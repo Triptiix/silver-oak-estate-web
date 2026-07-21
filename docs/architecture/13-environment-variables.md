@@ -1,0 +1,31 @@
+# Environment Variables
+
+*Note: This file documents the required keys only. DO NOT expose actual secrets here. Use explicit placeholders for development.*
+
+## Public Variables (Exposed to Browser)
+- `NEXT_PUBLIC_SITE_URL` = `<YOUR_SITE_URL>` (Required, Test/Live)
+- `NEXT_PUBLIC_SUPABASE_URL` = `<YOUR_SUPABASE_URL>` (Required, Test/Live)
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` = `<YOUR_SUPABASE_ANON_KEY>` (Required, Test/Live)
+- `NEXT_PUBLIC_TURNSTILE_SITE_KEY` = `<YOUR_TURNSTILE_SITE_KEY>` (Required, Test/Live)
+- `NEXT_PUBLIC_RAZORPAY_KEY_ID` = `<RAZORPAY_KEY_ID>` (Required, Test/Live)
+
+## Server-Only Variables (NEVER Exposed)
+- `APP_ENV` = `<development|staging|production>` (Required, Test/Live)
+- `APP_TIMEZONE` = `"Asia/Kolkata"` (Required, Test/Live)
+- `PAYMENT_PROVIDER` = `"razorpay"` (Required, Test/Live)
+- `BOOKING_HOLD_MINUTES` = `"10"` (Required, Test/Live)
+- `MANUAL_PAYMENT_HOLD_MINUTES` = `"30"` (Required, Test/Live)
+- `DATABASE_CRON_ENABLED` = `"true"` (Required, Test/Live)
+- `SUPABASE_SERVICE_ROLE_KEY` = `<YOUR_SUPABASE_SERVICE_ROLE_KEY>` (Required, Test/Live, **Sensitive**)
+- `RAZORPAY_KEY_SECRET` = `<RAZORPAY_KEY_SECRET>` (Required, Test/Live, **Sensitive**)
+- `PAYMENT_WEBHOOK_SECRET` = `<YOUR_WEBHOOK_SECRET>` (Required, Test/Live, **Sensitive**)
+- `TURNSTILE_SECRET_KEY` = `<YOUR_TURNSTILE_SECRET_KEY>` (Required, Test/Live, **Sensitive**)
+- `BOOKING_TOKEN_SECRET` = `<YOUR_BOOKING_TOKEN_SECRET>` (Required, Test/Live, **Sensitive**)
+- `ICAL_FEED_SECRET` = `<YOUR_ICAL_FEED_SECRET>` (Required, Test/Live, **Sensitive**)
+- `EMAIL_API_KEY` = `<YOUR_EMAIL_API_KEY>` (Required, Test/Live, **Sensitive**)
+- `EMAIL_SENDER` = `"noreply@silveroakestate.com"` (Required, Test/Live)
+- `ADMIN_NOTIFICATION_RECIPIENTS` = `"admin@silveroakestate.com"` (Required, Test/Live)
+- `CRON_SECRET` = `<YOUR_CRON_SECRET>` (Required, Test/Live, **Sensitive**)
+- `ERROR_MONITORING_DSN` = `<YOUR_SENTRY_DSN>` (Optional but Recommended, Test/Live)
+- `WHATSAPP_API_KEY` = `<YOUR_WHATSAPP_API_KEY>` (Optional, Test/Live, **Sensitive**)
+- `PMS_API_KEY` = `<YOUR_PMS_API_KEY>` (Optional, Test/Live, **Sensitive**)
