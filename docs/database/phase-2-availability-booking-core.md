@@ -18,6 +18,11 @@ not an inventory-start timestamp.
 `20260721170100_booking_hold_lifecycle.sql` adds stale cleanup, atomic hold
 creation, and idempotent release. Existing Phase 1 migrations are unchanged.
 
+`20260721170200_enforce_public_booking_business_date.sql` adds a trusted
+Asia/Kolkata business-date comparison and a public-booking trigger, then updates
+availability so past arrival dates are never advertised as bookable. Current
+and future business dates continue through the normal availability rules.
+
 ## Booking Date and Pricing Model
 
 `resolve_booking_dates` combines a business `date` with property wall-clock
@@ -58,6 +63,8 @@ expires associated `held` bookings, and writes one audit event per transition.
 Release changes an unpaid temporary reservation to `released`, uses terminal
 booking state `expired`, records an event, and is idempotent. Confirmed, manual,
 OTA, owner, and maintenance reservations are not releasable through this path.
+A repeat release after the browser has already cleared its cookie returns the
+same safe success shape without touching the database or adding an event.
 
 ## Token, Turnstile, and Privacy
 

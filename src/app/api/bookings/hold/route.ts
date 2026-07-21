@@ -6,6 +6,7 @@ import { bookingError, mapDatabaseError } from "@/lib/booking/api-errors";
 import { createHold } from "@/lib/booking/database";
 import { createRequestFingerprint, getTrustedClientAddress } from "@/lib/booking/fingerprint";
 import { signHoldToken } from "@/lib/booking/hold-token";
+import { HOLD_COOKIE_NAME, holdCookieOptions } from "@/lib/booking/hold-cookie";
 import { holdRequestSchema, normalizePhone } from "@/lib/booking/schemas";
 import { hasAllowedOrigin } from "@/lib/booking/security";
 import { verifyTurnstile } from "@/lib/booking/turnstile";
@@ -45,8 +46,8 @@ export async function POST(request: NextRequest) {
     const { created, bookingId: _bookingId, holdTokenNonce: _nonce, ...publicResult } = result;
     void _bookingId; void _nonce;
     const response = NextResponse.json(publicResult, { status: created ? 201 : 200, headers: { "Cache-Control": "no-store, max-age=0" } });
-    response.cookies.set("soe_booking_hold", token, {
-      httpOnly: true, sameSite: "lax", secure: envServer.APP_ENV === "production", path: "/api",
+    response.cookies.set(HOLD_COOKIE_NAME, token, {
+      ...holdCookieOptions(envServer.APP_ENV === "production"),
       maxAge: Math.max(0, Math.floor((new Date(result.holdExpiresAt).valueOf() - Date.now()) / 1000)),
     });
     return response;

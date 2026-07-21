@@ -12,7 +12,7 @@ vi.mock("@supabase/ssr", () => ({
   }),
 }));
 
-describe("Proxy / Middleware", () => {
+describe("Next.js Proxy", () => {
   it("unauthenticated admin access redirects to /admin/login", async () => {
     const request = new NextRequest("http://localhost:3000/admin/dashboard");
     const response = await proxy(request);

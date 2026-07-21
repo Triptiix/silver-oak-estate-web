@@ -624,6 +624,14 @@ export type Database = {
         Returns: boolean
       }
       is_active_admin: { Args: never; Returns: boolean }
+      is_current_or_future_business_date: {
+        Args: {
+          p_business_date: string
+          p_property_id: string
+          p_reference_instant?: string
+        }
+        Returns: boolean
+      }
       release_booking_hold: {
         Args: { p_booking_id: string; p_hold_token_nonce: string }
         Returns: boolean

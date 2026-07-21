@@ -1,5 +1,5 @@
 begin;
-select plan(39);
+select plan(40);
 
 create temporary table phase2_context as
 select id as property_id from public.properties where slug = 'silver-oak-estate';
@@ -60,6 +60,7 @@ select throws_ok($$select public.create_booking_hold('silver-oak-estate','2026-0
 select throws_ok($$select public.create_booking_hold('silver-oak-estate','2026-08-10','Conflict',null,'+919999000003',null,2,0,null,'31000000-0000-0000-0000-000000000003','32000000-0000-0000-0000-000000000003','fingerprint-three',10)$$, 'P0001', 'date_unavailable', 'overlapping hold receives controlled conflict');
 select is(public.release_booking_hold((select id from public.bookings where hold_request_id = '31000000-0000-0000-0000-000000000001'),'32000000-0000-0000-0000-000000000001'), true, 'valid hold releases');
 select is(public.release_booking_hold((select id from public.bookings where hold_request_id = '31000000-0000-0000-0000-000000000001'),'32000000-0000-0000-0000-000000000001'), true, 'duplicate release is idempotent');
+select is((select count(*)::integer from public.booking_events where booking_id = (select id from public.bookings where hold_request_id = '31000000-0000-0000-0000-000000000001') and event_type = 'hold_released'), 1, 'duplicate release does not add another event');
 select is((select status from public.inventory_reservations where booking_id = (select id from public.bookings where hold_request_id = '31000000-0000-0000-0000-000000000001')), 'released'::public.reservation_status, 'release changes inventory status');
 select is((select booking_status from public.bookings where hold_request_id = '31000000-0000-0000-0000-000000000001'), 'expired'::public.booking_status, 'release uses terminal expired booking state');
 
