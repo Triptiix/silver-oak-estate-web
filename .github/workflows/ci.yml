@@ -1,0 +1,121 @@
+name: Silver Oak Estate CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  application-quality:
+    name: Application Quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
+      NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-anon-key-placeholder
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: ci-turnstile-site-key-placeholder
+      NEXT_PUBLIC_RAZORPAY_KEY_ID: rzp_test_ci_placeholder
+      APP_ENV: development
+      APP_TIMEZONE: Asia/Kolkata
+      PAYMENT_PROVIDER: razorpay
+      BOOKING_HOLD_MINUTES: "10"
+      MANUAL_PAYMENT_HOLD_MINUTES: "30"
+      DATABASE_CRON_ENABLED: "true"
+      SUPABASE_SERVICE_ROLE_KEY: ci-service-role-placeholder
+      RAZORPAY_KEY_SECRET: ci-razorpay-secret-placeholder
+      PAYMENT_WEBHOOK_SECRET: ci-payment-webhook-placeholder
+      TURNSTILE_SECRET_KEY: ci-turnstile-secret-placeholder
+      BOOKING_TOKEN_SECRET: ci-booking-token-placeholder
+      ICAL_FEED_SECRET: ci-ical-placeholder
+      EMAIL_API_KEY: ci-email-api-placeholder
+      EMAIL_SENDER: ci@example.invalid
+      ADMIN_NOTIFICATION_RECIPIENTS: admin@example.invalid
+      CRON_SECRET: ci-cron-placeholder
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check application
+        run: npm run typecheck
+
+      - name: Lint application
+        run: npm run lint
+
+      - name: Test application
+        run: npm run test
+
+      - name: Build application
+        run: npm run build
+
+      - name: Check whitespace
+        run: git diff --check
+
+  database-and-concurrency:
+    name: Database and Concurrency
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      DO_NOT_TRACK: "1"
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Start local Supabase
+        run: npm run db:start
+
+      - name: Reset local database
+        run: npm run db:reset
+
+      - name: Lint local database
+        run: npm run db:lint
+
+      - name: Test local database
+        run: npm run db:test
+
+      - name: Generate database types
+        run: npm run db:types
+
+      - name: Verify generated database types
+        run: git diff --exit-code -- src/types/database.types.ts
+
+      - name: Test booking concurrency
+        run: npm run test:concurrency
+
+      - name: Check whitespace
+        run: git diff --check
+
+      - name: Stop local Supabase
+        if: always()
+        run: npm run db:stop

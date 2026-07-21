@@ -153,6 +153,20 @@ configuration. There is no unconditional development bypass. Never commit these
 values. Payment is not implemented, and successfully creating a hold does not
 confirm a booking.
 
+## Continuous Integration
+
+Pull requests targeting `main` run two required quality gates:
+
+- **Application Quality** installs dependencies with `npm ci`, then type-checks,
+  lints, tests, builds, and checks the diff for whitespace errors.
+- **Database and Concurrency** starts the local Supabase Docker stack, replays
+  migrations, lints and tests the database, verifies generated types, and runs
+  the booking concurrency test before always stopping the stack.
+
+Both jobs use Node.js 20 and the project-pinned Supabase CLI. CI uses only
+loopback URLs and explicit non-secret placeholders; it does not use hosted
+Supabase services or production credentials.
+
 ## Learn More
 
 - [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
