@@ -32,6 +32,7 @@ credentials to them.
 | `20260721090300_payments_events_settings.sql` | Payment ledger foundation, audit/event tables, and settings |
 | `20260721090400_functions_constraints_indexes.sql` | Updated-at trigger, admin helpers, exclusion constraint, and indexes |
 | `20260721090500_row_level_security.sql` | Explicit grants, RLS enablement, and policies |
+| `20260721160000_harden_site_settings_authorization.sql` | Sensitivity-aware settings access, controlled mutations, and actor-bound attribution |
 
 Dependency order is properties/customers/admins, then bookings, then inventory
 and pricing, then payments/events/settings. Migrations are forward-only and
@@ -72,19 +73,20 @@ classification uses Asia/Kolkata.
 RLS is enabled on every application table. The service role is reserved for
 trusted server-only code and never enters browser bundles.
 
-| Entity | Anonymous | Authenticated non-admin | Active operations | Active admin/super-admin | Service role |
-| --- | --- | --- | --- | --- | --- |
-| Active safe properties | Read | Denied | Read | Read | Read/write |
-| Inactive properties | Denied | Denied | Read | Read/write | Read/write |
-| Own `admins` membership | Denied | Empty unless membership exists | Read own | Read own; super-admin reads all | Read/write |
-| Admin membership management | Denied | Denied | Denied | Super-admin only | Read/write |
-| Customers | Denied | Denied | Read/insert/update | Read/insert/update | Read/write |
-| Bookings | Denied | Denied | Read | Read | Read/write |
-| Inventory reservations | Denied | Denied | Read | Read | Read/write |
-| Pricing rules | Denied | Denied | Read | Admin/super-admin insert/update | Read/write |
-| Payment status columns | Denied | Denied | Limited-column read | Limited-column read | Read/write |
-| Webhook/booking/notification events | Denied | Denied | Read | Read | Read/write |
-| Site settings | Denied | Denied | Read | Admin/super-admin insert/update | Read/write |
+| Entity | Anonymous | Authenticated non-admin | Operations | Admin | Super-admin | Service role |
+| --- | --- | --- | --- | --- | --- | --- |
+| Active safe properties | Read | Denied | Read | Read/write | Read/write | Read/write |
+| Inactive properties | Denied | Denied | Read | Read/write | Read/write | Read/write |
+| Own `admins` membership | Denied | Empty unless membership exists | Read own | Read own | Read all | Read/write |
+| Admin membership management | Denied | Denied | Denied | Denied | Create/update/delete | Read/write |
+| Customers | Denied | Denied | Read/insert/update | Read/insert/update | Read/insert/update | Read/write |
+| Bookings | Denied | Denied | Read | Read | Read | Read/write |
+| Inventory reservations | Denied | Denied | Read | Read | Read | Read/write |
+| Pricing rules | Denied | Denied | Read | Read/insert/update | Read/insert/update | Read/write |
+| Payment status columns | Denied | Denied | Limited-column read | Limited-column read | Limited-column read | Read/write |
+| Webhook/booking/notification events | Denied | Denied | Read | Read | Read | Read/write |
+| Non-sensitive site settings | Denied | Denied | Read | Read; controlled insert/update | Read; controlled insert/update/delete | Read/write |
+| Sensitive site settings | Denied | Denied | Denied | Denied | Read; controlled insert/update/delete | Read/write |
 
 No private table has a permissive `USING (true)` policy. Booking, reservation,
 payment, and event mutations remain server-only in Phase 1. No authenticated
@@ -100,6 +102,31 @@ from `public` and `anon`, and grant execution only to `authenticated` and
 
 A single invoker trigger function maintains `updated_at` on mutable tables.
 Append-oriented event tables do not receive that trigger.
+
+### Site Settings Mutations and Attribution
+
+Authenticated users have no direct `INSERT`, `UPDATE`, or `DELETE` table
+privileges on `site_settings`. PostgreSQL read policies expose non-sensitive
+rows to active operations, admin, and super-admin users; sensitive rows are
+visible only to active super-admin users. Because the former broad permissive
+policies were removed, another policy cannot expose a sensitive row through
+permissive-policy `OR` composition.
+
+Settings changes use three fixed-search-path `SECURITY DEFINER` functions:
+
+- `upsert_non_sensitive_setting(text, jsonb, text)` allows active admin and
+  super-admin callers to create or update only non-sensitive rows. An existing
+  sensitive key cannot be modified or downgraded through this function.
+- `upsert_sensitive_setting(text, jsonb, text)` allows only an active
+  super-admin to create or update sensitive rows.
+- `delete_setting(text)` allows only an active super-admin to delete a setting.
+
+The upsert functions accept no actor argument. They set `updated_by` to
+`auth.uid()` after confirming the caller has an active administrator row, and
+the foreign key targets `admins.auth_user_id`. Authenticated callers therefore
+cannot forge or clear attribution. Trusted service-role operations retain
+direct access; system/service writes leave `updated_by` null unless an explicit
+trusted administrator Auth UUID is intentionally supplied.
 
 ## Application Authorization Flow
 
@@ -154,11 +181,13 @@ npm run build
 npm run check
 ```
 
-The pgTAP suites cover overlap concurrency enforcement, half-open boundaries,
-released/stale holds, booking and pricing checks, RLS roles, administrator
-helpers, privilege boundaries, and safe function configuration. Application
-tests cover the login UI, lack of registration, Proxy redirect, membership and
-role decisions, logout, public smoke routes, and server-only import boundaries.
+The 88 pgTAP assertions cover overlap concurrency enforcement, half-open
+boundaries, released/stale holds, booking and pricing checks, RLS roles,
+administrator helpers, settings sensitivity, old/new-row mutation protection,
+actor attribution, privilege boundaries, and safe function configuration.
+Application tests cover the login UI, lack of registration, Proxy redirect,
+membership and role decisions, logout, public smoke routes, and server-only
+import boundaries.
 
 ## Architecture Clarifications
 

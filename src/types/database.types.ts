@@ -538,7 +538,7 @@ export type Database = {
             columns: ["updated_by"]
             isOneToOne: false
             referencedRelation: "admins"
-            referencedColumns: ["id"]
+            referencedColumns: ["auth_user_id"]
           },
         ]
       }
@@ -586,11 +586,58 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      delete_setting: { Args: { p_setting_key: string }; Returns: boolean }
       has_admin_role: {
         Args: { required_roles: Database["public"]["Enums"]["admin_role"][] }
         Returns: boolean
       }
       is_active_admin: { Args: never; Returns: boolean }
+      upsert_non_sensitive_setting: {
+        Args: {
+          p_description: string
+          p_setting_key: string
+          p_setting_value: Json
+        }
+        Returns: {
+          created_at: string
+          description: string | null
+          id: string
+          is_sensitive: boolean
+          setting_key: string
+          setting_value: Json
+          updated_at: string
+          updated_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "site_settings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      upsert_sensitive_setting: {
+        Args: {
+          p_description: string
+          p_setting_key: string
+          p_setting_value: Json
+        }
+        Returns: {
+          created_at: string
+          description: string | null
+          id: string
+          is_sensitive: boolean
+          setting_key: string
+          setting_value: Json
+          updated_at: string
+          updated_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "site_settings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       admin_role: "super_admin" | "admin" | "operations"
