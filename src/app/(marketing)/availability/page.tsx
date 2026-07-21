@@ -1,4 +1,5 @@
 import { Container } from "@/components/ui/container";
+import { AvailabilityList } from "@/components/booking/availability-list";
 
 export const metadata = {
   title: "Availability",
@@ -6,11 +7,9 @@ export const metadata = {
 
 export default function AvailabilityPage() {
   return (
-    <Container className="py-16 text-center max-w-2xl">
+    <Container className="py-16 max-w-3xl">
       <h1 className="text-4xl font-bold mb-8">Availability</h1>
-      <p className="text-[var(--muted-foreground)]">
-        Live availability will be enabled in the booking implementation phase. Please contact us directly for current availability.
-      </p>
+      <AvailabilityList />
     </Container>
   );
 }
