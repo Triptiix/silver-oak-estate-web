@@ -31,8 +31,8 @@ export async function proxy(request: NextRequest) {
   // Refresh session if expired and retrieve verified claims
   const { data: claims } = await supabase.auth.getClaims();
 
-  // Admin route protection foundation
-  // Role authorization is pending Phase 1 database migrations (admins table and RLS).
+  // Proxy validates session presence. Protected Server Components perform the
+  // deeper database-backed active administrator role check.
   if (request.nextUrl.pathname.startsWith("/admin") && !request.nextUrl.pathname.startsWith("/admin/login")) {
     if (!claims) {
       const url = request.nextUrl.clone();
