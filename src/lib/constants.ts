@@ -1,0 +1,16 @@
+export const CONSTANTS = {
+  PRICING: {
+    WEEKDAY_PAISE: 1500000,
+    WEEKEND_PAISE: 2000000,
+    ADVANCE_PAISE: 500000,
+  },
+  CAPACITY: {
+    OVERNIGHT_MIN: 6,
+    OVERNIGHT_MAX: 8,
+    EVENT_MAX: 30,
+  },
+  TIMING: {
+    CHECK_IN: "11:00 AM",
+    CHECK_OUT: "10:00 AM",
+  }
+}
