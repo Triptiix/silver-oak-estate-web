@@ -1,11 +1,11 @@
-# Silver Oak Estate Agent Guide
+# Silver Oak Estate — Codex Agent Guide
 
 ## Project
 
 Silver Oak Estate is a premium farmhouse booking website for one complete
 3 BHK property in Sector 135, Noida.
 
-The project uses:
+Technology:
 
 - Next.js App Router
 - TypeScript
@@ -25,14 +25,18 @@ The project uses:
 - docs/architecture/05-api-boundaries.md
 - docs/architecture/06-security-model.md
 - docs/architecture/07-payment-architecture.md
+- docs/architecture/08-calendar-and-ota-strategy.md
 - docs/architecture/09-deployment-plan.md
 - docs/architecture/10-implementation-sequence.md
+- docs/architecture/11-risk-register.md
+- docs/architecture/12-open-decisions.md
+- docs/architecture/13-environment-variables.md
 - docs/architecture/14-testing-strategy.md
 
 ## Mandatory business rules
 
 - Inventory is one complete property.
-- Do not support separate room bookings.
+- Never support independent room bookings.
 - Maximum event capacity is 30.
 - Maximum overnight capacity is 8.
 - Check-in is 11:00 AM Asia/Kolkata.
@@ -42,29 +46,47 @@ The project uses:
 - Booking advance is 500,000 paise.
 - Public-holiday pricing is deferred.
 - Store timestamps as timestamptz.
-- Store money as integer paise.
+- Store monetary amounts as integer paise.
 - All inventory blocking uses inventory_reservations.
-- Overlapping active reservations must be rejected by PostgreSQL.
+- PostgreSQL must reject overlapping active reservations.
 - Never trust browser-calculated prices.
 - Never expose customer PII publicly.
-- Never expose the Supabase service-role key.
-- No public admin registration.
-- Do not invent unresolved business policies.
+- Never expose Supabase service-role credentials.
+- No public administrator registration.
+- Do not invent unresolved policies.
 
-## Development rules
+## Working method
 
-- Inspect existing code before editing.
-- Do not modify unrelated files.
-- Do not push directly to main.
-- Do not apply migrations to production without explicit approval.
+1. Inspect existing files before editing.
+2. Present an implementation plan before high-risk changes.
+3. Implement only the requested phase.
+4. Apply migrations in dependency order.
+5. Replay migrations from a clean local database.
+6. Run tests and inspect the complete diff.
+7. Report assumptions rather than inventing business rules.
+8. Stop when the requested phase is complete.
+
+## Migration rules
+
+- Use gen_random_uuid() with pgcrypto.
+- Use btree_gist for inventory overlap protection.
+- Use timestamptz for instants.
+- Use date or time only for business dates and wall-clock values.
+- Never edit a migration already applied to production.
 - Prefer forward corrective migrations.
-- Every migration must replay from a clean database.
-- Do not edit an already-applied production migration.
-- Use least-privilege RLS.
-- Use server-side authorization for admin operations.
-- Stop after the requested phase.
+- Set safe search_path values on SECURITY DEFINER functions.
+- Revoke unnecessary function execution privileges.
+- Never target production automatically.
 
-## Required checks
+## Git rules
+
+- Work only on the current feature branch.
+- Never push directly to main.
+- Never rewrite Git history.
+- Do not commit credentials, tokens, passwords or .env.local.
+- Do not modify unrelated files.
+
+## Required commands
 
 ```bash
 npm run typecheck
