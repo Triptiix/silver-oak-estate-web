@@ -64,7 +64,7 @@ OTA, owner, and maintenance reservations are not releasable through this path.
 The `soe_booking_hold` cookie contains an HMAC-SHA256 signed, base64url payload
 with only version, booking ID, nonce, and expiry. The database stores the nonce,
 not the signed token. Verification uses constant-time signature comparison.
-The cookie is HttpOnly, SameSite=Lax, production-Secure, scoped to booking APIs,
+The cookie is HttpOnly, SameSite=Lax, production-Secure, scoped to `/api`,
 and expires with the hold.
 
 Hold creation verifies Turnstile server-side with a five-second timeout. Local

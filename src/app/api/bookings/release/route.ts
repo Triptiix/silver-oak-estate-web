@@ -5,7 +5,7 @@ import { releaseHold } from "@/lib/booking/database";
 import { verifyHoldToken } from "@/lib/booking/hold-token";
 
 function clearCookie(response: NextResponse) {
-  response.cookies.set("soe_booking_hold", "", { httpOnly: true, sameSite: "lax", secure: envServer.APP_ENV === "production", path: "/api/bookings", maxAge: 0 });
+  response.cookies.set("soe_booking_hold", "", { httpOnly: true, sameSite: "lax", secure: envServer.APP_ENV === "production", path: "/api", maxAge: 0 });
   return response;
 }
 

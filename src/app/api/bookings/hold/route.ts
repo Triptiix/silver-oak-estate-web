@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     void _bookingId; void _nonce;
     const response = NextResponse.json(publicResult, { status: created ? 201 : 200, headers: { "Cache-Control": "no-store, max-age=0" } });
     response.cookies.set("soe_booking_hold", token, {
-      httpOnly: true, sameSite: "lax", secure: envServer.APP_ENV === "production", path: "/api/bookings",
+      httpOnly: true, sameSite: "lax", secure: envServer.APP_ENV === "production", path: "/api",
       maxAge: Math.max(0, Math.floor((new Date(result.holdExpiresAt).valueOf() - Date.now()) / 1000)),
     });
     return response;

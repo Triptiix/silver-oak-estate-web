@@ -32,7 +32,7 @@ npm install
 ### Environment Setup
 1. Copy the example environment variables:
 ```bash
-cp .env.example .env
+cp .env.example .env.local
 ```
 2. Fill in local-development values only. Never use production Supabase URLs,
    keys, passwords, or service-role credentials on a developer machine.
@@ -118,7 +118,7 @@ operational procedure.
 
 ### Supabase Setup Status
 - Foundational clients (browser, server, service-role) are created in `src/lib/supabase`.
-- The Next.js middleware is configured for session refreshing and basic admin route protection.
+- The Next.js Proxy is configured for session refreshing and basic administrator route protection.
 - Phase 1 includes the database schema, RLS policies, local database tests,
   generated types, and database-backed administrator sign-in/authorization.
 - See [Phase 1 Database & Auth](docs/database/phase-1-database-auth.md) for the
