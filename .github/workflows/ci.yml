@@ -35,14 +35,14 @@ jobs:
       DATABASE_CRON_ENABLED: "true"
       SUPABASE_SERVICE_ROLE_KEY: ci-service-role-placeholder
       RAZORPAY_KEY_SECRET: ci-razorpay-secret-placeholder
-      PAYMENT_WEBHOOK_SECRET: ci-payment-webhook-placeholder
+      PAYMENT_WEBHOOK_SECRET: ci-non-secret-webhook-8f3a1c7e5d9b2a6046c8e1f7
       TURNSTILE_SECRET_KEY: ci-turnstile-secret-placeholder
-      BOOKING_TOKEN_SECRET: ci-booking-token-placeholder
-      ICAL_FEED_SECRET: ci-ical-placeholder
+      BOOKING_TOKEN_SECRET: ci-non-secret-booking-token-6e2b9d4f8a1c7e3055f0b3d9
+      ICAL_FEED_SECRET: ci-non-secret-ical-token-4c8e1a7f3d9b6052e6f0a2c8
       EMAIL_API_KEY: ci-email-api-placeholder
       EMAIL_SENDER: ci@example.invalid
       ADMIN_NOTIFICATION_RECIPIENTS: admin@example.invalid
-      CRON_SECRET: ci-cron-placeholder
+      CRON_SECRET: ci-non-secret-cron-token-9a5d2f7c1e8b4063d4f6a9c2
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
