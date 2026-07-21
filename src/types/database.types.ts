@@ -127,10 +127,13 @@ export type Database = {
           customer_name_snapshot: string
           customer_phone_snapshot: string
           guest_count: number
+          hold_request_id: string | null
+          hold_token_nonce: string | null
           id: string
           overnight_guest_count: number | null
           property_id: string
           public_confirmation_token: string
+          request_fingerprint_hash: string | null
           source: string
           special_requests: string | null
           total_amount_paise: number
@@ -151,10 +154,13 @@ export type Database = {
           customer_name_snapshot: string
           customer_phone_snapshot: string
           guest_count: number
+          hold_request_id?: string | null
+          hold_token_nonce?: string | null
           id?: string
           overnight_guest_count?: number | null
           property_id: string
           public_confirmation_token: string
+          request_fingerprint_hash?: string | null
           source: string
           special_requests?: string | null
           total_amount_paise: number
@@ -175,10 +181,13 @@ export type Database = {
           customer_name_snapshot?: string
           customer_phone_snapshot?: string
           guest_count?: number
+          hold_request_id?: string | null
+          hold_token_nonce?: string | null
           id?: string
           overnight_guest_count?: number | null
           property_id?: string
           public_confirmation_token?: string
+          request_fingerprint_hash?: string | null
           source?: string
           special_requests?: string | null
           total_amount_paise?: number
@@ -586,12 +595,62 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_booking_hold: {
+        Args: {
+          p_check_in_date: string
+          p_customer_email: string
+          p_customer_name: string
+          p_customer_phone: string
+          p_fallback_hold_minutes: number
+          p_guest_count: number
+          p_hold_request_id: string
+          p_hold_token_nonce: string
+          p_overnight_guest_count: number
+          p_property_slug: string
+          p_request_fingerprint_hash: string
+          p_special_requests: string
+          p_whatsapp: string
+        }
+        Returns: Json
+      }
       delete_setting: { Args: { p_setting_key: string }; Returns: boolean }
+      expire_stale_holds: { Args: { p_property_id?: string }; Returns: number }
+      get_monthly_availability: {
+        Args: { p_month: string; p_property_slug: string }
+        Returns: Json
+      }
       has_admin_role: {
         Args: { required_roles: Database["public"]["Enums"]["admin_role"][] }
         Returns: boolean
       }
       is_active_admin: { Args: never; Returns: boolean }
+      release_booking_hold: {
+        Args: { p_booking_id: string; p_hold_token_nonce: string }
+        Returns: boolean
+      }
+      resolve_booking_dates: {
+        Args: { p_check_in_date: string; p_property_id: string }
+        Returns: {
+          business_date: string
+          check_in_at: string
+          check_in_time: string
+          check_out_at: string
+          check_out_time: string
+          timezone: string
+        }[]
+      }
+      resolve_booking_price: {
+        Args: { p_business_date: string; p_property_id: string }
+        Returns: {
+          advance_amount_paise: number
+          balance_amount_paise: number
+          business_date: string
+          currency: string
+          price_amount_paise: number
+          pricing_rule_id: string
+          rule_type: Database["public"]["Enums"]["pricing_rule_type"]
+        }[]
+      }
       upsert_non_sensitive_setting: {
         Args: {
           p_description: string
