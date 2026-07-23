@@ -8,15 +8,16 @@ Please review the extensive architecture documentation before contributing:
 - [System Architecture](docs/architecture/01-system-architecture.md)
 - [Project Context](PROJECT_CONTEXT.md)
 
-**Current Implementation Status:** Phase 1 database and administrator authentication foundation.
-**IMPORTANT:** Public booking logic, payment integrations, and production deployment are **NOT** implemented. This codebase is not production-ready.
+**Current Implementation Status:** Phase 2 local availability and temporary booking-hold foundation.
+**IMPORTANT:** Payment, booking confirmation, OTA synchronization, and production deployment are **NOT** implemented. This codebase is not production-ready.
 
-**Next Development Phase:** Phase 1: Database & Auth Foundation (Supabase SQL Migrations & Admin Auth setup).
+Temporary holds expire after the private `booking_hold_minutes` setting (10
+minutes in the local seed). A hold is not a confirmed booking.
 
 ## Getting Started
 
 ### Development Prerequisites
-- Node.js (v20.9.0+)
+- Node.js 22+
 - npm
 - Docker Desktop or another Docker-compatible local container runtime
 - The project-pinned Supabase CLI (`npm install` installs it as a dev dependency)
@@ -31,7 +32,7 @@ npm install
 ### Environment Setup
 1. Copy the example environment variables:
 ```bash
-cp .env.example .env
+cp .env.example .env.local
 ```
 2. Fill in local-development values only. Never use production Supabase URLs,
    keys, passwords, or service-role credentials on a developer machine.
@@ -56,6 +57,12 @@ Run database lint and pgTAP tests:
 ```bash
 npm run db:lint
 npm run db:test
+```
+
+Run the real local concurrency check while Supabase is running:
+
+```bash
+npm run test:concurrency
 ```
 
 Regenerate the checked-in TypeScript schema types from the local database:
@@ -111,7 +118,7 @@ operational procedure.
 
 ### Supabase Setup Status
 - Foundational clients (browser, server, service-role) are created in `src/lib/supabase`.
-- The Next.js middleware is configured for session refreshing and basic admin route protection.
+- The Next.js Proxy is configured for session refreshing and basic administrator route protection.
 - Phase 1 includes the database schema, RLS policies, local database tests,
   generated types, and database-backed administrator sign-in/authorization.
 - See [Phase 1 Database & Auth](docs/database/phase-1-database-auth.md) for the
@@ -132,6 +139,33 @@ operational procedure.
 - **Lint Local Database:** `npm run db:lint`
 - **Test Local Database:** `npm run db:test`
 - **Generate Database Types:** `npm run db:types`
+- **Run Booking Concurrency Test:** `npm run test:concurrency`
+
+## Phase 2 Booking APIs
+
+- `GET /api/availability?month=YYYY-MM` returns safe, non-cacheable availability and server-resolved prices.
+- `POST /api/bookings/hold` validates Turnstile and creates one atomic ten-minute hold.
+- `POST /api/bookings/release` releases the hold identified by its signed HttpOnly cookie.
+- `POST /api/internal/cron/expire-holds` is protected by `CRON_SECRET` and performs idempotent housekeeping; no production schedule is configured.
+
+Use Cloudflare's official Turnstile test site key and secret in local environment
+configuration. There is no unconditional development bypass. Never commit these
+values. Payment is not implemented, and successfully creating a hold does not
+confirm a booking.
+
+## Continuous Integration
+
+Pull requests targeting `main` run two required quality gates:
+
+- **Application Quality** installs dependencies with `npm ci`, then type-checks,
+  lints, tests, builds, and checks the diff for whitespace errors.
+- **Database and Concurrency** starts the local Supabase Docker stack, replays
+  migrations, lints and tests the database, verifies generated types, and runs
+  the booking concurrency test before always stopping the stack.
+
+Both jobs use Node.js 22 and the project-pinned Supabase CLI. CI uses only
+loopback URLs and explicit non-secret placeholders; it does not use hosted
+Supabase services or production credentials.
 
 ## Learn More
 

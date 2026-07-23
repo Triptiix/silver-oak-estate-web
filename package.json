@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "engines": {
-    "node": ">=20.9.0"
+    "node": ">=22.0.0"
   },
   "scripts": {
     "dev": "next dev",
@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:concurrency": "node test/concurrency/booking-hold.mjs",
     "check": "npm run typecheck && npm run lint && npm run test",
     "db:start": "supabase start",
     "db:stop": "supabase stop",
