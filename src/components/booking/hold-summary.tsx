@@ -1,7 +1,7 @@
 "use client";
 
 import { HoldCountdown } from "./hold-countdown";
-import { formatDisplayDate } from "@/lib/booking/date";
+import { formatDisplayDate, formatTimeInKolkata } from "@/lib/booking/date";
 import { formatInrFromPaise } from "@/lib/booking/format";
 import type { HoldSummary as HoldSummaryType } from "@/hooks/use-booking-session";
 
@@ -36,12 +36,12 @@ export function HoldSummary({ hold, onExpire, onRelease }: HoldSummaryProps) {
             <div>
               <span className="block text-xs text-slate-500 uppercase tracking-wider font-semibold mb-1">Check-in</span>
               <span className="font-medium text-slate-900">{formatDisplayDate(hold.checkInAt.slice(0, 10))}</span>
-              <span className="block text-sm text-slate-600">From 11:00 AM</span>
+              <span className="block text-sm text-slate-600">From {formatTimeInKolkata(hold.checkInAt)}</span>
             </div>
             <div>
               <span className="block text-xs text-slate-500 uppercase tracking-wider font-semibold mb-1">Check-out</span>
               <span className="font-medium text-slate-900">{formatDisplayDate(hold.checkOutAt.slice(0, 10))}</span>
-              <span className="block text-sm text-slate-600">Until 09:00 AM</span>
+              <span className="block text-sm text-slate-600">Until {formatTimeInKolkata(hold.checkOutAt)}</span>
             </div>
           </div>
 
@@ -74,7 +74,7 @@ export function HoldSummary({ hold, onExpire, onRelease }: HoldSummaryProps) {
               disabled
               className="px-6 py-3 bg-slate-900 text-white font-medium rounded-md opacity-50 cursor-not-allowed"
             >
-              Continue to Payment
+              Secure online payment will be enabled in the next implementation phase.
             </button>
           </div>
         </div>

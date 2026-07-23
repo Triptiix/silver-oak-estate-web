@@ -9,6 +9,7 @@ type AvailabilityDayProps = {
   priceAmountPaise: number | undefined;
   isPast: boolean;
   isSelected: boolean;
+  isToday: boolean;
   onClick?: () => void;
   isBlank?: boolean;
 };
@@ -20,6 +21,7 @@ export function AvailabilityDay({
   priceAmountPaise,
   isPast,
   isSelected,
+  isToday,
   onClick,
   isBlank,
 }: AvailabilityDayProps) {
@@ -42,17 +44,37 @@ export function AvailabilityDay({
     bgClass = "bg-slate-900";
     textClass = "text-white";
     borderClass = "border-slate-900";
+  } else if (isToday) {
+    borderClass = "border-slate-400 border-2";
   }
+
+  const d = new Date(`${dateStr}T00:00:00Z`);
+  const fullDateLabel = new Intl.DateTimeFormat("en-IN", {
+    timeZone: "UTC",
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }).format(d);
+
+  const priceLabel = priceAmountPaise ? `Price ${formatInrFromPaise(priceAmountPaise)}` : "";
+  const ariaLabel = [
+    fullDateLabel,
+    isToday ? "Today" : "",
+    isSelected ? "Selected" : "",
+    !available ? "Unavailable" : "Available",
+    priceLabel
+  ].filter(Boolean).join(". ");
 
   return (
     <button
       type="button"
       disabled={disabled}
       onClick={onClick}
-      aria-label={`${dateStr}${isSelected ? " (Selected)" : ""}${!available ? " (Unavailable)" : ""}`}
+      aria-label={ariaLabel}
       className={`flex flex-col items-center justify-center p-3 sm:p-4 border rounded-md transition-colors ${bgClass} ${textClass} ${borderClass} ${
         !disabled ? "cursor-pointer focus:ring-2 focus:ring-slate-900 focus:outline-none" : "cursor-not-allowed"
-      }`}
+      } relative`}
     >
       <span className="text-lg sm:text-xl font-medium">{dayOfMonth}</span>
       {priceAmountPaise !== undefined && !isPast && available && (

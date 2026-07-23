@@ -20,7 +20,7 @@ describe("BookingForm", () => {
   });
 
   it("renders correctly", () => {
-    render(<BookingForm checkInDate="2024-12-01" onSuccess={() => {}} />);
+    render(<BookingForm checkInDate="2024-12-01" guestCount={1} overnightGuestCount={0} onGuestCountChange={vi.fn()} onOvernightGuestCountChange={vi.fn()} onSuccess={() => {}} />);
     
     expect(screen.getByLabelText(/Full Name/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Email Address/i)).toBeInTheDocument();
@@ -40,7 +40,7 @@ describe("BookingForm", () => {
       })
     });
 
-    render(<BookingForm checkInDate="2024-12-01" onSuccess={onSuccess} />);
+    render(<BookingForm checkInDate="2024-12-01" guestCount={1} overnightGuestCount={0} onGuestCountChange={vi.fn()} onOvernightGuestCountChange={vi.fn()} onSuccess={onSuccess} />);
     
     // Fill form
     fireEvent.change(screen.getByLabelText(/Full Name/i), { target: { value: "John Doe" } });
@@ -71,7 +71,7 @@ describe("BookingForm", () => {
       })
     });
 
-    render(<BookingForm checkInDate="2024-12-01" onSuccess={() => {}} />);
+    render(<BookingForm checkInDate="2024-12-01" guestCount={1} overnightGuestCount={0} onGuestCountChange={vi.fn()} onOvernightGuestCountChange={vi.fn()} onSuccess={() => {}} />);
     
     // Fill form
     fireEvent.change(screen.getByLabelText(/Full Name/i), { target: { value: "John Doe" } });

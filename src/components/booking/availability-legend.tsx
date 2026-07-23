@@ -13,6 +13,10 @@ export function AvailabilityLegend() {
         <div className="w-4 h-4 rounded-sm border border-slate-900 bg-slate-900" />
         <span>Selected</span>
       </div>
+      <div className="flex items-center gap-1.5">
+        <div className="w-4 h-4 rounded-sm border-2 border-slate-400 bg-white" />
+        <span>Today</span>
+      </div>
     </div>
   );
 }

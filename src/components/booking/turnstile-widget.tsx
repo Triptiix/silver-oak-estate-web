@@ -17,23 +17,24 @@ declare global {
 
 type TurnstileWidgetProps = {
   onVerify: (token: string) => void;
+  resetSignal?: number;
 };
 
-export function TurnstileWidget({ onVerify }: TurnstileWidgetProps) {
+export function TurnstileWidget({ onVerify, resetSignal = 0 }: TurnstileWidgetProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [widgetId, setWidgetId] = useState<string | null>(null);
 
-  // We expose a reset function on the container so the parent form can reset the widget.
+  // Re-run reset when resetSignal changes
+  const prevResetSignalRef = useRef(resetSignal);
   useEffect(() => {
-    if (containerRef.current) {
-      (containerRef.current as HTMLDivElement & { resetTurnstile: () => void }).resetTurnstile = () => {
-        if (widgetId && window.turnstile) {
-          window.turnstile.reset(widgetId);
-          onVerify(""); // Clear the token on reset
-        }
-      };
+    if (resetSignal > prevResetSignalRef.current) {
+      if (widgetId && window.turnstile) {
+        window.turnstile.reset(widgetId);
+        onVerify(""); // Clear token on reset
+      }
+      prevResetSignalRef.current = resetSignal;
     }
-  }, [widgetId, onVerify]);
+  }, [resetSignal, widgetId, onVerify]);
 
   useEffect(() => {
     function renderWidget() {
@@ -64,6 +65,9 @@ export function TurnstileWidget({ onVerify }: TurnstileWidgetProps) {
     return () => {
       if (widgetId && window.turnstile) {
         window.turnstile.remove(widgetId);
+      }
+      if (window.onSoeTurnstileLoad === renderWidget) {
+        delete window.onSoeTurnstileLoad;
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

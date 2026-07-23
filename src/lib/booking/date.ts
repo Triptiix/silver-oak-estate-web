@@ -44,3 +44,15 @@ export function formatDisplayDate(dateStr: string): string {
     year: "numeric",
   }).format(d);
 }
+
+export function formatTimeInKolkata(isoTimestamp: string): string {
+  const d = new Date(isoTimestamp);
+  if (Number.isNaN(d.getTime())) {
+    throw new Error("Invalid timestamp");
+  }
+  return new Intl.DateTimeFormat("en-IN", {
+    timeZone: "Asia/Kolkata",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(d);
+}

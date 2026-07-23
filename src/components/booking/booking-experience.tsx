@@ -10,6 +10,14 @@ import { HoldSummary } from "./hold-summary";
 import { ReleaseHoldDialog } from "./release-hold-dialog";
 import { isPastBusinessDate } from "@/lib/booking/date";
 
+type SelectedDateEntry = {
+  date: string;
+  priceAmountPaise: number;
+  advanceAmountPaise: number;
+  checkInTime: string;
+  checkOutTime: string;
+};
+
 export function BookingExperience() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -18,7 +26,9 @@ export function BookingExperience() {
   const { holdSummary, isLoaded, saveHold, clearHold } = useBookingSession();
 
   // Pre-check state
-  const [priceAmountPaise, setPriceAmountPaise] = useState<number | null>(null);
+  const [selectedEntry, setSelectedEntry] = useState<SelectedDateEntry | null>(null);
+  const [guestCount, setGuestCount] = useState(1);
+  const [overnightGuestCount, setOvernightGuestCount] = useState(0);
   const [isChecking, setIsChecking] = useState(true);
   const [isReleaseDialogOpen, setIsReleaseDialogOpen] = useState(false);
   const [isReleasing, setIsReleasing] = useState(false);
@@ -33,7 +43,13 @@ export function BookingExperience() {
       const entry = data.dates.find((d) => d.date === date);
       
       if (entry && entry.available && !isPastBusinessDate(date)) {
-        setPriceAmountPaise(entry.priceAmountPaise);
+        setSelectedEntry({
+          date: entry.date,
+          priceAmountPaise: entry.priceAmountPaise,
+          advanceAmountPaise: entry.advanceAmountPaise,
+          checkInTime: data.checkInTime,
+          checkOutTime: data.checkOutTime,
+        });
       } else {
         router.replace("/availability");
       }
@@ -134,13 +150,22 @@ export function BookingExperience() {
     );
   }
 
-  if (dateParam && priceAmountPaise !== null) {
+  if (dateParam && selectedEntry) {
     return (
       <div className="flex flex-col lg:flex-row gap-12">
         <div className="flex-1">
           <h2 className="text-2xl font-medium text-slate-900 mb-6">Enter Your Details</h2>
           <BookingForm 
             checkInDate={dateParam}
+            guestCount={guestCount}
+            overnightGuestCount={overnightGuestCount}
+            onGuestCountChange={(val) => {
+              setGuestCount(val);
+              if (overnightGuestCount > val) {
+                setOvernightGuestCount(val);
+              }
+            }}
+            onOvernightGuestCountChange={setOvernightGuestCount}
             onSuccess={(hold) => {
               saveHold(hold);
             }}
@@ -148,9 +173,13 @@ export function BookingExperience() {
         </div>
         <div className="w-full lg:w-96">
           <BookingSummary 
-            checkInDate={dateParam} 
-            priceAmountPaise={priceAmountPaise} 
-            guestCount={1} // We don't lift guest count state yet, but it can be lifted if needed
+            checkInDate={dateParam}
+            checkInTime={selectedEntry.checkInTime}
+            checkOutTime={selectedEntry.checkOutTime}
+            priceAmountPaise={selectedEntry.priceAmountPaise}
+            advanceAmountPaise={selectedEntry.advanceAmountPaise}
+            guestCount={guestCount}
+            overnightGuestCount={overnightGuestCount}
           />
         </div>
       </div>

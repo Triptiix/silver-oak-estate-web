@@ -44,7 +44,7 @@ Cloudflare Turnstile is integrated directly into the `BookingForm` for bot prote
 Once a hold is successfully created, the server responds with a safe summary of the hold (booking reference, expiration time, and amounts).
 - This summary is stored in `sessionStorage`.
 - When the `/book` page is reloaded, the `BookingExperience` component immediately restores this safe summary.
-- The page does *not* need to fetch sensitive user data from the database. It relies purely on the local `sessionStorage` token to maintain the visual "held" state for the user.
+- The page does *not* need to fetch sensitive user data from the database. It relies purely on the local `sessionStorage` summary and the secure HttpOnly cookie to maintain the visual "held" state and authorisation.
 
 ## Countdown and Expiry
 
@@ -58,7 +58,7 @@ The `useHoldCountdown` hook calculates the remaining time.
 ## Release and Change-Date Flows
 
 If a user holds a date but decides they want a different one, they can click "Release Hold & Change Date".
-- This triggers a `POST` request to `/api/bookings/release` using the `bookingToken` stored in `sessionStorage`.
+- This triggers a `POST` request to `/api/bookings/release` which relies on the secure `HttpOnly` cookie for authorization.
 - If successful, the local session is cleared, and the user is redirected to `/availability`.
 - If the network fails, the hold screen remains visible, and an inline error is displayed.
 - The native `<dialog>` element is used for the confirmation modal, carefully mocked in Vitest to ensure robust automated testing without cascading render loops.

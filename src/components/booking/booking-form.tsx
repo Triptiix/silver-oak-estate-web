@@ -9,10 +9,14 @@ import type { HoldResponse, PublicBookingErrorCode } from "@/types/booking";
 
 type BookingFormProps = {
   checkInDate: string;
+  guestCount: number;
+  overnightGuestCount: number;
+  onGuestCountChange: (count: number) => void;
+  onOvernightGuestCountChange: (count: number) => void;
   onSuccess: (hold: HoldResponse) => void;
 };
 
-export function BookingForm({ checkInDate, onSuccess }: BookingFormProps) {
+export function BookingForm({ checkInDate, guestCount, overnightGuestCount, onGuestCountChange, onOvernightGuestCountChange, onSuccess }: BookingFormProps) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<PublicBookingErrorCode | null>(null);
 
@@ -38,16 +42,11 @@ export function BookingForm({ checkInDate, onSuccess }: BookingFormProps) {
 
   const [turnstileToken, setTurnstileToken] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
-  const turnstileContainerRef = useRef<HTMLDivElement>(null);
 
-  // Guest counts
-  const [guestCount, setGuestCount] = useState(1);
-  const [overnightGuestCount, setOvernightGuestCount] = useState(0);
+  const [turnstileResetVersion, setTurnstileResetVersion] = useState(0);
 
   function resetTurnstile() {
-    if (turnstileContainerRef.current) {
-      (turnstileContainerRef.current as HTMLDivElement & { resetTurnstile?: () => void }).resetTurnstile?.();
-    }
+    setTurnstileResetVersion((v) => v + 1);
     setTurnstileToken("");
   }
 
@@ -69,8 +68,8 @@ export function BookingForm({ checkInDate, onSuccess }: BookingFormProps) {
         customerEmail: values.customerEmail ? String(values.customerEmail) : undefined,
         customerPhone: String(values.customerPhone),
         whatsapp: values.whatsapp ? String(values.whatsapp) : undefined,
-        guestCount: Number(values.guestCount),
-        overnightGuestCount: Number(values.overnightGuestCount),
+        guestCount,
+        overnightGuestCount,
         specialRequests: values.specialRequests ? String(values.specialRequests) : undefined,
         turnstileToken,
       });
@@ -172,7 +171,7 @@ export function BookingForm({ checkInDate, onSuccess }: BookingFormProps) {
           min={1}
           max={30}
           value={guestCount}
-          onChange={setGuestCount}
+          onChange={onGuestCountChange}
         />
         <GuestCountField
           label="Overnight Guests"
@@ -181,7 +180,7 @@ export function BookingForm({ checkInDate, onSuccess }: BookingFormProps) {
           min={0}
           max={Math.min(8, guestCount)}
           value={overnightGuestCount}
-          onChange={setOvernightGuestCount}
+          onChange={onOvernightGuestCountChange}
         />
       </div>
 
@@ -199,8 +198,8 @@ export function BookingForm({ checkInDate, onSuccess }: BookingFormProps) {
         />
       </div>
 
-      <div className="mt-6" ref={turnstileContainerRef}>
-        <TurnstileWidget onVerify={setTurnstileToken} />
+      <div className="mt-6">
+        <TurnstileWidget onVerify={setTurnstileToken} resetSignal={turnstileResetVersion} />
       </div>
 
       <button
