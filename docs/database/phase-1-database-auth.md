@@ -13,7 +13,7 @@ refund workflows, final booking-management UI, or production deployment.
 
 ## Local Prerequisites and Safety
 
-- Node.js 20.9 or newer and npm
+- Node.js 22 or newer and npm
 - Docker Desktop or a Docker-compatible runtime
 - Project-pinned Supabase CLI installed by `npm install`
 

@@ -17,7 +17,7 @@ minutes in the local seed). A hold is not a confirmed booking.
 ## Getting Started
 
 ### Development Prerequisites
-- Node.js (v20.9.0+)
+- Node.js 22+
 - npm
 - Docker Desktop or another Docker-compatible local container runtime
 - The project-pinned Supabase CLI (`npm install` installs it as a dev dependency)
@@ -163,7 +163,7 @@ Pull requests targeting `main` run two required quality gates:
   migrations, lints and tests the database, verifies generated types, and runs
   the booking concurrency test before always stopping the stack.
 
-Both jobs use Node.js 20 and the project-pinned Supabase CLI. CI uses only
+Both jobs use Node.js 22 and the project-pinned Supabase CLI. CI uses only
 loopback URLs and explicit non-secret placeholders; it does not use hosted
 Supabase services or production credentials.
 
