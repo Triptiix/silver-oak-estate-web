@@ -1,18 +1,24 @@
+import { Suspense } from "react";
 import { Container } from "@/components/ui/container";
-import { BookingForm } from "@/components/booking/booking-form";
+import { BookingExperience } from "@/components/booking/booking-experience";
 
 export const metadata = {
-  title: "Book Your Stay",
+  title: "Book Your Stay - Silver Oak Estate",
 };
 
 export default function BookPage() {
   return (
-    <Container className="py-16 max-w-2xl">
-      <h1 className="text-4xl font-bold mb-8 text-center">Book Your Stay</h1>
-      <p className="text-center text-[var(--muted-foreground)] mb-12">
-        Create a temporary ten-minute hold. Payment is not enabled and a hold is not a confirmed booking.
-      </p>
-      <BookingForm />
+    <Container className="py-16 max-w-5xl">
+      <div className="text-center mb-12">
+        <h1 className="text-4xl font-semibold mb-4 text-slate-900 tracking-tight">Complete Your Reservation</h1>
+      </div>
+      <Suspense fallback={
+        <div className="flex justify-center py-20">
+          <p className="text-slate-500" aria-live="polite">Loading booking experience…</p>
+        </div>
+      }>
+        <BookingExperience />
+      </Suspense>
     </Container>
   );
 }
