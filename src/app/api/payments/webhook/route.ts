@@ -12,6 +12,32 @@ import { razorpayWebhookSchema } from "@/lib/payments/schemas";
 const MAX_WEBHOOK_BYTES = 256_000;
 const eventIdPattern = /^[A-Za-z0-9_-]{3,128}$/;
 
+class WebhookBodyTooLargeError extends Error {}
+
+async function readBoundedRawBody(request: NextRequest, limit: number): Promise<Buffer> {
+  if (!request.body) return Buffer.alloc(0);
+
+  const reader = request.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let totalBytes = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      totalBytes += value.byteLength;
+      if (totalBytes > limit) {
+        await reader.cancel().catch(() => undefined);
+        throw new WebhookBodyTooLargeError();
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+
+  return Buffer.concat(chunks, totalBytes);
+}
+
 function response(body: Record<string, boolean>, status = 200) {
   return NextResponse.json(body, {
     status,
@@ -22,28 +48,30 @@ function response(body: Record<string, boolean>, status = 200) {
 export async function POST(request: NextRequest) {
   const eventId = request.headers.get("x-razorpay-event-id");
   const signature = request.headers.get("x-razorpay-signature");
-  const declaredLength = Number(request.headers.get("content-length") ?? 0);
+  const contentLength = request.headers.get("content-length");
+  const declaredLength = contentLength && /^\d+$/.test(contentLength)
+    ? Number(contentLength)
+    : null;
   if (
     !eventId
     || !eventIdPattern.test(eventId)
     || !signature
-    || (Number.isFinite(declaredLength) && declaredLength > MAX_WEBHOOK_BYTES)
   ) {
     return response({ received: false }, 400);
+  }
+  if (declaredLength !== null && declaredLength > MAX_WEBHOOK_BYTES) {
+    return response({ received: false }, 413);
   }
 
   let began = false;
   try {
-    const rawBody = await request.text();
-    if (Buffer.byteLength(rawBody, "utf8") > MAX_WEBHOOK_BYTES) {
-      return response({ received: false }, 413);
-    }
+    const rawBody = await readBoundedRawBody(request, MAX_WEBHOOK_BYTES);
     const config = assertPaymentConfiguration();
     if (!verifyWebhookSignature(rawBody, signature, config.webhookSecret)) {
       return response({ received: false }, 400);
     }
 
-    const parsed = razorpayWebhookSchema.safeParse(JSON.parse(rawBody));
+    const parsed = razorpayWebhookSchema.safeParse(JSON.parse(rawBody.toString("utf8")));
     if (!parsed.success) return response({ received: false }, 400);
 
     const webhook = parsed.data;
@@ -83,7 +111,10 @@ export async function POST(request: NextRequest) {
 
     await completePaymentWebhook(eventId, "processed");
     return response({ received: true });
-  } catch {
+  } catch (error) {
+    if (error instanceof WebhookBodyTooLargeError) {
+      return response({ received: false }, 413);
+    }
     if (began) {
       await completePaymentWebhook(eventId, "failed", "processing_failed").catch(() => undefined);
     }

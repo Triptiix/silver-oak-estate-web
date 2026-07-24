@@ -8,11 +8,21 @@ const mocks = vi.hoisted(() => ({
   completePaymentWebhook: vi.fn(),
   finalizeVerifiedPayment: vi.fn(),
   markProviderPaymentFailed: vi.fn(),
+  verifyWebhookSignature: vi.fn(),
 }));
 vi.mock("@/lib/payments/database", () => mocks);
+vi.mock("@/lib/payments/crypto", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/payments/crypto")>();
+  return {
+    ...actual,
+    verifyWebhookSignature: mocks.verifyWebhookSignature,
+  };
+});
 
 import { NextRequest } from "next/server";
 import { POST } from "@/app/api/payments/webhook/route";
+
+const MAX_WEBHOOK_BYTES = 256_000;
 
 const payload = {
   event: "payment.captured",
@@ -46,9 +56,66 @@ function request(body: unknown = payload, signatureSecret = "dummy") {
   });
 }
 
+function streamedRequest(
+  chunks: Uint8Array[],
+  options: { contentLength?: string; failAtChunk?: number } = {},
+) {
+  let chunksRead = 0;
+  let cancelled = false;
+  const body = new ReadableStream<Uint8Array>({
+    pull(controller) {
+      if (options.failAtChunk === chunksRead) {
+        controller.error(new Error("private stream failure detail"));
+        return;
+      }
+      const chunk = chunks[chunksRead];
+      if (!chunk) {
+        controller.close();
+        return;
+      }
+      chunksRead += 1;
+      controller.enqueue(chunk);
+    },
+    cancel() {
+      cancelled = true;
+    },
+  }, { highWaterMark: 0 });
+  const headers = new Headers({
+    "content-type": "application/json",
+    "x-razorpay-event-id": "event_test_1",
+    "x-razorpay-signature": "0".repeat(64),
+  });
+  if (options.contentLength !== undefined) {
+    headers.set("content-length", options.contentLength);
+  }
+  return {
+    request: new NextRequest("http://localhost/api/payments/webhook", {
+      method: "POST",
+      headers,
+      body,
+      duplex: "half",
+    }),
+    chunksRead: () => chunksRead,
+    cancelled: () => cancelled,
+  };
+}
+
+function expectNoDownstreamWork() {
+  expect(mocks.verifyWebhookSignature).not.toHaveBeenCalled();
+  expect(mocks.beginPaymentWebhook).not.toHaveBeenCalled();
+  expect(mocks.finalizeVerifiedPayment).not.toHaveBeenCalled();
+  expect(mocks.markProviderPaymentFailed).not.toHaveBeenCalled();
+}
+
 describe("payment webhook API", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.verifyWebhookSignature.mockImplementation(
+      (rawBody: Uint8Array, signature: string, secret: string) => {
+        const expected = createHmac("sha256", secret).update(rawBody).digest("hex");
+        return signature === expected;
+      },
+    );
     mocks.beginPaymentWebhook.mockResolvedValue({
       created: true,
       shouldProcess: true,
@@ -86,6 +153,104 @@ describe("payment webhook API", () => {
     const response = await POST(request(payload, "wrong-secret"));
     expect(response.status).toBe(400);
     expect(mocks.beginPaymentWebhook).not.toHaveBeenCalled();
+  });
+
+  it("stops a missing-length stream as soon as it crosses the byte limit", async () => {
+    const stream = streamedRequest([
+      new Uint8Array(MAX_WEBHOOK_BYTES),
+      new Uint8Array([1]),
+      new Uint8Array([2]),
+    ]);
+
+    const response = await POST(stream.request);
+
+    expect(response.status).toBe(413);
+    expect(stream.chunksRead()).toBe(2);
+    expect(stream.cancelled()).toBe(true);
+    expectNoDownstreamWork();
+  });
+
+  it.each([
+    ["understated", "1"],
+    ["malformed", "not-a-number"],
+  ])("enforces the streamed limit with %s Content-Length", async (_name, contentLength) => {
+    const stream = streamedRequest(
+      [new Uint8Array(MAX_WEBHOOK_BYTES), new Uint8Array([1])],
+      { contentLength },
+    );
+
+    const response = await POST(stream.request);
+
+    expect(response.status).toBe(413);
+    expectNoDownstreamWork();
+  });
+
+  it("rejects a declared oversized body before reading its stream", async () => {
+    const stream = streamedRequest([new Uint8Array([1])], {
+      contentLength: String(MAX_WEBHOOK_BYTES + 1),
+    });
+
+    const response = await POST(stream.request);
+
+    expect(response.status).toBe(413);
+    expect(stream.chunksRead()).toBe(0);
+    expectNoDownstreamWork();
+  });
+
+  it("allows a body exactly at the raw-byte limit to reach signature verification", async () => {
+    const stream = streamedRequest([new Uint8Array(MAX_WEBHOOK_BYTES)]);
+
+    const response = await POST(stream.request);
+
+    expect(response.status).toBe(400);
+    expect(mocks.verifyWebhookSignature).toHaveBeenCalledOnce();
+    expect(mocks.verifyWebhookSignature.mock.calls[0]?.[0]).toHaveLength(MAX_WEBHOOK_BYTES);
+    expect(mocks.beginPaymentWebhook).not.toHaveBeenCalled();
+  });
+
+  it("counts multi-byte UTF-8 input by raw bytes", async () => {
+    const multiByte = new TextEncoder().encode("€".repeat(90_000));
+    expect("€".repeat(90_000)).toHaveLength(90_000);
+    expect(multiByte.byteLength).toBeGreaterThan(MAX_WEBHOOK_BYTES);
+    const stream = streamedRequest([multiByte]);
+
+    const response = await POST(stream.request);
+
+    expect(response.status).toBe(413);
+    expectNoDownstreamWork();
+  });
+
+  it("preserves exact bounded bytes for signature verification", async () => {
+    const raw = new TextEncoder().encode(
+      '{\n  "event":"refund.created", "payload":{}, "note":"€" \n}',
+    );
+    const signature = createHmac("sha256", "dummy").update(raw).digest("hex");
+    const stream = streamedRequest([raw.subarray(0, 17), raw.subarray(17)]);
+    stream.request.headers.set("x-razorpay-signature", signature);
+
+    const response = await POST(stream.request);
+
+    expect(response.status).toBe(200);
+    expect(Buffer.from(mocks.verifyWebhookSignature.mock.calls[0]?.[0])).toEqual(Buffer.from(raw));
+    expect(mocks.verifyWebhookSignature).toHaveBeenCalledWith(
+      expect.any(Uint8Array),
+      signature,
+      "dummy",
+    );
+    expect(mocks.completePaymentWebhook).toHaveBeenCalledWith("event_test_1", "processed");
+  });
+
+  it("returns a generic response when the body stream fails", async () => {
+    const stream = streamedRequest(
+      [new TextEncoder().encode('{"event":')],
+      { failAtChunk: 1 },
+    );
+
+    const response = await POST(stream.request);
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({ received: false });
+    expectNoDownstreamWork();
   });
 
   it("acknowledges a processed duplicate without finalizing twice", async () => {

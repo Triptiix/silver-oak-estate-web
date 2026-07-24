@@ -21,15 +21,14 @@ export function verifyCheckoutSignature(
 }
 
 export function verifyWebhookSignature(
-  rawBody: string,
+  rawBody: string | Uint8Array,
   signature: string,
   secret: string,
 ): boolean {
-  const expected = createHmac("sha256", secret).update(rawBody, "utf8").digest("hex");
+  const expected = createHmac("sha256", secret).update(rawBody).digest("hex");
   return safeHexEqual(signature, expected);
 }
 
-export function hashWebhookPayload(rawBody: string): string {
-  return createHash("sha256").update(rawBody, "utf8").digest("hex");
+export function hashWebhookPayload(rawBody: string | Uint8Array): string {
+  return createHash("sha256").update(rawBody).digest("hex");
 }
-
