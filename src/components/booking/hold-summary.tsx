@@ -4,14 +4,17 @@ import { HoldCountdown } from "./hold-countdown";
 import { formatDisplayDate, formatTimeInKolkata } from "@/lib/booking/date";
 import { formatInrFromPaise } from "@/lib/booking/format";
 import type { HoldSummary as HoldSummaryType } from "@/hooks/use-booking-session";
+import type { PaymentVerificationResponse } from "@/types/payment";
+import { PaymentCheckout } from "./payment-checkout";
 
 type HoldSummaryProps = {
   hold: HoldSummaryType;
   onExpire: () => void;
   onRelease: () => void;
+  onPaymentFinalState: (result: PaymentVerificationResponse) => void;
 };
 
-export function HoldSummary({ hold, onExpire, onRelease }: HoldSummaryProps) {
+export function HoldSummary({ hold, onExpire, onRelease, onPaymentFinalState }: HoldSummaryProps) {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="bg-white border border-slate-200 rounded-lg p-8 shadow-sm">
@@ -62,12 +65,13 @@ export function HoldSummary({ hold, onExpire, onRelease }: HoldSummaryProps) {
         </div>
 
         <div className="mt-8 pt-6">
-          <div className="bg-amber-50 border border-amber-200 rounded-md p-4 mb-6 text-amber-800 text-sm">
-            <p className="font-medium mb-1">Payment Integration Pending</p>
-            <p>Secure online payment will be enabled in the next implementation phase.</p>
-          </div>
+          <PaymentCheckout
+            advanceAmountPaise={hold.advanceAmountPaise}
+            bookingReference={hold.bookingReference}
+            onFinalState={onPaymentFinalState}
+          />
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-4">
             <button
               onClick={onRelease}
               className="px-6 py-3 border border-slate-300 text-slate-700 font-medium rounded-md hover:bg-slate-50 transition-colors focus:ring-2 focus:ring-slate-900 focus:outline-none"

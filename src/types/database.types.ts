@@ -356,51 +356,87 @@ export type Database = {
       payments: {
         Row: {
           amount_paise: number
+          attempt_expires_at: string | null
+          authorized_at: string | null
           booking_id: string
+          captured_at: string | null
+          checkout_started_at: string | null
           created_at: string
           currency: string
+          failed_at: string | null
           failure_code: string | null
           failure_reason: string | null
           id: string
           idempotency_key: string
+          last_provider_event_id: string | null
+          order_created_at: string | null
           provider: string
           provider_order_id: string | null
           provider_payment_id: string | null
+          provider_receipt: string | null
+          recovery_reason: string | null
+          recovery_required_at: string | null
           signature_verified: boolean
           status: Database["public"]["Enums"]["payment_status"]
           updated_at: string
+          verification_source: string | null
+          verified_at: string | null
         }
         Insert: {
           amount_paise: number
+          attempt_expires_at?: string | null
+          authorized_at?: string | null
           booking_id: string
+          captured_at?: string | null
+          checkout_started_at?: string | null
           created_at?: string
           currency?: string
+          failed_at?: string | null
           failure_code?: string | null
           failure_reason?: string | null
           id?: string
           idempotency_key: string
+          last_provider_event_id?: string | null
+          order_created_at?: string | null
           provider: string
           provider_order_id?: string | null
           provider_payment_id?: string | null
+          provider_receipt?: string | null
+          recovery_reason?: string | null
+          recovery_required_at?: string | null
           signature_verified?: boolean
           status?: Database["public"]["Enums"]["payment_status"]
           updated_at?: string
+          verification_source?: string | null
+          verified_at?: string | null
         }
         Update: {
           amount_paise?: number
+          attempt_expires_at?: string | null
+          authorized_at?: string | null
           booking_id?: string
+          captured_at?: string | null
+          checkout_started_at?: string | null
           created_at?: string
           currency?: string
+          failed_at?: string | null
           failure_code?: string | null
           failure_reason?: string | null
           id?: string
           idempotency_key?: string
+          last_provider_event_id?: string | null
+          order_created_at?: string | null
           provider?: string
           provider_order_id?: string | null
           provider_payment_id?: string | null
+          provider_receipt?: string | null
+          recovery_reason?: string | null
+          recovery_required_at?: string | null
           signature_verified?: boolean
           status?: Database["public"]["Enums"]["payment_status"]
           updated_at?: string
+          verification_source?: string | null
+          verified_at?: string | null
         }
         Relationships: [
           {
@@ -595,6 +631,34 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      attach_provider_order: {
+        Args: {
+          p_amount_paise: number
+          p_currency: string
+          p_payment_id: string
+          p_provider_order_id: string
+        }
+        Returns: Json
+      }
+      begin_payment_webhook: {
+        Args: {
+          p_event_type: string
+          p_payload_hash: string
+          p_payload_redacted: Json
+          p_provider: string
+          p_provider_event_id: string
+        }
+        Returns: Json
+      }
+      complete_payment_webhook: {
+        Args: {
+          p_error_category?: string
+          p_processing_status: Database["public"]["Enums"]["webhook_processing_status"]
+          p_provider: string
+          p_provider_event_id: string
+        }
+        Returns: undefined
+      }
       create_booking_hold: {
         Args: {
           p_check_in_date: string
@@ -615,6 +679,19 @@ export type Database = {
       }
       delete_setting: { Args: { p_setting_key: string }; Returns: boolean }
       expire_stale_holds: { Args: { p_property_id?: string }; Returns: number }
+      finalize_verified_payment: {
+        Args: {
+          p_amount_paise: number
+          p_currency: string
+          p_financial_status: string
+          p_provider: string
+          p_provider_event_id?: string
+          p_provider_order_id: string
+          p_provider_payment_id: string
+          p_verification_source: string
+        }
+        Returns: Json
+      }
       get_monthly_availability: {
         Args: { p_month: string; p_property_slug: string }
         Returns: Json
@@ -631,6 +708,31 @@ export type Database = {
           p_reference_instant?: string
         }
         Returns: boolean
+      }
+      mark_payment_checkout_started: {
+        Args: { p_payment_id: string }
+        Returns: undefined
+      }
+      mark_payment_order_failed: {
+        Args: { p_failure_category: string; p_payment_id: string }
+        Returns: undefined
+      }
+      mark_provider_payment_failed: {
+        Args: {
+          p_provider: string
+          p_provider_event_id?: string
+          p_provider_order_id: string
+          p_provider_payment_id: string
+        }
+        Returns: boolean
+      }
+      prepare_payment_order: {
+        Args: {
+          p_booking_id: string
+          p_hold_token_nonce: string
+          p_provider: string
+        }
+        Returns: Json
       }
       release_booking_hold: {
         Args: { p_booking_id: string; p_hold_token_nonce: string }
@@ -721,11 +823,15 @@ export type Database = {
       payment_status:
         | "not_started"
         | "order_created"
+        | "checkout_started"
         | "pending"
         | "authorized"
         | "captured"
+        | "verified"
         | "failed"
+        | "expired"
         | "refund_pending"
+        | "reconciliation_required"
         | "partially_refunded"
         | "refunded"
       pricing_rule_type: "weekday" | "weekend" | "special_date"
@@ -883,11 +989,15 @@ export const Constants = {
       payment_status: [
         "not_started",
         "order_created",
+        "checkout_started",
         "pending",
         "authorized",
         "captured",
+        "verified",
         "failed",
+        "expired",
         "refund_pending",
+        "reconciliation_required",
         "partially_refunded",
         "refunded",
       ],

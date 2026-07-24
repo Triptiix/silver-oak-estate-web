@@ -9,6 +9,7 @@ import { BookingSummary } from "./booking-summary";
 import { HoldSummary } from "./hold-summary";
 import { ReleaseHoldDialog } from "./release-hold-dialog";
 import { isPastBusinessDate } from "@/lib/booking/date";
+import type { PaymentVerificationResponse } from "@/types/payment";
 
 type SelectedDateEntry = {
   date: string;
@@ -34,6 +35,7 @@ export function BookingExperience() {
   const [isReleasing, setIsReleasing] = useState(false);
   const [releaseError, setReleaseError] = useState<string | null>(null);
   const [hasExpired, setHasExpired] = useState(false);
+  const [paymentOutcome, setPaymentOutcome] = useState<PaymentVerificationResponse | null>(null);
 
   const checkAvailability = useCallback(async (date: string) => {
     setIsChecking(true);
@@ -65,7 +67,7 @@ export function BookingExperience() {
   useEffect(() => {
     if (!isLoaded) return;
 
-    if (!holdSummary && !hasExpired) {
+    if (!holdSummary && !hasExpired && !paymentOutcome) {
       if (!dateParam || isPastBusinessDate(dateParam)) {
         router.replace("/availability");
       } else {
@@ -73,7 +75,7 @@ export function BookingExperience() {
         checkAvailability(dateParam);
       }
     }
-  }, [isLoaded, holdSummary, hasExpired, dateParam, router, checkAvailability]);
+  }, [isLoaded, holdSummary, hasExpired, paymentOutcome, dateParam, router, checkAvailability]);
 
   async function handleReleaseHold() {
     setIsReleasing(true);
@@ -128,6 +130,25 @@ export function BookingExperience() {
     );
   }
 
+  if (paymentOutcome) {
+    const confirmed = paymentOutcome.state === "confirmed";
+    return (
+      <div className="py-8">
+        <div className="max-w-2xl mx-auto bg-white border border-slate-200 rounded-lg p-8 shadow-sm text-center">
+          <h2 className="text-2xl font-semibold text-slate-900 mb-2">
+            {confirmed ? "Booking confirmed" : "Payment received — recovery required"}
+          </h2>
+          <p className="text-slate-600 mb-4">
+            {confirmed
+              ? "Your booking is confirmed and the dates are reserved."
+              : "Your payment was received, but the expired or released booking was not revived. Our team must review the payment."}
+          </p>
+          <p className="font-mono text-sm text-slate-700">{paymentOutcome.bookingReference}</p>
+        </div>
+      </div>
+    );
+  }
+
   if (holdSummary) {
     return (
       <div className="py-8">
@@ -135,6 +156,10 @@ export function BookingExperience() {
           hold={holdSummary} 
           onExpire={handleHoldExpired}
           onRelease={() => setIsReleaseDialogOpen(true)}
+          onPaymentFinalState={(result) => {
+            setPaymentOutcome(result);
+            clearHold();
+          }}
         />
         <ReleaseHoldDialog
           isOpen={isReleaseDialogOpen}
