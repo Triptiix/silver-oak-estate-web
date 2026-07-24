@@ -1,7 +1,7 @@
 export type AdminListQuery = {
   page: number;
   pageSize: number;
-  search?: string;
+  bookingReference?: string;
   bookingStatus?: string;
   paymentStatus?: string;
   notificationStatus?: string;

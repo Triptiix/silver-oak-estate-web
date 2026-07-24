@@ -14,8 +14,8 @@ export function AdminFilters({
   return (
     <form method="get" className="mb-6 grid gap-3 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] p-4 md:grid-cols-3 xl:grid-cols-6">
       <label className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
-        Search
-        <input name="search" maxLength={80} placeholder="Reference or customer" className="mt-1 block h-10 w-full rounded-[var(--radius)] border border-[var(--border)] bg-white px-3 text-sm text-[var(--foreground)]" />
+        Booking reference
+        <input name="bookingReference" maxLength={21} pattern="SOE-[0-9]{8}-[A-F0-9]{8}" placeholder="SOE-20260725-ABCD1234" className="mt-1 block h-10 w-full rounded-[var(--radius)] border border-[var(--border)] bg-white px-3 text-sm text-[var(--foreground)]" />
       </label>
       {showBookingStatus && (
         <label className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">

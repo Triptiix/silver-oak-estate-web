@@ -61,7 +61,7 @@ describe("Phase 5A administrator APIs", () => {
   it("allows an active operations administrator with server-owned filters and pagination", async () => {
     const response = await bookingListRoute.GET(
       new NextRequest(
-        "http://localhost/api/admin/bookings?page=2&pageSize=10&bookingStatus=held&search=SOE-2026&sort=oldest",
+        "http://localhost/api/admin/bookings?page=2&pageSize=10&bookingStatus=held&bookingReference=SOE-20260725-ABCD1234&sort=oldest",
       ),
     );
     expect(response.status).toBe(200);
@@ -71,9 +71,21 @@ describe("Phase 5A administrator APIs", () => {
       page: 2,
       pageSize: 10,
       bookingStatus: "held",
-      search: "SOE-2026",
+      bookingReference: "SOE-20260725-ABCD1234",
       sort: "oldest",
     }));
+  });
+
+  it("does not pass PII-like URL values to the service-role list query", async () => {
+    const response = await bookingListRoute.GET(
+      new NextRequest("http://localhost/api/admin/bookings?bookingReference=guest%40example.com&page=999999999"),
+    );
+    expect(response.status).toBe(200);
+    expect(mocks.listAdminBookings).toHaveBeenCalledWith(expect.objectContaining({
+      bookingReference: undefined,
+      page: 1,
+    }));
+    expect(JSON.stringify(await response.json())).not.toContain("guest@example.com");
   });
 
   it("resolves booking detail only by safe public reference and returns no secret fields", async () => {

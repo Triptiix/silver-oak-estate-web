@@ -3,6 +3,7 @@ import "server-only";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import type { Database } from "@/types/database.types";
 import { maskEmail, maskName, maskPhone, notificationDelivery } from "./format";
+import { orderAdminTimeline } from "./timeline";
 import type {
   AdminBookingDetail,
   AdminBookingListItem,
@@ -10,7 +11,6 @@ import type {
   AdminNotificationItem,
   AdminPageResult,
   AdminPaymentItem,
-  AdminTimelineItem,
 } from "./types";
 
 type UnknownRow = Record<string, unknown>;
@@ -99,7 +99,7 @@ function mapNotification(row: UnknownRow): AdminNotificationItem {
 }
 
 const paymentFields = [
-  "provider", "provider_order_id", "provider_payment_id", "amount_paise", "currency",
+  "id", "provider", "provider_order_id", "provider_payment_id", "amount_paise", "currency",
   "status", "verification_source", "recovery_reason", "failure_code",
   "order_created_at", "checkout_started_at", "authorized_at", "captured_at",
   "verified_at", "recovery_required_at", "created_at", "updated_at",
@@ -122,11 +122,7 @@ export async function listAdminBookings(
       { count: "exact" },
     );
 
-  if (query.search) {
-    request = request.or(
-      `booking_reference.ilike.%${query.search}%,customer_name_snapshot.ilike.%${query.search}%,customer_email_snapshot.ilike.%${query.search}%,customer_phone_snapshot.ilike.%${query.search}%`,
-    );
-  }
+  if (query.bookingReference) request = request.eq("booking_reference", query.bookingReference);
   if (query.bookingStatus) request = request.eq("booking_status", query.bookingStatus as BookingStatus);
   if (query.checkInFrom) request = request.gte("check_in_at", `${query.checkInFrom}T00:00:00+05:30`);
   if (query.checkInTo) request = request.lt("check_in_at", `${query.checkInTo}T23:59:59.999+05:30`);
@@ -179,7 +175,7 @@ export async function listAdminPayments(
   if (recoveryOnly) request = request.in("status", ["refund_pending", "reconciliation_required"]);
   if (query.paymentStatus) request = request.eq("status", query.paymentStatus as PaymentStatus);
   if (query.recoveryState) request = request.eq("status", query.recoveryState as PaymentStatus);
-  if (query.search) request = request.ilike("bookings.booking_reference", `%${query.search}%`);
+  if (query.bookingReference) request = request.eq("bookings.booking_reference", query.bookingReference);
   const { data, count, error } = await request
     .order("created_at", { ascending: query.sort === "oldest" })
     .range(from, to);
@@ -194,7 +190,7 @@ export async function listAdminNotifications(
   const client = createServiceRoleClient();
   const from = (query.page - 1) * query.pageSize;
   const to = from + query.pageSize - 1;
-  const bookingRelation = query.search
+  const bookingRelation = query.bookingReference
     ? "bookings!inner(booking_reference)"
     : "bookings(booking_reference)";
   let request = client
@@ -204,7 +200,7 @@ export async function listAdminNotifications(
       { count: "exact" },
     );
   if (query.notificationStatus) request = request.eq("status", query.notificationStatus as NotificationStatus);
-  if (query.search) request = request.ilike("bookings.booking_reference", `%${query.search}%`);
+  if (query.bookingReference) request = request.eq("bookings.booking_reference", query.bookingReference);
   const { data, count, error } = await request
     .order("created_at", { ascending: query.sort === "oldest" })
     .range(from, to);
@@ -228,10 +224,10 @@ export async function getAdminBookingDetail(
   const booking = rawBooking as UnknownRow;
   const bookingId = text(booking.id);
   const [reservationsResult, paymentsResult, eventsResult, notificationsResult] = await Promise.all([
-    client.from("inventory_reservations").select("status,reservation_type,expires_at,created_at,updated_at").eq("booking_id", bookingId).order("created_at"),
+    client.from("inventory_reservations").select("id,status,reservation_type,expires_at,created_at,updated_at").eq("booking_id", bookingId).order("created_at"),
     client.from("payments").select(paymentFields).eq("booking_id", bookingId).order("created_at"),
-    client.from("booking_events").select("event_type,previous_state,new_state,created_at").eq("booking_id", bookingId).order("created_at"),
-    client.from("notification_events").select("channel,template_key,recipient_masked,status,attempt_count,created_at,sent_at").eq("booking_id", bookingId).order("created_at"),
+    client.from("booking_events").select("id,event_type,previous_state,new_state,created_at").eq("booking_id", bookingId).order("created_at"),
+    client.from("notification_events").select("id,channel,template_key,recipient_masked,status,attempt_count,created_at,sent_at").eq("booking_id", bookingId).order("created_at"),
   ]);
   if ([reservationsResult, paymentsResult, eventsResult, notificationsResult].some((result) => result.error)) {
     throw new Error("admin_booking_detail_failed");
@@ -252,7 +248,8 @@ export async function getAdminBookingDetail(
     && latestReservation?.status === "active"
     && Date.parse(text(latestReservation.expires_at)) > now;
 
-  const paymentTimeline: AdminTimelineItem[] = payments.flatMap((payment) => {
+  const paymentTimeline = payments.flatMap((payment, index) => {
+    const paymentId = text(asRows(paymentsResult.data)[index]?.id);
     const milestones: Array<[string, string | null]> = [
       ["Provider order attached", payment.orderCreatedAt],
       ["Checkout started", payment.checkoutStartedAt],
@@ -262,19 +259,19 @@ export async function getAdminBookingDetail(
       ["Recovery required", payment.recoveryRequiredAt],
     ];
     return [
-      { kind: "payment" as const, label: "Payment attempt created", state: payment.status, occurredAt: payment.createdAt },
+      { kind: "payment" as const, label: "Payment attempt created", state: payment.status, occurredAt: payment.createdAt, sourcePriority: 2, typePriority: 0, orderingId: paymentId },
       ...milestones
         .filter((entry): entry is [string, string] => entry[1] !== null)
-        .map(([label, occurredAt]) => ({ kind: "payment" as const, label, state: payment.status, occurredAt })),
+        .map(([label, occurredAt], typePriority) => ({ kind: "payment" as const, label, state: payment.status, occurredAt, sourcePriority: 2, typePriority: typePriority + 1, orderingId: paymentId })),
     ];
   });
 
-  const timeline: AdminTimelineItem[] = [
-    { kind: "booking", label: "Booking created", state: text(booking.booking_status), occurredAt: text(booking.created_at) },
+  const timeline = orderAdminTimeline([
+    { kind: "booking" as const, label: "Booking created", state: text(booking.booking_status), occurredAt: text(booking.created_at), sourcePriority: 0, typePriority: 0, orderingId: bookingId },
     ...reservations.flatMap((row) => [
-      { kind: "reservation" as const, label: "Reservation created", state: text(row.reservation_type), occurredAt: text(row.created_at) },
+      { kind: "reservation" as const, label: "Reservation created", state: text(row.reservation_type), occurredAt: text(row.created_at), sourcePriority: 1, typePriority: 0, orderingId: text(row.id) },
       ...(row.updated_at !== row.created_at
-        ? [{ kind: "reservation" as const, label: "Reservation updated", state: text(row.status), occurredAt: text(row.updated_at) }]
+        ? [{ kind: "reservation" as const, label: "Reservation updated", state: text(row.status), occurredAt: text(row.updated_at), sourcePriority: 1, typePriority: 1, orderingId: text(row.id) }]
         : []),
     ]),
     ...paymentTimeline,
@@ -282,16 +279,15 @@ export async function getAdminBookingDetail(
       kind: "audit" as const,
       label: text(row.event_type).replaceAll("_", " "),
       state: nullableText(row.new_state) ?? nullableText(row.previous_state),
-      occurredAt: text(row.created_at),
+      occurredAt: text(row.created_at), sourcePriority: 3, typePriority: 0, orderingId: text(row.id),
     })),
     ...notifications.map((notification) => ({
       kind: "notification" as const,
       label: `Notification ${notification.deliveryLabel}`,
       state: notification.templateKey,
-      occurredAt: notification.sentAt ?? notification.createdAt,
+      occurredAt: notification.sentAt ?? notification.createdAt, sourcePriority: 4, typePriority: 0, orderingId: text(asRows(notificationsResult.data)[notifications.indexOf(notification)]?.id),
     })),
-  ];
-  timeline.sort((a, b) => Date.parse(a.occurredAt) - Date.parse(b.occurredAt));
+  ]);
 
   const reservationStatus = nullableText(latestReservation?.status);
   const reservationType = nullableText(latestReservation?.reservation_type);

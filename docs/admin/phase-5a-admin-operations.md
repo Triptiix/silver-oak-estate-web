@@ -27,9 +27,9 @@ mutation methods.
 | Data | List | Detail | API | Notes |
 | --- | --- | --- | --- | --- |
 | Booking reference | Full | Full | Full | Public operational identifier used in URLs |
-| Customer name | Masked | Masked | Masked | Search runs only on the server |
-| Customer email | Masked | Masked | Masked | Domain retained for diagnosis |
-| Customer phone | Last four digits | Last four digits | Last four digits | Full value never leaves server data access |
+| Customer name | Masked | Masked | Masked | URL-based search is deferred |
+| Customer email | Masked | Masked | Masked | URL-based search is deferred |
+| Customer phone | Last four digits | Last four digits | Last four digits | URL-based search is deferred |
 | Provider order/payment IDs | Operational views | Operational views | Operational views | Required for payment diagnosis |
 | Hold nonce | Never | Never | Never | Not selected |
 | Request fingerprint | Never | Never | Never | Not selected |
@@ -53,3 +53,16 @@ The Phase 4 no-revival invariant remains unchanged.
 - `failed`: a delivery attempt failed.
 
 An outbox row alone is never presented as proof of delivery.
+
+## Query and timeline safety
+
+Phase 5A URL filters accept only a complete public booking reference in the
+`SOE-YYYYMMDD-XXXXXXXX` format. Customer name, email, and phone search is
+deferred until a separately reviewed privacy-preserving mechanism exists.
+Pagination is capped at 100 pages of at most 50 rows (5,000 rows), appropriate
+for one property.
+
+Timeline entries are ordered by timestamp, then source/type priority (booking,
+reservation, payment, audit, notification), then a server-only record UUID.
+The UUID is used only while sorting and is removed before page and API DTOs are
+constructed.
