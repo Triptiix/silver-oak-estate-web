@@ -15,7 +15,7 @@ This structure allows direct linking from advertisements, simpler analytics, and
 - `AvailabilityCalendar`: Displays the month grid, handles navigation, and highlights available vs. booked dates.
 - `BookingExperience`: The main orchestrator for the `/book` page. Manages the transition between the `BookingForm` and `HoldSummary`.
 - `BookingForm`: Captures guest details, handles Turnstile verification, and initiates the temporary hold via `POST /api/bookings/hold`.
-- `HoldSummary`: Displays the active hold details, including a countdown timer and payment integration placeholder.
+- `HoldSummary`: Displays the active hold details, including a countdown timer and a placeholder informational text regarding the pending payment integration.
 - `HoldCountdown`: A dedicated client component to manage the visual countdown ticker and handle expiration logic gracefully.
 - `ReleaseHoldDialog`: A modal (using native HTML `<dialog>`) to confirm if the user wants to release their hold and select a different date.
 
@@ -29,7 +29,7 @@ To safely handle network failures without generating orphaned records in the dat
 
 ## Date Revalidation
 
-The `/book` page uses `useQuery` to re-fetch availability for the specifically requested date. If the date has been booked by someone else since the user left the `/availability` page, the UI degrades gracefully, informing the user that the date is no longer available and providing a button to return to the calendar.
+The `/book` page uses `fetchAvailability` to perform a pre-check of the availability for the specifically requested date. If the date has been booked by someone else since the user left the `/availability` page, the UI degrades gracefully, informing the user that the date is no longer available and providing a button to return to the calendar. The database and the hold API remain the authoritative source of truth.
 
 ## Turnstile Lifecycle
 
@@ -42,9 +42,9 @@ Cloudflare Turnstile is integrated directly into the `BookingForm` for bot prote
 ## Safe Session Summary
 
 Once a hold is successfully created, the server responds with a safe summary of the hold (booking reference, expiration time, and amounts).
-- This summary is stored in `sessionStorage`.
+- This summary is stored in `sessionStorage` purely as an untrusted display convenience.
 - When the `/book` page is reloaded, the `BookingExperience` component immediately restores this safe summary.
-- The page does *not* need to fetch sensitive user data from the database. It relies purely on the local `sessionStorage` summary and the secure HttpOnly cookie to maintain the visual "held" state and authorisation.
+- The page does *not* need to fetch sensitive user data from the database. It relies on the local `sessionStorage` summary for display, while the secure HttpOnly cookie maintains the actual authorisation and signed hold token. The database remains authoritative for the hold state.
 
 ## Countdown and Expiry
 
@@ -65,10 +65,10 @@ If a user holds a date but decides they want a different one, they can click "Re
 
 ## Error-Code Mappings
 
-The backend returns standardized error codes. The `BookingError` component maps these codes to user-friendly messages:
+The backend returns standardized error codes representing `PublicBookingErrorCode` values. The `BookingError` component maps these codes to user-friendly messages:
 - `DATE_UNAVAILABLE`: "This date is no longer available."
-- `HOLD_EXPIRED`: "Your hold has expired."
 - `BOT_VERIFICATION_FAILED`: "Security verification failed. Please try again."
+- `IDEMPOTENCY_CONFLICT`: "A booking request is already in progress. Please wait a moment."
 - `SERVER_ERROR`: "An unexpected error occurred. Please try again."
 - Default: "An unknown error occurred."
 
@@ -95,5 +95,5 @@ The backend returns standardized error codes. The `BookingError` component maps 
 
 ## Known Limitations
 
-- **Payment is absent**: Phase 3 does not include the Razorpay checkout flow. A placeholder "Payment Integration Pending" alert is shown instead of a real checkout button.
+- **Payment is absent**: Phase 3 does not include the Razorpay checkout flow. A placeholder informational text is shown instead of a payment mechanism.
 - A "hold" is strictly a temporary reservation, not a confirmed booking.

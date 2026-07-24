@@ -17,13 +17,13 @@ export function HoldSummary({ hold, onExpire, onRelease }: HoldSummaryProps) {
       <div className="bg-white border border-slate-200 rounded-lg p-8 shadow-sm">
         <div className="text-center mb-8">
           <h2 className="text-2xl font-semibold text-slate-900 mb-2">Dates Held Successfully</h2>
-          <p className="text-slate-600">This is not a confirmed booking. Please complete your payment to confirm your stay.</p>
+          <p className="text-slate-600">This is not a confirmed booking. A temporary hold has been placed on these dates.</p>
         </div>
 
         <div className="bg-slate-50 border border-slate-200 rounded-lg p-6 mb-8 text-center">
           <p className="text-sm font-medium text-slate-500 uppercase tracking-wider mb-2">Time Remaining</p>
           <HoldCountdown expiresAt={hold.holdExpiresAt} onExpire={onExpire} />
-          <p className="text-xs text-slate-500 mt-2">Your hold expires at {new Date(hold.holdExpiresAt).toLocaleTimeString("en-IN")}</p>
+          <p className="text-xs text-slate-500 mt-2">Your hold expires at {formatTimeInKolkata(hold.holdExpiresAt)}</p>
         </div>
 
         <div className="space-y-6">
@@ -54,13 +54,17 @@ export function HoldSummary({ hold, onExpire, onRelease }: HoldSummaryProps) {
               <span>Advance Required to Confirm</span>
               <span>{formatInrFromPaise(hold.advanceAmountPaise)}</span>
             </div>
+            <div className="flex justify-between text-slate-600 text-sm">
+              <span>Remaining Balance (Due at check-in)</span>
+              <span>{formatInrFromPaise(hold.priceAmountPaise - hold.advanceAmountPaise)}</span>
+            </div>
           </div>
         </div>
 
         <div className="mt-8 pt-6">
           <div className="bg-amber-50 border border-amber-200 rounded-md p-4 mb-6 text-amber-800 text-sm">
             <p className="font-medium mb-1">Payment Integration Pending</p>
-            <p>Phase 3 does not include the Razorpay checkout flow. To test releasing this hold or booking a different date, click below.</p>
+            <p>Secure online payment will be enabled in the next implementation phase.</p>
           </div>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -69,12 +73,6 @@ export function HoldSummary({ hold, onExpire, onRelease }: HoldSummaryProps) {
               className="px-6 py-3 border border-slate-300 text-slate-700 font-medium rounded-md hover:bg-slate-50 transition-colors focus:ring-2 focus:ring-slate-900 focus:outline-none"
             >
               Release Hold & Change Date
-            </button>
-            <button
-              disabled
-              className="px-6 py-3 bg-slate-900 text-white font-medium rounded-md opacity-50 cursor-not-allowed"
-            >
-              Secure online payment will be enabled in the next implementation phase.
             </button>
           </div>
         </div>

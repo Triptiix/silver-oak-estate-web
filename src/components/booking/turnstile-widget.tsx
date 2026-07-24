@@ -1,7 +1,7 @@
 "use client";
 
 import Script from "next/script";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { envClient } from "@/lib/env/client";
 
 declare global {
@@ -22,38 +22,41 @@ type TurnstileWidgetProps = {
 
 export function TurnstileWidget({ onVerify, resetSignal = 0 }: TurnstileWidgetProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [widgetId, setWidgetId] = useState<string | null>(null);
+  const widgetIdRef = useRef<string | null>(null);
+  const isUnmountedRef = useRef(false);
 
   // Re-run reset when resetSignal changes
   const prevResetSignalRef = useRef(resetSignal);
   useEffect(() => {
     if (resetSignal > prevResetSignalRef.current) {
-      if (widgetId && window.turnstile) {
-        window.turnstile.reset(widgetId);
+      if (widgetIdRef.current && window.turnstile) {
+        window.turnstile.reset(widgetIdRef.current);
         onVerify(""); // Clear token on reset
       }
       prevResetSignalRef.current = resetSignal;
     }
-  }, [resetSignal, widgetId, onVerify]);
+  }, [resetSignal, onVerify]);
 
   useEffect(() => {
+    isUnmountedRef.current = false;
+
     function renderWidget() {
-      if (!window.turnstile || !containerRef.current) return;
+      if (!window.turnstile || !containerRef.current || widgetIdRef.current || isUnmountedRef.current) return;
       
       const id = window.turnstile.render(containerRef.current, {
         sitekey: envClient.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
         callback: (token: string) => {
-          onVerify(token);
+          if (!isUnmountedRef.current) onVerify(token);
         },
         "expired-callback": () => {
-          onVerify("");
+          if (!isUnmountedRef.current) onVerify("");
         },
         "error-callback": () => {
-          onVerify("");
+          if (!isUnmountedRef.current) onVerify("");
         }
       });
       
-      setWidgetId(id);
+      widgetIdRef.current = id;
     }
 
     if (window.turnstile) {
@@ -63,8 +66,10 @@ export function TurnstileWidget({ onVerify, resetSignal = 0 }: TurnstileWidgetPr
     }
 
     return () => {
-      if (widgetId && window.turnstile) {
-        window.turnstile.remove(widgetId);
+      isUnmountedRef.current = true;
+      if (widgetIdRef.current && window.turnstile) {
+        window.turnstile.remove(widgetIdRef.current);
+        widgetIdRef.current = null;
       }
       if (window.onSoeTurnstileLoad === renderWidget) {
         delete window.onSoeTurnstileLoad;

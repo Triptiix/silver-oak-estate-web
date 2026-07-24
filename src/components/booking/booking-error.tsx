@@ -52,7 +52,7 @@ export function BookingError({ code, onRetry }: BookingErrorProps) {
       default:
         return {
           title: "Temporary System Error",
-          message: "We're experiencing technical difficulties. Your details have been saved, please try again.",
+          message: "We're experiencing technical difficulties. Your entered details remain on this page. Please try again.",
           action: "Retry",
         };
     }

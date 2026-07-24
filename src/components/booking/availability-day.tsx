@@ -57,13 +57,13 @@ export function AvailabilityDay({
     day: "numeric",
   }).format(d);
 
-  const priceLabel = priceAmountPaise ? `Price ${formatInrFromPaise(priceAmountPaise)}` : "";
+  const statusLabel = isPast ? "Past date" : (!available ? "Unavailable" : `Available${priceAmountPaise ? ` Price ${formatInrFromPaise(priceAmountPaise)}` : ""}`);
+
   const ariaLabel = [
     fullDateLabel,
     isToday ? "Today" : "",
     isSelected ? "Selected" : "",
-    !available ? "Unavailable" : "Available",
-    priceLabel
+    statusLabel
   ].filter(Boolean).join(". ");
 
   return (
