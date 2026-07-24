@@ -5,6 +5,7 @@ const serverEnvSchema = z.object({
   APP_ENV: z.enum(["development", "staging", "production"]).default("development"),
   APP_TIMEZONE: z.string().default("Asia/Kolkata"),
   PAYMENT_PROVIDER: z.string().default("razorpay"),
+  PAYMENT_MODE: z.enum(["test", "live"]).default("test"),
   BOOKING_HOLD_MINUTES: z.coerce.number().int().default(10),
   MANUAL_PAYMENT_HOLD_MINUTES: z.coerce.number().int().default(30),
   DATABASE_CRON_ENABLED: z.enum(["true", "false"]).default("true").transform(value => value === "true"),

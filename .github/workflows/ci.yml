@@ -30,6 +30,7 @@ jobs:
       APP_ENV: development
       APP_TIMEZONE: Asia/Kolkata
       PAYMENT_PROVIDER: razorpay
+      PAYMENT_MODE: test
       BOOKING_HOLD_MINUTES: "10"
       MANUAL_PAYMENT_HOLD_MINUTES: "30"
       DATABASE_CRON_ENABLED: "true"
