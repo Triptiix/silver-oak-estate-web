@@ -15,7 +15,7 @@
 - `PAYMENT_PROVIDER` = `"razorpay"` (Required, Test/Live)
 - `PAYMENT_MODE` = `"test"` (Phase 4; live mode is not approved)
 - `BOOKING_HOLD_MINUTES` = `"10"` (Required, Test/Live)
-- `MANUAL_PAYMENT_HOLD_MINUTES` = `"30"` (Required, Test/Live)
+- `MANUAL_PAYMENT_HOLD_MINUTES` = `"30"` (Future/deferred — unused until the manual-payment workflow is approved)
 - `DATABASE_CRON_ENABLED` = `"true"` (Required, Test/Live)
 - `SUPABASE_SERVICE_ROLE_KEY` = `<YOUR_SUPABASE_SERVICE_ROLE_KEY>` (Required, Test/Live, **Sensitive**)
 - `RAZORPAY_KEY_SECRET` = `<RAZORPAY_KEY_SECRET>` (Required, Test/Live, **Sensitive**)

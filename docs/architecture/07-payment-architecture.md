@@ -11,10 +11,12 @@ Browser verification (`/api/payments/verify`) and Provider Webhooks (`/api/payme
 5. Convert that reservation to `confirmed_booking` without reacquiring inventory.
 6. Confirm the booking ONLY while the original hold remains eligible.
 7. Mark the payment verified/captured as appropriate.
-8. Create audit events and queue notifications.
+8. Create audit events and pending `notification_events` outbox records.
+   Phase 4 does not deliver those notifications.
 
 **The later callback will:**
-- Return idempotent success (`200 OK`) without repeating writes or triggering duplicate notifications.
+- Return idempotent success (`200 OK`) without repeating writes or creating
+  duplicate outbox records.
 
 ## Expired-Hold Payment Recovery
 If a verified payment arrives AFTER the `temporary_hold` expired:
@@ -25,19 +27,24 @@ If a verified payment arrives AFTER the `temporary_hold` expired:
 - Inventory availability does not restore eligibility. A customer who still
   wishes to book must start a new availability and hold flow after payment
   recovery is resolved.
-- Administrators are alerted for manual reconciliation. Automatic refunds are
-  not performed until the exact policy and provider workflow are approved.
+- A pending internal recovery outbox record is written for future administrator
+  alert delivery. Phase 4 does not deliver the alert. Automatic refunds are not
+  performed until the exact policy and provider workflow are approved.
 
-## Manual Payment Fallback (KYC Delay)
-If Razorpay KYC is delayed, users see a UPI QR/Payment Link.
-- Hold duration for manual payments is a separate configuration (Initial setting: **30 minutes**).
-- Status becomes `payment_pending`.
-- Requires manual admin verification in the dashboard (collecting transaction references).
-- If unverified by expiry time, the hold drops, customer is notified, and inventory is released.
-- A payment received before the manual hold expires may be eligible for
-  administrator verification and confirmation.
-- A payment received after expiry or release becomes `refund_pending` /
-  `reconciliation_required`; no late manual payment may revive the booking.
+## Future Manual Payment Fallback
+
+Manual UPI QR and payment-link workflows are not implemented in Phase 4.
+
+Any future manual-payment flow will require separately approved:
+
+- hold duration;
+- proof and transaction-reference requirements;
+- administrator verification process;
+- notification process;
+- late-payment recovery;
+- refund and reconciliation ownership.
+
+A late manual payment must never revive an expired or released booking.
 
 ## Implementation Clarification
 
@@ -48,6 +55,7 @@ otherwise ineligible for confirmation:
 1. The inventory-confirmation transaction rolls back or uses a savepoint.
 2. A separate successful recovery transaction updates the payment to `refund_pending` / `reconciliation_required`.
 3. An audit event is recorded.
-4. Administrators are alerted.
+4. A pending internal recovery outbox record is written; alert delivery is not
+   implemented in Phase 4.
 5. Inventory is never reacquired for the old booking attempt.
 6. Manual reconciliation remains required until an approved refund workflow exists.

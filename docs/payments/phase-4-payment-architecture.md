@@ -155,10 +155,11 @@ It confirms only when:
 - its expiry is later than the transaction time.
 
 The transaction converts that exact reservation to `confirmed_booking`, removes
-its expiry, marks the booking `confirmed`, records audit events, and queues a
+its expiry, marks the booking `confirmed`, records audit events, and writes a
+pending `notification_events` outbox row. Phase 4 does not deliver that
 notification. It never inserts or reacquires inventory. Repeated browser and
 webhook calls return the same safe result without duplicate confirmation events
-or notifications.
+or outbox rows.
 
 ## Recovery and `refund_pending`
 
@@ -166,8 +167,9 @@ If a verified financial success has an amount/currency anomaly, an expired or
 released hold, a missing/ineligible reservation, or an internal confirmation
 failure, the payment is preserved as `refund_pending`. Confirmation work occurs
 inside a PL/pgSQL exception block, so failed confirmation writes roll back to a
-savepoint before the durable recovery update and administrator notification are
-written.
+savepoint before both the durable recovery update and a pending internal
+recovery outbox record are written. Administrator alert delivery is not
+implemented in Phase 4.
 
 The booking remains unconfirmed. Released inventory remains released, stale
 temporary inventory is expired, and no replacement reservation is created.
@@ -231,4 +233,3 @@ must never use production credentials or make a real charge.
   work.
 - Production credentials, hosted webhook configuration, monitoring, and
   deployment are not part of Phase 4.
-
