@@ -8,7 +8,7 @@ Please review the extensive architecture documentation before contributing:
 - [System Architecture](docs/architecture/01-system-architecture.md)
 - [Project Context](PROJECT_CONTEXT.md)
 
-**Current Implementation Status:** Phase 2 local availability and temporary booking-hold foundation.
+**Current Implementation Status:** Phase 3 public availability and temporary booking-hold experience.
 **IMPORTANT:** Payment, booking confirmation, OTA synchronization, and production deployment are **NOT** implemented. This codebase is not production-ready.
 
 Temporary holds expire after the private `booking_hold_minutes` setting (10
@@ -123,6 +123,7 @@ operational procedure.
   generated types, and database-backed administrator sign-in/authorization.
 - See [Phase 1 Database & Auth](docs/database/phase-1-database-auth.md) for the
   migration inventory, RLS matrix, security model, and deferred scope.
+- See [Phase 3 Booking Experience](docs/frontend/phase-3-booking-experience.md) for details on the public availability and booking hold architecture.
 
 ## Available Commands
 
