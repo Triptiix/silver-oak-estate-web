@@ -74,14 +74,14 @@ beforeEach(() => {
 
 describe("server-side administrator authorization", () => {
   it("allows an active administrator using database membership", async () => {
-    createClientMock.mockResolvedValue(
-      makeClient({ membership: activeOperations })
-    );
+    const client = makeClient({ membership: activeOperations });
+    createClientMock.mockResolvedValue(client);
 
     await expect(getActiveAdmin()).resolves.toMatchObject({
       authUserId: "auth-user-1",
       role: "operations",
     });
+    expect(client.from().eq).toHaveBeenCalledWith("is_active", true);
   });
 
   it("denies an authenticated user without active membership", async () => {
