@@ -14,9 +14,29 @@ const request = (body: unknown, origin: string | null = "http://localhost:3000")
 describe("hold API", () => {
   beforeEach(() => { createHold.mockReset(); verifyTurnstile.mockReset(); verifyTurnstile.mockResolvedValue(true); createHold.mockResolvedValue(result); });
   it("creates a hold and sets a protected API-scoped cookie", async () => { const response = await POST(request(input)); expect(response.status).toBe(201); const cookie = response.headers.get("set-cookie"); expect(cookie).toMatch(/soe_booking_hold=.*HttpOnly.*SameSite=lax/i); expect(cookie).toContain("Path=/api"); expect(cookie).not.toContain("Path=/api/bookings"); expect(cookie).not.toContain(input.customerName); expect(cookie).not.toContain(input.customerPhone); expect(cookie).not.toContain(input.turnstileToken); expect(holdCookieOptions(false).httpOnly).toBe(true); expect("/api/payments/order".startsWith(HOLD_COOKIE_PATH)).toBe(true); const body = await response.json(); expect(body.bookingId).toBeUndefined(); expect(body.holdTokenNonce).toBeUndefined(); });
+  it("passes canonical phone identities to the booking RPC", async () => {
+    const response = await POST(request({
+      ...input,
+      customerPhone: "+91 99990 00001",
+      whatsapp: "+91-99990-00002",
+    }));
+    expect(response.status).toBe(201);
+    expect(createHold).toHaveBeenCalledWith(expect.objectContaining({
+      p_customer_phone: "+919999000001",
+      p_whatsapp: "+919999000002",
+    }));
+  });
   it("returns 200 for an idempotent retry", async () => { createHold.mockResolvedValue({ ...result, created: false }); expect((await POST(request(input))).status).toBe(200); });
   it("rejects malformed dates", async () => expect((await POST(request({ ...input, checkInDate: "2026-02-31" }))).status).toBe(400));
   it("rejects capacity above 30", async () => expect((await POST(request({ ...input, guestCount: 31 }))).status).toBe(400));
+  it.each(["+91+9999000001", "91+9999000001", "phone"])(
+    "rejects malformed phone %s before the booking RPC",
+    async (customerPhone) => {
+      const response = await POST(request({ ...input, customerPhone }));
+      expect(response.status).toBe(400);
+      expect(createHold).not.toHaveBeenCalled();
+    },
+  );
   it("rejects browser-supplied price fields", async () => expect((await POST(request({ ...input, priceAmountPaise: 1 }))).status).toBe(400));
   it("rejects invalid Turnstile", async () => { verifyTurnstile.mockResolvedValue(false); expect((await POST(request(input))).status).toBe(403); });
   it.each([null, "https://evil.example"])("rejects origin %s before parsing or side effects", async (origin) => {

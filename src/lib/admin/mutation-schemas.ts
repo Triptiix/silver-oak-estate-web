@@ -1,6 +1,7 @@
 import "server-only";
 
 import { z } from "zod";
+import { normalizePhone } from "@/lib/phone";
 import type { Database } from "@/types/database.types";
 
 type BookingStatus = Database["public"]["Enums"]["booking_status"];
@@ -103,8 +104,17 @@ export const createManualBookingSchema = z
     customerPhone: z
       .string()
       .trim()
-      .transform((value) => value.replace(/[^0-9+]/g, ""))
-      .refine((value) => /^\+?[0-9]{7,15}$/.test(value), "Enter a valid phone number."),
+      .transform((value, context) => {
+        try {
+          return normalizePhone(value);
+        } catch {
+          context.addIssue({
+            code: "custom",
+            message: "Enter a valid phone number.",
+          });
+          return z.NEVER;
+        }
+      }),
     customerEmail: z
       .string()
       .trim()

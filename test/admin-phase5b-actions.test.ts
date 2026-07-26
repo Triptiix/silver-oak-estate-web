@@ -205,6 +205,14 @@ describe("Phase 5B normalization and safe results", () => {
       .toBe(false);
     expect(createManualBookingSchema.safeParse({ ...manualBookingInput, customerPhone: "123" }).success)
       .toBe(false);
+    expect(createManualBookingSchema.safeParse({
+      ...manualBookingInput,
+      customerPhone: "+91+9876543210",
+    }).success).toBe(false);
+    expect(createManualBookingSchema.safeParse({
+      ...manualBookingInput,
+      customerPhone: "91+9876543210",
+    }).success).toBe(false);
     expect(createManualBookingSchema.safeParse({ ...manualBookingInput, guestCount: 31 }).success)
       .toBe(false);
     expect(createManualBookingSchema.safeParse({

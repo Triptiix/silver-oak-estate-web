@@ -1,4 +1,5 @@
 import { z } from "zod";
+export { normalizePhone } from "@/lib/phone";
 
 const optionalTrimmed = (max: number) =>
   z.string().trim().max(max).optional().transform((value) => value || undefined);
@@ -24,9 +25,3 @@ export const holdRequestSchema = z.strictObject({
 }).refine((value) => (value.overnightGuestCount ?? 0) <= value.guestCount, {
   path: ["overnightGuestCount"], message: "Overnight guests cannot exceed total guests",
 });
-
-export function normalizePhone(value: string): string {
-  const normalized = value.replace(/[^\d+]/g, "").replace(/(?!^)\+/g, "");
-  if (!/^\+?\d{7,15}$/.test(normalized)) throw new Error("invalid_phone");
-  return normalized;
-}

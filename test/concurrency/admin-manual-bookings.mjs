@@ -181,6 +181,72 @@ if (bookingCount !== 1 || reservationCount !== 1 || paymentCount !== 1) {
   throw new Error("concurrent retry left an invalid domain row count");
 }
 
+const sharedPhone = `+9198${String(Math.floor(Math.random() * 1_000_000_000)).padStart(9, "0")}`;
+const sharedPublicRequest = randomUUID();
+const sharedManualRequest = randomUUID();
+const [sharedPublicResult, sharedManualResult] = await Promise.all([
+  service.rpc("create_booking_hold", {
+    p_property_slug: "silver-oak-estate",
+    p_check_in_date: date(8),
+    p_customer_name: "Shared Identity Guest",
+    p_customer_email: null,
+    p_customer_phone: sharedPhone.replace(/(\+91)(\d{5})(\d+)/, "$1 $2 $3"),
+    p_whatsapp: null,
+    p_guest_count: 2,
+    p_overnight_guest_count: 0,
+    p_special_requests: null,
+    p_hold_request_id: sharedPublicRequest,
+    p_hold_token_nonce: randomUUID(),
+    p_request_fingerprint_hash: `shared-phone-${randomUUID()}`,
+    p_fallback_hold_minutes: 10,
+  }),
+  adminA.rpc(
+    "create_admin_manual_booking",
+    manualArgs(date(10), sharedManualRequest, sharedPhone),
+  ),
+]);
+if (sharedPublicResult.error || sharedManualResult.error) {
+  throw sharedPublicResult.error ?? sharedManualResult.error;
+}
+const [{ data: sharedCustomers, error: sharedCustomerError }, {
+  data: sharedBookings,
+  error: sharedBookingError,
+}] = await Promise.all([
+  service.from("customers").select("id").eq("phone", sharedPhone),
+  service
+    .from("bookings")
+    .select("id,customer_id,customer_phone_snapshot,source")
+    .eq("customer_phone_snapshot", sharedPhone)
+    .in("source", ["public_web", "admin_manual"]),
+]);
+if (sharedCustomerError || sharedBookingError) {
+  throw sharedCustomerError ?? sharedBookingError;
+}
+if (
+  sharedCustomers?.length !== 1
+  || sharedBookings?.length !== 2
+  || sharedBookings.some((booking) =>
+    booking.customer_id !== sharedCustomers[0].id
+    || booking.customer_phone_snapshot !== sharedPhone
+  )
+) {
+  throw new Error("cross-workflow phone race did not reuse one canonical customer");
+}
+const sharedBookingIds = sharedBookings.map((booking) => booking.id);
+const [{ count: sharedReservationCount }, { count: sharedPaymentCount }] = await Promise.all([
+  service
+    .from("inventory_reservations")
+    .select("id", { count: "exact", head: true })
+    .in("booking_id", sharedBookingIds),
+  service
+    .from("payments")
+    .select("id", { count: "exact", head: true })
+    .in("booking_id", sharedBookingIds),
+]);
+if (sharedReservationCount !== 2 || sharedPaymentCount !== 1) {
+  throw new Error("cross-workflow phone race left partial domain rows");
+}
+
 console.log(
-  "Manual booking concurrency PASS: manual/manual, manual/public, manual/owner races produced one winner; exact retry produced one create and one replay with one domain set.",
+  "Manual booking concurrency PASS: inventory races produced one winner; exact retry produced one domain set; non-overlapping public/manual creation reused one canonical customer.",
 );
