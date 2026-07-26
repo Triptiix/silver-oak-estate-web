@@ -1,6 +1,6 @@
 begin;
 
-select plan(67);
+select plan(85);
 
 insert into auth.users (
   id, email, encrypted_password, email_confirmed_at,
@@ -538,6 +538,202 @@ select is(
   )),
   null,
   'empty evidence descriptor normalizes to null'
+);
+
+reset role;
+set local "request.jwt.claim.sub" = 'c0000000-0000-4000-8000-000000000002';
+select lives_ok(
+  $$select public.create_admin_manual_booking(
+    '2040-01-08', 'Released Guest', '+919811111104', null, 2, 0, null,
+    'manual_upi', 'c0000000-0000-4000-8000-000000000501'
+  )$$,
+  'admin fixture creates a booking for released-reservation reconciliation'
+);
+insert into verification_context
+select
+  'released',
+  booking.booking_reference,
+  booking.id,
+  reservation.id,
+  payment.id
+from public.bookings as booking
+join public.inventory_reservations as reservation on reservation.booking_id = booking.id
+join public.payments as payment on payment.booking_id = booking.id
+where booking.customer_phone_snapshot = '+919811111104';
+update public.inventory_reservations
+set status = 'released'
+where id = (select reservation_id from verification_context where label = 'released');
+
+set local role authenticated;
+select is(
+  (
+    public.verify_admin_manual_payment(
+      (select booking_reference from verification_context where label = 'released'),
+      'RELEASED-REF-001', 500000, 'INR',
+      'c0000000-0000-4000-8000-000000000502', null, null
+    )
+  ).result,
+  'reconciliation_required',
+  'payment observed after release routes to reconciliation'
+);
+select is(
+  (select status from public.payments where id = (
+    select payment_id from verification_context where label = 'released'
+  )),
+  'reconciliation_required'::public.payment_status,
+  'released-reservation payment becomes reconciliation required'
+);
+select is(
+  (select manual_reference from public.payments where id = (
+    select payment_id from verification_context where label = 'released'
+  )),
+  'RELEASED-REF-001',
+  'released-reservation observation facts remain durable'
+);
+select is(
+  (select status from public.inventory_reservations where id = (
+    select reservation_id from verification_context where label = 'released'
+  )),
+  'released'::public.reservation_status,
+  'released reservation remains released'
+);
+select is(
+  (select booking_status from public.bookings where id = (
+    select booking_id from verification_context where label = 'released'
+  )),
+  'expired'::public.booking_status,
+  'released-reservation booking is terminalized'
+);
+select results_eq(
+  $$select count(*)::integer from public.inventory_reservations
+    where booking_id = (select booking_id from verification_context where label = 'released')$$,
+  array[1::integer],
+  'released-reservation reconciliation creates no replacement inventory'
+);
+select results_eq(
+  $$select count(*)::integer from public.notification_events
+    where booking_id = (select booking_id from verification_context where label = 'released')
+      and template_key = 'booking_confirmed'$$,
+  array[0::integer],
+  'released-reservation reconciliation creates no confirmation notification'
+);
+select results_eq(
+  $$select count(*)::integer from public.booking_events
+    where booking_id = (select booking_id from verification_context where label = 'released')
+      and event_type = 'manual_payment_reconciliation_required'$$,
+  array[1::integer],
+  'released-reservation reconciliation creates one booking event'
+);
+select results_eq(
+  $$select count(*)::integer from public.admin_operation_events
+    where booking_id = (select booking_id from verification_context where label = 'released')
+      and action_type = 'manual_payment_reconciliation_required'$$,
+  array[1::integer],
+  'released-reservation reconciliation creates one receipt'
+);
+
+reset role;
+insert into public.bookings (
+  id, booking_reference, public_confirmation_token, property_id, customer_id,
+  customer_name_snapshot, customer_email_snapshot, customer_phone_snapshot,
+  source, booking_type, check_in_at, check_out_at, guest_count,
+  overnight_guest_count, total_amount_paise, advance_amount_paise,
+  balance_amount_paise, booking_status
+)
+select
+  'c0000000-0000-4000-8000-000000000601',
+  'SOE-20400110-A1B2C3D4',
+  'missing-reservation-confirmation-token',
+  property_id,
+  customer_id,
+  'Missing Reservation Guest',
+  null,
+  '+919811111105',
+  'admin_manual',
+  'manual_one_night',
+  '2040-01-10 05:30:00+00',
+  '2040-01-11 04:30:00+00',
+  2,
+  0,
+  1500000,
+  500000,
+  1000000,
+  'payment_pending'
+from public.bookings
+limit 1;
+insert into public.payments (
+  id, booking_id, provider, idempotency_key, amount_paise, currency,
+  status, signature_verified, attempt_expires_at
+) values (
+  'c0000000-0000-4000-8000-000000000602',
+  'c0000000-0000-4000-8000-000000000601',
+  'manual_upi',
+  'missing-reservation-payment',
+  500000,
+  'INR',
+  'pending',
+  false,
+  '2040-01-10 06:00:00+00'
+);
+
+set local role authenticated;
+select is(
+  (
+    public.verify_admin_manual_payment(
+      'SOE-20400110-A1B2C3D4', 'MISSING-REF-001', 500000, 'INR',
+      'c0000000-0000-4000-8000-000000000603', null, null
+    )
+  ).result,
+  'reconciliation_required',
+  'missing reservation routes observed payment to reconciliation'
+);
+select is(
+  (select status from public.payments where id = 'c0000000-0000-4000-8000-000000000602'),
+  'reconciliation_required'::public.payment_status,
+  'missing-reservation payment becomes reconciliation required'
+);
+select is(
+  (select booking_status from public.bookings where id = 'c0000000-0000-4000-8000-000000000601'),
+  'expired'::public.booking_status,
+  'missing-reservation booking does not confirm'
+);
+select results_eq(
+  $$select count(*)::integer from public.inventory_reservations
+    where booking_id = 'c0000000-0000-4000-8000-000000000601'$$,
+  array[0::integer],
+  'missing-reservation reconciliation does not create inventory'
+);
+select results_eq(
+  $$select count(*)::integer from public.notification_events
+    where booking_id = 'c0000000-0000-4000-8000-000000000601'
+      and template_key = 'booking_confirmed'$$,
+  array[0::integer],
+  'missing-reservation reconciliation creates no confirmation notification'
+);
+select results_eq(
+  $$select count(*)::integer from public.booking_events
+    where booking_id = 'c0000000-0000-4000-8000-000000000601'
+      and event_type = 'manual_payment_reconciliation_required'$$,
+  array[1::integer],
+  'missing-reservation reconciliation creates one event'
+);
+select results_eq(
+  $$select count(*)::integer from public.admin_operation_events
+    where booking_id = 'c0000000-0000-4000-8000-000000000601'
+      and inventory_reservation_id is null
+      and action_type = 'manual_payment_reconciliation_required'$$,
+  array[1::integer],
+  'missing-reservation reconciliation creates one receipt without inventing a target'
+);
+select is(
+  (
+    public.verify_admin_manual_payment(
+      'SOE-20400110-A1B2C3D4', 'MISSING-REF-001', 500000, 'INR',
+      'c0000000-0000-4000-8000-000000000603', null, null
+    )
+  ).reservation_type,
+  null,
+  'safe missing-reservation replay exposes no internal reservation identifier'
 );
 
 reset role;
