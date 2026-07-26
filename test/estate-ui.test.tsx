@@ -1,0 +1,201 @@
+import { render, screen } from "@testing-library/react";
+import { describe, it, expect } from "vitest";
+import { EstateButton } from "@/components/estate-ui/estate-button";
+import { EstateHeading } from "@/components/estate-ui/estate-heading";
+import { EstateText } from "@/components/estate-ui/estate-text";
+import { EstateContainer } from "@/components/estate-ui/estate-container";
+import { EstateSection } from "@/components/estate-ui/estate-section";
+import { EstateActionLink } from "@/components/estate-ui/estate-action-link";
+import { EstateField } from "@/components/estate-ui/estate-field";
+import { EstateMediaFrame } from "@/components/estate-ui/estate-media-frame";
+import React from "react";
+
+describe("Estate UI Primitives", () => {
+  describe("EstateButton", () => {
+    it("Defaults to type='button'", () => {
+      render(<EstateButton>Click me</EstateButton>);
+      expect(screen.getByRole("button", { name: "Click me" })).toHaveAttribute("type", "button");
+    });
+
+    it("Preserves type='submit'", () => {
+      render(<EstateButton type="submit">Submit</EstateButton>);
+      expect(screen.getByRole("button", { name: "Submit" })).toHaveAttribute("type", "submit");
+    });
+
+    it("Preserves type='reset'", () => {
+      render(<EstateButton type="reset">Reset</EstateButton>);
+      expect(screen.getByRole("button", { name: "Reset" })).toHaveAttribute("type", "reset");
+    });
+
+    it("Loading sets aria-busy='true'", () => {
+      render(<EstateButton isLoading>Loading</EstateButton>);
+      expect(screen.getByRole("button")).toHaveAttribute("aria-busy", "true");
+    });
+
+    it("Loading disables the button", () => {
+      render(<EstateButton isLoading>Loading</EstateButton>);
+      expect(screen.getByRole("button")).toBeDisabled();
+    });
+
+    it("Disabled state remains disabled", () => {
+      render(<EstateButton disabled>Disabled</EstateButton>);
+      expect(screen.getByRole("button")).toBeDisabled();
+    });
+
+    it("Loading content does not remove the accessible label", () => {
+      render(<EstateButton isLoading>Accessible Content</EstateButton>);
+      expect(screen.getByRole("button", { name: "Accessible Content" })).toBeInTheDocument();
+    });
+
+    it("Caller class extension still works", () => {
+      render(<EstateButton className="custom-class">Custom</EstateButton>);
+      expect(screen.getByRole("button", { name: "Custom" })).toHaveClass("custom-class");
+    });
+  });
+
+  describe("EstateField", () => {
+    it("Label htmlFor equals control id", () => {
+      render(
+        <EstateField id="test-field" label="Test Label">
+          {(props) => <input {...props} data-testid="input" />}
+        </EstateField>
+      );
+      expect(screen.getByText("Test Label")).toHaveAttribute("for", "test-field");
+      expect(screen.getByTestId("input")).toHaveAttribute("id", "test-field");
+    });
+
+    it("Description ID is included in aria-describedby", () => {
+      render(
+        <EstateField id="desc-field" label="Desc" description="A description">
+          {(props) => <input {...props} data-testid="input" />}
+        </EstateField>
+      );
+      expect(screen.getByTestId("input")).toHaveAttribute("aria-describedby", "desc-field-description");
+      expect(screen.getByText("A description")).toHaveAttribute("id", "desc-field-description");
+    });
+
+    it("Error ID is included in aria-describedby", () => {
+      render(
+        <EstateField id="err-field" label="Err" error="An error">
+          {(props) => <input {...props} data-testid="input" />}
+        </EstateField>
+      );
+      expect(screen.getByTestId("input")).toHaveAttribute("aria-describedby", "err-field-error");
+      expect(screen.getByText("An error")).toHaveAttribute("id", "err-field-error");
+    });
+
+    it("Both IDs are included when description and error both exist", () => {
+      render(
+        <EstateField id="both-field" label="Both" description="A description" error="An error">
+          {(props) => <input {...props} data-testid="input" />}
+        </EstateField>
+      );
+      const describedBy = screen.getByTestId("input").getAttribute("aria-describedby");
+      expect(describedBy).toContain("both-field-error");
+      expect(describedBy).toContain("both-field-description");
+      expect(screen.getByText("A description")).toBeInTheDocument();
+      expect(screen.getByText("An error")).toBeInTheDocument();
+    });
+
+    it("No empty aria-describedby", () => {
+      render(
+        <EstateField id="empty-field" label="Empty">
+          {(props) => <input {...props} data-testid="input" />}
+        </EstateField>
+      );
+      expect(screen.getByTestId("input")).not.toHaveAttribute("aria-describedby");
+    });
+
+    it("Error sets aria-invalid", () => {
+      render(
+        <EstateField id="inv-field" label="Inv" error="Err">
+          {(props) => <input {...props} data-testid="input" />}
+        </EstateField>
+      );
+      expect(screen.getByTestId("input")).toHaveAttribute("aria-invalid", "true");
+    });
+
+    it("Required sets aria-required", () => {
+      render(
+        <EstateField id="req-field" label="Req" required>
+          {(props) => <input {...props} data-testid="input" />}
+        </EstateField>
+      );
+      expect(screen.getByTestId("input")).toHaveAttribute("aria-required", "true");
+    });
+
+    it("Caller-provided accessible attributes are not silently corrupted", () => {
+      render(
+        <EstateField id="custom-field" label="Custom" description="Desc">
+          {(props) => <input {...props} aria-hidden="true" data-testid="input" />}
+        </EstateField>
+      );
+      expect(screen.getByTestId("input")).toHaveAttribute("aria-hidden", "true");
+      expect(screen.getByTestId("input")).toHaveAttribute("aria-describedby", "custom-field-description");
+    });
+
+    it("Multiple fields on one page do not generate duplicate IDs", () => {
+      render(
+        <>
+          <EstateField id="f1" label="F1" description="D1">{(p) => <input {...p} data-testid="i1" />}</EstateField>
+          <EstateField id="f2" label="F2" description="D2">{(p) => <input {...p} data-testid="i2" />}</EstateField>
+        </>
+      );
+      expect(screen.getByTestId("i1")).toHaveAttribute("aria-describedby", "f1-description");
+      expect(screen.getByTestId("i2")).toHaveAttribute("aria-describedby", "f2-description");
+    });
+  });
+
+  describe("Surface and focus contract", () => {
+    it("Light theme attribute sets appropriate classes", () => {
+      render(<EstateSection surface="light" data-testid="light-sec" />);
+      expect(screen.getByTestId("light-sec")).toHaveAttribute("data-estate-theme", "light");
+      expect(screen.getByTestId("light-sec")).toHaveClass("bg-[var(--soe-surface-bg-primary)]");
+    });
+
+    it("Dark theme attribute sets appropriate classes", () => {
+      render(<EstateSection surface="dark" data-testid="dark-sec" />);
+      expect(screen.getByTestId("dark-sec")).toHaveAttribute("data-estate-theme", "dark");
+      expect(screen.getByTestId("dark-sec")).toHaveClass("bg-[var(--soe-surface-bg-primary)]");
+    });
+
+    it("Transparent surface behaviour removes theme and background", () => {
+      render(<EstateSection surface="transparent" data-testid="trans-sec" />);
+      expect(screen.getByTestId("trans-sec")).not.toHaveAttribute("data-estate-theme");
+      expect(screen.getByTestId("trans-sec")).not.toHaveClass("bg-[var(--soe-surface-bg-primary)]");
+    });
+
+    it("Dark-theme focus token mapping and surface-aware focus offset mapping are applied to Button", () => {
+      render(<EstateButton data-testid="btn" />);
+      expect(screen.getByTestId("btn")).toHaveClass("focus-visible:ring-offset-[var(--soe-color-focus-offset)]");
+      expect(screen.getByTestId("btn")).toHaveClass("focus-visible:ring-[var(--soe-color-focus-ring)]");
+    });
+  });
+
+  it("EstateHeading renders correct elements", () => {
+    const { rerender } = render(<EstateHeading as="h1">Heading 1</EstateHeading>);
+    expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
+    rerender(<EstateHeading as="h3">Heading 3</EstateHeading>);
+    expect(screen.getByRole("heading", { level: 3 })).toBeInTheDocument();
+  });
+
+  it("EstateText renders correctly", () => {
+    render(<EstateText>Some text</EstateText>);
+    expect(screen.getByText("Some text")).toBeInTheDocument();
+  });
+
+  it("EstateContainer renders correctly", () => {
+    render(<EstateContainer data-testid="container">Container content</EstateContainer>);
+    expect(screen.getByTestId("container")).toHaveClass("mx-auto");
+  });
+
+  it("EstateActionLink renders correctly", () => {
+    render(<EstateActionLink href="/test">Link</EstateActionLink>);
+    expect(screen.getByRole("link", { name: "Link" })).toHaveAttribute("href", "/test");
+  });
+
+  it("EstateMediaFrame renders correctly", () => {
+    render(<EstateMediaFrame data-testid="media">Media</EstateMediaFrame>);
+    expect(screen.getByTestId("media")).toHaveClass("relative");
+  });
+});
