@@ -43,6 +43,8 @@ export type HoldResponse = {
 export type PublicBookingErrorCode =
   | "INVALID_REQUEST"
   | "ORIGIN_REJECTED"
+  | "REQUEST_TOO_LARGE"
+  | "UNSUPPORTED_MEDIA_TYPE"
   | "BOT_VERIFICATION_FAILED"
   | "PROPERTY_NOT_FOUND"
   | "DATE_UNAVAILABLE"

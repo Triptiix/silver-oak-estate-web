@@ -10,7 +10,27 @@ import { HOLD_COOKIE_PATH, holdCookieOptions } from "@/lib/booking/hold-cookie";
 
 const input = { requestId: "31000000-0000-4000-8000-000000000001", propertySlug: "silver-oak-estate", checkInDate: "2026-07-25", customerName: "Guest", customerPhone: "+919999000001", guestCount: 8, overnightGuestCount: 4, turnstileToken: "test-token" };
 const result = { created: true, bookingId: "booking-id", holdTokenNonce: "nonce", bookingReference: "SOE-1", checkInAt: "2026-07-25T05:30:00Z", checkOutAt: "2026-07-26T04:30:00Z", holdExpiresAt: new Date(Date.now() + 600000).toISOString(), priceAmountPaise: 2000000, advanceAmountPaise: 500000, balanceAmountPaise: 1500000, currency: "INR" };
-const request = (body: unknown, origin: string | null = "http://localhost:3000") => new NextRequest("http://localhost/api/bookings/hold", { method: "POST", headers: { "content-type": "application/json", ...(origin ? { origin } : {}) }, body: JSON.stringify(body) });
+const rawRequest = (
+  body: BodyInit,
+  options: {
+    contentLength?: string;
+    contentType?: string;
+    origin?: string | null;
+  } = {},
+) => new NextRequest("http://localhost/api/bookings/hold", {
+  method: "POST",
+  headers: {
+    "content-type": options.contentType ?? "application/json",
+    ...(options.contentLength ? { "content-length": options.contentLength } : {}),
+    ...(options.origin === null
+      ? {}
+      : { origin: options.origin ?? "http://localhost:3000" }),
+  },
+  body,
+  ...(body instanceof ReadableStream ? { duplex: "half" } : {}),
+});
+const request = (body: unknown, origin: string | null = "http://localhost:3000") =>
+  rawRequest(JSON.stringify(body), { origin });
 describe("hold API", () => {
   beforeEach(() => { createHold.mockReset(); verifyTurnstile.mockReset(); verifyTurnstile.mockResolvedValue(true); createHold.mockResolvedValue(result); });
   it("creates a hold and sets a protected API-scoped cookie", async () => { const response = await POST(request(input)); expect(response.status).toBe(201); const cookie = response.headers.get("set-cookie"); expect(cookie).toMatch(/soe_booking_hold=.*HttpOnly.*SameSite=lax/i); expect(cookie).toContain("Path=/api"); expect(cookie).not.toContain("Path=/api/bookings"); expect(cookie).not.toContain(input.customerName); expect(cookie).not.toContain(input.customerPhone); expect(cookie).not.toContain(input.turnstileToken); expect(holdCookieOptions(false).httpOnly).toBe(true); expect("/api/payments/order".startsWith(HOLD_COOKIE_PATH)).toBe(true); const body = await response.json(); expect(body.bookingId).toBeUndefined(); expect(body.holdTokenNonce).toBeUndefined(); });
@@ -38,10 +58,84 @@ describe("hold API", () => {
     },
   );
   it("rejects browser-supplied price fields", async () => expect((await POST(request({ ...input, priceAmountPaise: 1 }))).status).toBe(400));
+  it("rejects oversized JSON without downstream work or a cookie", async () => {
+    const response = await POST(request({
+      ...input,
+      specialRequests: "a".repeat(17_000),
+    }));
+    expect(response.status).toBe(413);
+    expect(await response.json()).toEqual({
+      error: {
+        code: "REQUEST_TOO_LARGE",
+        message: "The request body is too large.",
+      },
+    });
+    expect(verifyTurnstile).not.toHaveBeenCalled();
+    expect(createHold).not.toHaveBeenCalled();
+    expect(response.headers.get("set-cookie")).toBeNull();
+  });
+  it("enforces the streamed limit when Content-Length is missing", async () => {
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(new Uint8Array(16 * 1024));
+        controller.enqueue(new Uint8Array([1]));
+        controller.close();
+      },
+    });
+    const response = await POST(rawRequest(body));
+    expect(response.status).toBe(413);
+    expect(verifyTurnstile).not.toHaveBeenCalled();
+    expect(createHold).not.toHaveBeenCalled();
+  });
+  it("returns the existing invalid request for malformed JSON", async () => {
+    const response = await POST(rawRequest('{"requestId":'));
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({
+      error: {
+        code: "INVALID_REQUEST",
+        message: "Review the booking details and try again.",
+      },
+    });
+    expect(verifyTurnstile).not.toHaveBeenCalled();
+    expect(createHold).not.toHaveBeenCalled();
+    expect(response.headers.get("set-cookie")).toBeNull();
+  });
+  it("rejects unsupported content types before downstream work", async () => {
+    const response = await POST(rawRequest(JSON.stringify(input), {
+      contentType: "text/plain",
+    }));
+    expect(response.status).toBe(415);
+    expect(await response.json()).toEqual({
+      error: {
+        code: "UNSUPPORTED_MEDIA_TYPE",
+        message: "Send the request as JSON.",
+      },
+    });
+    expect(verifyTurnstile).not.toHaveBeenCalled();
+    expect(createHold).not.toHaveBeenCalled();
+    expect(response.headers.get("set-cookie")).toBeNull();
+  });
+  it("keeps maximum schema values below the route byte limit", async () => {
+    const maximumInput = {
+      ...input,
+      propertySlug: "a".repeat(80),
+      customerName: "a".repeat(120),
+      customerEmail: `${"a".repeat(242)}@example.com`,
+      customerPhone: "+123456789012345",
+      whatsapp: "+123456789012345",
+      guestCount: 30,
+      overnightGuestCount: 8,
+      specialRequests: "a".repeat(1000),
+      turnstileToken: "a".repeat(4096),
+    };
+    expect(new TextEncoder().encode(JSON.stringify(maximumInput)).byteLength)
+      .toBeLessThanOrEqual(16 * 1024);
+    expect((await POST(request(maximumInput))).status).toBe(201);
+  });
   it("rejects invalid Turnstile", async () => { verifyTurnstile.mockResolvedValue(false); expect((await POST(request(input))).status).toBe(403); });
   it.each([null, "https://evil.example"])("rejects origin %s before parsing or side effects", async (origin) => {
     const incoming = request(input, origin);
-    const json = vi.spyOn(incoming, "json");
+    const getReader = vi.spyOn(incoming.body!, "getReader");
     const response = await POST(incoming);
     expect(response.status).toBe(403);
     expect(await response.json()).toEqual({
@@ -50,7 +144,7 @@ describe("hold API", () => {
         message: "Request origin was rejected.",
       },
     });
-    expect(json).not.toHaveBeenCalled();
+    expect(getReader).not.toHaveBeenCalled();
     expect(verifyTurnstile).not.toHaveBeenCalled();
     expect(createHold).not.toHaveBeenCalled();
   });

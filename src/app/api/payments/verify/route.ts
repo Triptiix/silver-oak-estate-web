@@ -8,7 +8,10 @@ import { verifyCheckoutSignature } from "@/lib/payments/crypto";
 import { finalizeVerifiedPayment } from "@/lib/payments/database";
 import { createRazorpayGateway } from "@/lib/payments/razorpay";
 import { verifyPaymentRequestSchema } from "@/lib/payments/schemas";
+import { readBoundedJson } from "@/lib/security/bounded-json";
 import { hasTrustedMutationOrigin } from "@/lib/security/mutation-origin";
+
+const MAX_PAYMENT_VERIFICATION_JSON_BYTES = 8 * 1024;
 
 function clearHoldCookie(response: NextResponse) {
   response.cookies.set(HOLD_COOKIE_NAME, "", {
@@ -23,7 +26,17 @@ export async function POST(request: NextRequest) {
     return bookingError(403, "ORIGIN_REJECTED", "Request origin was rejected.");
   }
 
-  const parsed = verifyPaymentRequestSchema.safeParse(await request.json().catch(() => null));
+  const body = await readBoundedJson(request, MAX_PAYMENT_VERIFICATION_JSON_BYTES);
+  if (!body.ok) {
+    if (body.reason === "too_large") {
+      return bookingError(413, "REQUEST_TOO_LARGE", "The request body is too large.");
+    }
+    if (body.reason === "unsupported_media_type") {
+      return bookingError(415, "UNSUPPORTED_MEDIA_TYPE", "Send the request as JSON.");
+    }
+    return bookingError(400, "INVALID_REQUEST", "Payment verification details were invalid.");
+  }
+  const parsed = verifyPaymentRequestSchema.safeParse(body.value);
   if (!parsed.success) {
     return bookingError(400, "INVALID_REQUEST", "Payment verification details were invalid.");
   }
