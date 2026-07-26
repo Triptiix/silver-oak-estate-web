@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@plugin "tailwindcss-animate";
 
 @theme {
   --font-soe-display: var(--font-newsreader), georgia, serif;
