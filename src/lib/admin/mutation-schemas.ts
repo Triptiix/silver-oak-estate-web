@@ -1,6 +1,44 @@
 import "server-only";
 
 import { z } from "zod";
+import type { Database } from "@/types/database.types";
+
+type BookingStatus = Database["public"]["Enums"]["booking_status"];
+type PaymentStatus = Database["public"]["Enums"]["payment_status"];
+type ReservationStatus = Database["public"]["Enums"]["reservation_status"];
+type ReservationType = Database["public"]["Enums"]["reservation_type"];
+
+const bookingStatuses = [
+  "draft",
+  "held",
+  "payment_pending",
+  "confirmed",
+  "checked_in",
+  "completed",
+  "cancelled",
+  "expired",
+] as const satisfies readonly BookingStatus[];
+const reservationStatuses = [
+  "active",
+  "released",
+  "expired",
+  "cancelled",
+] as const satisfies readonly ReservationStatus[];
+const reservationTypes = [
+  "temporary_hold",
+  "confirmed_booking",
+  "manual_booking",
+  "ota_booking",
+  "owner_block",
+  "maintenance_block",
+] as const satisfies readonly ReservationType[];
+const replayPaymentStatuses = [
+  "manually_verified",
+  "reconciliation_required",
+  "refund_pending",
+  "partially_refunded",
+  "refunded",
+] as const satisfies readonly PaymentStatus[];
 
 const controlCharacters = /[\u0000-\u001F\u007F]/;
 const date = z.iso.date();
@@ -116,8 +154,8 @@ export const inventoryBlockOutputSchema = z.strictObject({
 export const manualBookingOutputSchema = z.strictObject({
   result: z.literal("manual_booking_created"),
   booking_reference: z.string().regex(/^SOE-\d{8}-[A-F0-9]{8}$/),
-  booking_status: z.literal("payment_pending"),
-  reservation_status: z.literal("active"),
+  booking_status: z.enum(bookingStatuses),
+  reservation_status: z.enum(reservationStatuses),
   payment_provider: z.enum(["manual_upi", "payment_link"]),
   check_in_at: isoInstant,
   check_out_at: isoInstant,
@@ -125,18 +163,22 @@ export const manualBookingOutputSchema = z.strictObject({
   advance_amount_paise: money,
   balance_amount_paise: money,
   currency: z.string().regex(/^[A-Z]{3}$/),
-  hold_expires_at: isoInstant,
+  hold_expires_at: isoInstant.nullable(),
   applied: z.boolean(),
 });
 export const manualPaymentOutputSchema = z.strictObject({
   result: z.enum(["confirmed", "reconciliation_required"]),
   booking_reference: z.string().regex(/^SOE-\d{8}-[A-F0-9]{8}$/),
-  booking_status: z.enum(["confirmed", "expired", "cancelled", "completed"]),
-  reservation_type: z
-    .enum(["confirmed_booking", "manual_booking", "temporary_hold", "owner_block", "maintenance_block"])
-    .nullable(),
-  reservation_status: z.enum(["active", "released", "expired", "cancelled"]).nullable(),
-  payment_status: z.enum(["manually_verified", "reconciliation_required"]),
+  booking_status: z.enum([
+    "confirmed",
+    "checked_in",
+    "completed",
+    "cancelled",
+    "expired",
+  ] satisfies readonly BookingStatus[]),
+  reservation_type: z.enum(reservationTypes).nullable(),
+  reservation_status: z.enum(reservationStatuses).nullable(),
+  payment_status: z.enum(replayPaymentStatuses),
   manual_provider: z.enum(["manual_upi", "payment_link"]),
   expected_amount_paise: money,
   observed_amount_paise: money,

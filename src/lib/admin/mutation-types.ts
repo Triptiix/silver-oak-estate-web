@@ -1,5 +1,12 @@
 import "server-only";
 
+import type { Database } from "@/types/database.types";
+
+type BookingStatus = Database["public"]["Enums"]["booking_status"];
+type PaymentStatus = Database["public"]["Enums"]["payment_status"];
+type ReservationStatus = Database["public"]["Enums"]["reservation_status"];
+type ReservationType = Database["public"]["Enums"]["reservation_type"];
+
 export type AdminMutationErrorCode =
   | "unauthorized"
   | "forbidden"
@@ -43,8 +50,8 @@ export type InventoryBlockResult = {
 export type ManualBookingResult = {
   result: "manual_booking_created";
   bookingReference: string;
-  bookingStatus: "payment_pending";
-  reservationStatus: "active";
+  bookingStatus: BookingStatus;
+  reservationStatus: ReservationStatus;
   paymentProvider: "manual_upi" | "payment_link";
   checkInAt: string;
   checkOutAt: string;
@@ -52,23 +59,27 @@ export type ManualBookingResult = {
   advanceAmountPaise: number;
   balanceAmountPaise: number;
   currency: string;
-  holdExpiresAt: string;
+  holdExpiresAt: string | null;
   applied: boolean;
 };
 
 export type ManualPaymentResult = {
   result: "confirmed" | "reconciliation_required";
   bookingReference: string;
-  bookingStatus: "confirmed" | "expired" | "cancelled" | "completed";
-  reservationType:
-    | "confirmed_booking"
-    | "manual_booking"
-    | "temporary_hold"
-    | "owner_block"
-    | "maintenance_block"
-    | null;
-  reservationStatus: "active" | "released" | "expired" | "cancelled" | null;
-  paymentStatus: "manually_verified" | "reconciliation_required";
+  bookingStatus: Extract<
+    BookingStatus,
+    "confirmed" | "checked_in" | "completed" | "cancelled" | "expired"
+  >;
+  reservationType: ReservationType | null;
+  reservationStatus: ReservationStatus | null;
+  paymentStatus: Extract<
+    PaymentStatus,
+    | "manually_verified"
+    | "reconciliation_required"
+    | "refund_pending"
+    | "partially_refunded"
+    | "refunded"
+  >;
   manualProvider: "manual_upi" | "payment_link";
   expectedAmountPaise: number;
   observedAmountPaise: number;
