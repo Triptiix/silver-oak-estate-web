@@ -5,6 +5,7 @@ import { PaymentTable } from "@/components/admin/payment-table";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { formatAdminDateTime, formatPaise } from "@/lib/admin/format";
 import { getAdminBookingDetail } from "@/lib/admin/database";
+import { isCanonicalBookingReference } from "@/lib/admin/query";
 import { requireAdminRole } from "@/lib/auth/admin";
 
 export const dynamic = "force-dynamic";
@@ -20,7 +21,7 @@ export default async function AdminBookingDetailPage({
 }) {
   await requireAdminRole("operations", "admin", "super_admin");
   const { bookingReference } = await params;
-  if (!/^[A-Za-z0-9-]{3,80}$/.test(bookingReference)) notFound();
+  if (!isCanonicalBookingReference(bookingReference)) notFound();
   const detail = await getAdminBookingDetail(bookingReference);
   if (!detail) notFound();
   const { booking } = detail;

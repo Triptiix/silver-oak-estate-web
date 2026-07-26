@@ -19,7 +19,7 @@ export function parseAdminListQuery(
   const page = z.coerce.number().int().min(1).max(MAX_ADMIN_PAGE).catch(1).parse(one(params.page));
   const pageSize = z.coerce.number().int().min(1).max(50).catch(20).parse(one(params.pageSize));
   const rawBookingReference = one(params.bookingReference)?.trim();
-  const bookingReference = rawBookingReference && bookingReferencePattern.test(rawBookingReference)
+  const bookingReference = rawBookingReference && isCanonicalBookingReference(rawBookingReference)
     ? rawBookingReference
     : undefined;
   const checkInFrom = one(params.checkInFrom);
@@ -41,4 +41,8 @@ export function parseAdminListQuery(
     checkInTo: checkInTo && datePattern.test(checkInTo) ? checkInTo : undefined,
     sort: one(params.sort) === "oldest" ? "oldest" : "newest",
   };
+}
+
+export function isCanonicalBookingReference(value: string) {
+  return bookingReferencePattern.test(value);
 }

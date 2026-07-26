@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { bookingReferencePattern } from "@/lib/admin/query";
+import { isCanonicalBookingReference } from "@/lib/admin/query";
 
 const preservedKeys = new Set([
   "bookingReference", "bookingStatus", "paymentStatus", "recoveryState",
@@ -15,7 +15,7 @@ export function buildAdminPaginationHref(
   for (const [key, value] of Object.entries(query)) {
     const selected = Array.isArray(value) ? value[0] : value;
     if (!selected || key === "page" || !preservedKeys.has(key)) continue;
-    if (key === "bookingReference" && !bookingReferencePattern.test(selected)) continue;
+    if (key === "bookingReference" && !isCanonicalBookingReference(selected)) continue;
     params.set(key, selected);
   }
   params.set("page", String(targetPage));

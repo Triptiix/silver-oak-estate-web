@@ -9,8 +9,11 @@ import {
   maskPhone,
   notificationDelivery,
 } from "@/lib/admin/format";
-import { parseAdminListQuery } from "@/lib/admin/query";
-import { MAX_ADMIN_PAGE } from "@/lib/admin/query";
+import {
+  isCanonicalBookingReference,
+  MAX_ADMIN_PAGE,
+  parseAdminListQuery,
+} from "@/lib/admin/query";
 import { buildAdminPaginationHref } from "@/components/admin/pagination";
 import { orderAdminTimeline } from "@/lib/admin/timeline";
 
@@ -34,9 +37,21 @@ describe("Phase 5A operational data boundaries", () => {
   });
 
   it("accepts only a complete public booking reference in URL filters", () => {
-    expect(parseAdminListQuery({ bookingReference: "SOE-20260725-ABCD1234" }).bookingReference)
-      .toBe("SOE-20260725-ABCD1234");
-    for (const value of ["guest@example.com", "+91 98765 43210", "Priyanshu", "SOE-20260725-abcD1234"]) {
+    const validReference = "SOE-20260725-ABCD1234";
+    expect(isCanonicalBookingReference(validReference)).toBe(true);
+    expect(parseAdminListQuery({ bookingReference: validReference }).bookingReference)
+      .toBe(validReference);
+    for (const value of [
+      "guest@example.com",
+      "+91 98765 43210",
+      "Priyanshu",
+      "9876543210",
+      "SOE-20260725-ABC",
+      "SOE-20260725-abcD1234",
+      `x${validReference}`,
+      `${validReference}x`,
+    ]) {
+      expect(isCanonicalBookingReference(value)).toBe(false);
       expect(parseAdminListQuery({ bookingReference: value }).bookingReference).toBeUndefined();
     }
   });
@@ -107,6 +122,7 @@ describe("Phase 5A operational data boundaries", () => {
   it("contains no Phase 5A payment or recovery mutation handler", () => {
     const sources = [
       "src/app/api/admin/bookings/route.ts",
+      "src/app/api/admin/bookings/[bookingReference]/route.ts",
       "src/app/api/admin/payments/route.ts",
       "src/app/api/admin/recovery/route.ts",
       "src/app/api/admin/notifications/route.ts",
