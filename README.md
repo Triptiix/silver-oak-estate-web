@@ -8,7 +8,7 @@ Please review the extensive architecture documentation before contributing:
 - [System Architecture](docs/architecture/01-system-architecture.md)
 - [Project Context](PROJECT_CONTEXT.md)
 
-**Current Implementation Status:** Phase 4 test-mode payment and transactional booking-confirmation foundation.
+**Current Implementation Status:** Phase 5A read-only administrator booking and payment operations over the Phase 4 test-mode foundation.
 **IMPORTANT:** Production payment configuration, automatic refunds, OTA synchronization, and production deployment are **NOT** implemented. This codebase is not production-ready.
 
 Temporary holds expire after the private `booking_hold_minutes` setting (10
@@ -127,6 +127,8 @@ operational procedure.
 - See [Phase 4 Payment Architecture](docs/payments/phase-4-payment-architecture.md)
   for the test-mode order, verification, webhook, confirmation, and recovery
   design.
+- See [Phase 5A Admin Operations](docs/admin/phase-5a-admin-operations.md) for
+  authenticated booking, payment, recovery, audit, and notification visibility.
 
 ## Available Commands
 
@@ -169,6 +171,14 @@ Ordinary automated tests mock the provider and never call Razorpay. A verified
 payment after hold expiry or release is stored as `refund_pending`; it never
 revives the booking or reacquires inventory. Automatic refunds are not
 implemented.
+
+## Phase 5A Admin Operations
+
+Active `operations`, `admin`, and `super_admin` members can access protected,
+server-rendered views at `/admin/bookings`, `/admin/payments`,
+`/admin/recovery`, and `/admin/notifications`. Recovery is diagnosis-only:
+Phase 5A exposes no route or control that confirms, revives, refunds, or
+financially overrides a booking or payment.
 
 ## Continuous Integration
 

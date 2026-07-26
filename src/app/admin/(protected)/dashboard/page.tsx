@@ -1,6 +1,5 @@
-import { Container } from "@/components/ui/container";
-import { Button } from "@/components/ui/button";
-import { logoutAction } from "@/app/admin/actions";
+import Link from "next/link";
+import { AdminShell } from "@/components/admin/admin-shell";
 
 export const metadata = {
   title: "Admin Dashboard",
@@ -8,23 +7,20 @@ export const metadata = {
 
 export default function AdminDashboardPage() {
   return (
-    <Container className="py-8">
-      <div className="mb-8 flex items-start justify-between gap-6">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <form action={logoutAction}>
-          <Button type="submit" variant="outline">
-            Log out
-          </Button>
-        </form>
+    <AdminShell title="Operations dashboard" description="Authenticated test-mode visibility across bookings, payments, recovery and the notification outbox.">
+      <div className="grid gap-4 md:grid-cols-2">
+        {[
+          ["/admin/bookings", "Booking operations", "Inspect bookings, holds, reservations and the unified audit timeline."],
+          ["/admin/payments", "Payment attempts", "Review provider references, lifecycle state and verification timestamps."],
+          ["/admin/recovery", "Recovery queue", "Diagnose refund_pending and reconciliation_required without mutation controls."],
+          ["/admin/notifications", "Notification outbox", "Distinguish queued records from actual provider delivery."],
+        ].map(([href, title, description]) => (
+          <Link key={href} href={href} className="rounded-[var(--radius)] border border-[var(--border)] bg-white p-6 transition hover:-translate-y-0.5 hover:shadow-sm">
+            <h2 className="text-xl font-bold">{title}</h2>
+            <p className="mt-2 text-sm text-[var(--muted-foreground)]">{description}</p>
+          </Link>
+        ))}
       </div>
-      <div className="rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] p-6">
-        <h2 className="mb-2 text-xl font-bold">Administrator access active</h2>
-        <p className="text-[var(--muted-foreground)]">
-          Your Supabase session and active Silver Oak Estate administrator
-          membership have both been verified on the server. Booking operations
-          are intentionally deferred to a later phase.
-        </p>
-      </div>
-    </Container>
+    </AdminShell>
   );
 }

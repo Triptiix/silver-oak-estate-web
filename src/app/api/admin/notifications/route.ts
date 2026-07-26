@@ -1,0 +1,17 @@
+import { type NextRequest } from "next/server";
+import { listAdminNotifications } from "@/lib/admin/database";
+import { adminError, adminJson, authorizeAdminApi } from "@/lib/admin/http";
+import { parseAdminListQuery } from "@/lib/admin/query";
+
+export const dynamic = "force-dynamic";
+
+export async function GET(request: NextRequest) {
+  if (!await authorizeAdminApi()) return adminError(403);
+  try {
+    return adminJson(
+      await listAdminNotifications(parseAdminListQuery(Object.fromEntries(request.nextUrl.searchParams))),
+    );
+  } catch {
+    return adminError(500);
+  }
+}
