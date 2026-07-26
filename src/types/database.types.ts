@@ -34,6 +34,83 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_operation_events: {
+        Row: {
+          action_type: Database["public"]["Enums"]["admin_operation_action"]
+          actor_admin_id: string
+          booking_id: string | null
+          created_at: string
+          id: string
+          internal_note: string | null
+          inventory_reservation_id: string | null
+          payment_id: string | null
+          previous_state: string | null
+          reason_category: string | null
+          request_fingerprint: string
+          request_id: string
+          resulting_state: string
+        }
+        Insert: {
+          action_type: Database["public"]["Enums"]["admin_operation_action"]
+          actor_admin_id: string
+          booking_id?: string | null
+          created_at?: string
+          id?: string
+          internal_note?: string | null
+          inventory_reservation_id?: string | null
+          payment_id?: string | null
+          previous_state?: string | null
+          reason_category?: string | null
+          request_fingerprint: string
+          request_id: string
+          resulting_state: string
+        }
+        Update: {
+          action_type?: Database["public"]["Enums"]["admin_operation_action"]
+          actor_admin_id?: string
+          booking_id?: string | null
+          created_at?: string
+          id?: string
+          internal_note?: string | null
+          inventory_reservation_id?: string | null
+          payment_id?: string | null
+          previous_state?: string | null
+          reason_category?: string | null
+          request_fingerprint?: string
+          request_id?: string
+          resulting_state?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_operation_events_actor_admin_id_fkey"
+            columns: ["actor_admin_id"]
+            isOneToOne: false
+            referencedRelation: "admins"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_operation_events_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_operation_events_inventory_reservation_id_fkey"
+            columns: ["inventory_reservation_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_reservations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_operation_events_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admins: {
         Row: {
           auth_user_id: string
@@ -363,12 +440,16 @@ export type Database = {
           checkout_started_at: string | null
           created_at: string
           currency: string
+          evidence_descriptor: string | null
           failed_at: string | null
           failure_code: string | null
           failure_reason: string | null
           id: string
           idempotency_key: string
           last_provider_event_id: string | null
+          manual_reference: string | null
+          manual_verified_at: string | null
+          operator_note: string | null
           order_created_at: string | null
           provider: string
           provider_order_id: string | null
@@ -381,6 +462,7 @@ export type Database = {
           updated_at: string
           verification_source: string | null
           verified_at: string | null
+          verified_by_admin_id: string | null
         }
         Insert: {
           amount_paise: number
@@ -391,12 +473,16 @@ export type Database = {
           checkout_started_at?: string | null
           created_at?: string
           currency?: string
+          evidence_descriptor?: string | null
           failed_at?: string | null
           failure_code?: string | null
           failure_reason?: string | null
           id?: string
           idempotency_key: string
           last_provider_event_id?: string | null
+          manual_reference?: string | null
+          manual_verified_at?: string | null
+          operator_note?: string | null
           order_created_at?: string | null
           provider: string
           provider_order_id?: string | null
@@ -409,6 +495,7 @@ export type Database = {
           updated_at?: string
           verification_source?: string | null
           verified_at?: string | null
+          verified_by_admin_id?: string | null
         }
         Update: {
           amount_paise?: number
@@ -419,12 +506,16 @@ export type Database = {
           checkout_started_at?: string | null
           created_at?: string
           currency?: string
+          evidence_descriptor?: string | null
           failed_at?: string | null
           failure_code?: string | null
           failure_reason?: string | null
           id?: string
           idempotency_key?: string
           last_provider_event_id?: string | null
+          manual_reference?: string | null
+          manual_verified_at?: string | null
+          operator_note?: string | null
           order_created_at?: string | null
           provider?: string
           provider_order_id?: string | null
@@ -437,6 +528,7 @@ export type Database = {
           updated_at?: string
           verification_source?: string | null
           verified_at?: string | null
+          verified_by_admin_id?: string | null
         }
         Relationships: [
           {
@@ -444,6 +536,13 @@ export type Database = {
             columns: ["booking_id"]
             isOneToOne: false
             referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_verified_by_admin_id_fkey"
+            columns: ["verified_by_admin_id"]
+            isOneToOne: false
+            referencedRelation: "admins"
             referencedColumns: ["id"]
           },
         ]
@@ -809,6 +908,15 @@ export type Database = {
       }
     }
     Enums: {
+      admin_operation_action:
+        | "owner_block_created"
+        | "maintenance_block_created"
+        | "owner_block_released"
+        | "maintenance_block_released"
+        | "manual_booking_created"
+        | "manual_booking_expired"
+        | "manual_payment_verified"
+        | "manual_payment_reconciliation_required"
       admin_role: "super_admin" | "admin" | "operations"
       booking_status:
         | "draft"
@@ -828,6 +936,7 @@ export type Database = {
         | "authorized"
         | "captured"
         | "verified"
+        | "manually_verified"
         | "failed"
         | "expired"
         | "refund_pending"
@@ -974,6 +1083,16 @@ export const Constants = {
   },
   public: {
     Enums: {
+      admin_operation_action: [
+        "owner_block_created",
+        "maintenance_block_created",
+        "owner_block_released",
+        "maintenance_block_released",
+        "manual_booking_created",
+        "manual_booking_expired",
+        "manual_payment_verified",
+        "manual_payment_reconciliation_required",
+      ],
       admin_role: ["super_admin", "admin", "operations"],
       booking_status: [
         "draft",
@@ -994,6 +1113,7 @@ export const Constants = {
         "authorized",
         "captured",
         "verified",
+        "manually_verified",
         "failed",
         "expired",
         "refund_pending",

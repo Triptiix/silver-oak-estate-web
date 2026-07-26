@@ -30,7 +30,7 @@ select results_eq(
       and relkind = 'r'
       and relrowsecurity
   $$,
-  array[11::bigint],
+  array[12::bigint],
   'RLS is enabled on every Phase 1 application table'
 );
 
