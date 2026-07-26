@@ -11,7 +11,7 @@ export const EstateMediaFrame = React.forwardRef<HTMLDivElement, EstateMediaFram
       <div
         ref={ref}
         className={cn(
-          "relative overflow-hidden bg-[var(--soe-color-stone)] rounded-[var(--soe-space-1)]",
+          "relative overflow-hidden bg-[var(--soe-color-stone)] rounded-[var(--soe-radius-media)]",
           {
             "aspect-video": aspectRatio === "video",
             "aspect-square": aspectRatio === "square",

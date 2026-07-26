@@ -25,7 +25,7 @@ export const EstateField = React.forwardRef<HTMLDivElement, EstateFieldProps>(
 
     return (
       <div ref={ref} className={cn("space-y-[var(--soe-space-2)]", className)} {...props}>
-        <label htmlFor={id} className="block font-ui text-[length:var(--soe-text-sm)] font-medium text-[var(--soe-color-text-primary)]">
+        <label htmlFor={id} className="block font-soe-ui text-[length:var(--soe-text-sm)] font-medium text-[var(--soe-surface-text-primary)]">
           {label}
           {required && <span className="ml-1 text-[var(--soe-color-error)]" aria-hidden="true">*</span>}
         </label>
@@ -39,7 +39,7 @@ export const EstateField = React.forwardRef<HTMLDivElement, EstateFieldProps>(
         })}
 
         {description && (
-          <p id={descriptionId} className="text-[length:var(--soe-text-sm)] text-[var(--soe-color-text-secondary)]">
+          <p id={descriptionId} className="text-[length:var(--soe-text-sm)] text-[var(--soe-surface-text-secondary)]">
             {description}
           </p>
         )}

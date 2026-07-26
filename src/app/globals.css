@@ -1,17 +1,36 @@
 @import "tailwindcss";
+@plugin "tailwindcss-animate";
 
 @theme {
+  --font-soe-display: var(--font-newsreader), georgia, serif;
+  --font-soe-body: var(--font-manrope), system-ui, sans-serif;
+  --font-soe-ui: var(--font-manrope), system-ui, sans-serif;
+
   --color-background: var(--background);
-  --color-surface: var(--surface);
   --color-foreground: var(--foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
   --color-border: var(--border);
 
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
-
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
 
   --color-success: var(--success);
   --color-warning: var(--warning);
@@ -40,12 +59,17 @@
   --color-soe-text-primary: var(--soe-surface-text-primary);
   --color-soe-text-secondary: var(--soe-surface-text-secondary);
   --color-soe-text-inverse: var(--soe-surface-text-inverse);
+  --color-soe-text-quiet: var(--soe-surface-text-quiet);
+  
   --color-soe-background-primary: var(--soe-surface-bg-primary);
   --color-soe-background-surface: var(--soe-surface-bg-surface);
-  --color-soe-background-dark: var(--soe-color-night);
+  
   --color-soe-action-primary: var(--soe-surface-action-primary);
   --color-soe-action-primary-hover: var(--soe-surface-action-hover);
-  --color-soe-action-on-dark: var(--soe-color-canvas);
+  --color-soe-action-secondary: var(--soe-surface-action-secondary);
+  --color-soe-action-secondary-hover: var(--soe-surface-action-secondary-hover);
+  --color-soe-action-quiet-hover: var(--soe-surface-action-quiet-hover);
+
   --color-soe-accent-metal: var(--soe-surface-accent-metal);
   --color-soe-accent-water: var(--soe-color-water);
   --color-soe-control-border: var(--soe-surface-control-border);
@@ -81,7 +105,6 @@
     --container-width: 80rem;
 
     /* SOE Public Primitives (UI-1R) */
-
     /* Warm ivory: Primary public canvas, Editorial storytelling sections, Light navigation state, Reading sections */
     --soe-color-canvas: #f5f1e8;
     --soe-color-surface: #fbfaf7;
@@ -102,7 +125,7 @@
     /* Silver: Restrained logo reference, Fine neutral accent, Decorative metallic neutral (no CSS gradients) */
     --soe-color-silver: #b9b7ae;
 
-    /* Antique gold: Sparingly for logo details, fine divider lines, small icons, selected decorative strokes, premium micro-details (not main body text, buttons, borders, background gradients, or focus indication) */
+    /* Antique gold: Sparingly for logo details, fine divider lines, small icons, selected decorative strokes, premium micro-details */
     --soe-color-gold: #b79052;
 
     /* Pool water: Pool-related storytelling, small information highlights, water-themed visual details */
@@ -124,48 +147,18 @@
     --soe-surface-text-primary: var(--soe-color-ink);
     --soe-surface-text-secondary: var(--soe-color-ink-muted);
     --soe-surface-text-inverse: var(--soe-color-canvas);
+    --soe-surface-text-quiet: var(--soe-color-ink-muted);
     --soe-surface-control-border: var(--soe-color-border);
     --soe-surface-action-primary: var(--soe-color-brand);
     --soe-surface-action-hover: var(--soe-color-brand-strong);
+    --soe-surface-action-secondary: var(--soe-color-surface);
+    --soe-surface-action-secondary-hover: var(--soe-color-stone);
+    --soe-surface-action-quiet-hover: var(--soe-color-stone);
     --soe-surface-accent-metal: var(--soe-color-gold);
     --soe-color-focus-ring: var(--soe-color-focus);
     --soe-color-focus-offset: var(--soe-surface-bg-primary);
-  }
 
-  /* Light Theme Override (Explicit) */
-  [data-estate-theme="light"] {
-    --soe-surface-bg-primary: var(--soe-color-canvas);
-    --soe-surface-bg-surface: var(--soe-color-surface);
-    --soe-surface-text-primary: var(--soe-color-ink);
-    --soe-surface-text-secondary: var(--soe-color-ink-muted);
-    --soe-surface-text-inverse: var(--soe-color-canvas);
-    --soe-surface-control-border: var(--soe-color-border);
-    --soe-surface-action-primary: var(--soe-color-brand);
-    --soe-surface-action-hover: var(--soe-color-brand-strong);
-    --soe-surface-accent-metal: var(--soe-color-gold);
-    --soe-color-focus-ring: var(--soe-color-focus);
-    --soe-color-focus-offset: var(--soe-surface-bg-primary);
-  }
-
-  /* Dark Theme Override */
-  [data-estate-theme="dark"] {
-    --soe-surface-bg-primary: var(--soe-color-night);
-    --soe-surface-bg-surface: var(--soe-color-night);
-    --soe-surface-text-primary: var(--soe-color-canvas);
-    --soe-surface-text-secondary: var(--soe-color-silver);
-    --soe-surface-text-inverse: var(--soe-color-ink);
-    --soe-surface-control-border: var(--soe-color-ink-muted);
-    --soe-surface-action-primary: var(--soe-color-brand-soft);
-    --soe-surface-action-hover: var(--soe-color-canvas);
-    --soe-surface-accent-metal: var(--soe-color-gold);
-    --soe-color-focus-ring: var(--soe-color-focus-on-dark);
-    --soe-color-focus-offset: var(--soe-surface-bg-primary);
-
-    /* Typography */
-    --soe-font-display: var(--font-newsreader), Georgia, serif;
-    --soe-font-body: var(--font-manrope), system-ui, sans-serif;
-    --soe-font-ui: var(--font-manrope), system-ui, sans-serif;
-
+    /* Shared Typography */
     --soe-text-xs: 0.75rem;
     --soe-text-sm: 0.875rem;
     --soe-text-base: 1rem;
@@ -174,6 +167,18 @@
     --soe-text-2xl: clamp(1.75rem, 2.4vw + 1rem, 3rem);
     --soe-text-3xl: clamp(2.4rem, 4.2vw + 1rem, 5.5rem);
     --soe-text-hero: clamp(2.8rem, 6.5vw, 7.5rem);
+
+    /* Line Heights */
+    --soe-leading-display-tight: 1.1;
+    --soe-leading-heading: 1.2;
+    --soe-leading-body: 1.6;
+    --soe-leading-label: 1.4;
+
+    /* Tracking */
+    --soe-tracking-display: -0.02em;
+    --soe-tracking-heading: -0.01em;
+    --soe-tracking-eyebrow: 0.05em;
+    --soe-tracking-label: 0.01em;
 
     /* Spacing */
     --soe-space-1: 0.25rem;
@@ -188,30 +193,78 @@
     --soe-space-24: 6rem;
     --soe-space-32: 8rem;
 
+    /* Section Spacing */
+    --soe-section-space-sm: clamp(2rem, 4vw, 4rem);
+    --soe-section-space-md: clamp(4rem, 8vw, 8rem);
+    --soe-section-space-lg: clamp(6rem, 12vw, 12rem);
+
     /* Containers */
     --soe-container-visual: 90rem;
     --soe-container-content: 80rem;
     --soe-container-reading: 51.25rem;
+    
+    /* Radius */
+    --soe-radius-control: 0.25rem;
+    --soe-radius-card: 0.75rem;
+    --soe-radius-media: 0.5rem;
+    --soe-radius-pill: 9999px;
+
+    /* Shadows */
+    --soe-shadow-raised: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --soe-shadow-overlay: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 
     /* Motion */
-    --soe-motion-immediate: 150ms;
-    --soe-motion-standard: 250ms;
-    --soe-motion-editorial: 400ms;
-    --soe-motion-ease: cubic-bezier(0.4, 0, 0.2, 1);
+    --soe-duration-immediate: 150ms;
+    --soe-duration-interface: 250ms;
+    --soe-duration-editorial: 400ms;
+    --soe-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+    --soe-ease-emphasized: cubic-bezier(0.4, 0, 0.2, 1);
+    --soe-ease-editorial: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Light Theme Override (Explicit) */
+  [data-estate-theme="light"] {
+    --soe-surface-bg-primary: var(--soe-color-canvas);
+    --soe-surface-bg-surface: var(--soe-color-surface);
+    --soe-surface-text-primary: var(--soe-color-ink);
+    --soe-surface-text-secondary: var(--soe-color-ink-muted);
+    --soe-surface-text-inverse: var(--soe-color-canvas);
+    --soe-surface-text-quiet: var(--soe-color-ink-muted);
+    --soe-surface-control-border: var(--soe-color-border);
+    --soe-surface-action-primary: var(--soe-color-brand);
+    --soe-surface-action-hover: var(--soe-color-brand-strong);
+    --soe-surface-action-secondary: var(--soe-color-surface);
+    --soe-surface-action-secondary-hover: var(--soe-color-stone);
+    --soe-surface-action-quiet-hover: var(--soe-color-stone);
+    --soe-surface-accent-metal: var(--soe-color-gold);
+    --soe-color-focus-ring: var(--soe-color-focus);
+    --soe-color-focus-offset: var(--soe-surface-bg-primary);
+  }
+
+  /* Dark Theme Override */
+  [data-estate-theme="dark"] {
+    --soe-surface-bg-primary: var(--soe-color-night);
+    --soe-surface-bg-surface: var(--soe-color-night);
+    --soe-surface-text-primary: var(--soe-color-canvas);
+    --soe-surface-text-secondary: var(--soe-color-silver);
+    --soe-surface-text-inverse: var(--soe-color-ink);
+    --soe-surface-text-quiet: var(--soe-color-silver);
+    --soe-surface-control-border: var(--soe-color-ink-muted);
+    --soe-surface-action-primary: var(--soe-color-brand-soft);
+    --soe-surface-action-hover: var(--soe-color-canvas);
+    --soe-surface-action-secondary: transparent;
+    --soe-surface-action-secondary-hover: rgba(255, 255, 255, 0.1);
+    --soe-surface-action-quiet-hover: rgba(255, 255, 255, 0.1);
+    --soe-surface-accent-metal: var(--soe-color-gold);
+    --soe-color-focus-ring: var(--soe-color-focus-on-dark);
+    --soe-color-focus-offset: var(--soe-surface-bg-primary);
   }
 
   @media (prefers-reduced-motion: reduce) {
     :root {
-      --soe-motion-immediate: 0ms;
-      --soe-motion-standard: 0ms;
-      --soe-motion-editorial: 0ms;
-    }
-
-    *, ::before, ::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-      scroll-behavior: auto !important;
+      --soe-duration-immediate: 0.01ms;
+      --soe-duration-interface: 0.01ms;
+      --soe-duration-editorial: 0.01ms;
     }
   }
 }

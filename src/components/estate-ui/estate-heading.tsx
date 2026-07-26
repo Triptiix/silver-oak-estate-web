@@ -17,7 +17,7 @@ export function EstateHeading({
   return (
     <Component
       className={cn(
-        "font-display text-[var(--soe-color-text-primary)] tracking-tight",
+        "font-soe-display text-[var(--soe-surface-text-primary)] tracking-tight",
         {
           "text-[length:var(--soe-text-hero)] leading-[1.1]": variant === "hero",
           "text-[length:var(--soe-text-3xl)] leading-[1.15]": variant === "h1",
