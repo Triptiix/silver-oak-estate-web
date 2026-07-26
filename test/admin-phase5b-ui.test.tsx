@@ -33,6 +33,7 @@ import { InventoryBlockForm } from "@/components/admin/operations/inventory-bloc
 import { ManualBookingForm } from "@/components/admin/operations/manual-booking-form";
 import { resolveManualPaymentCandidate } from "@/components/admin/operations/manual-payment-candidate";
 import { ManualPaymentVerificationForm } from "@/components/admin/operations/manual-payment-verification-form";
+import { ManualPaymentVerificationPanel } from "@/components/admin/operations/manual-payment-verification-panel";
 
 const activeOwnerBlock = {
   reservationId: "10000000-0000-4000-8000-000000000001",
@@ -98,6 +99,20 @@ function fillBlockForm(type: "owner_block" | "maintenance_block") {
 function fillReleaseForm() {
   fireEvent.change(screen.getByLabelText("Release reason"), { target: { value: "corrected" } });
   fireEvent.click(screen.getByLabelText(/I confirm that this active block should be released/i));
+}
+
+const manualPaymentCandidate = {
+  bookingReference: "SOE-20260801-ABCDEF12",
+  provider: "manual_upi" as const,
+  paymentStatus: "pending" as const,
+  expectedAmountPaise: 500_000,
+  currency: "INR",
+};
+
+function fillManualPayment(observedAmount = "5000") {
+  fireEvent.change(screen.getByLabelText("External payment reference"), { target: { value: "UPI-REFERENCE-1" } });
+  fireEvent.change(screen.getByLabelText("Observed INR amount"), { target: { value: observedAmount } });
+  fireEvent.click(screen.getByLabelText(/I independently verified/i));
 }
 
 describe("administrator operations role visibility and action wiring", () => {
@@ -185,6 +200,46 @@ describe("administrator operations role visibility and action wiring", () => {
     expect(await screen.findByText("Release not confirmed")).toBeInTheDocument();
     expect(screen.getAllByText(/Confirm that this active block should be released/i)).toHaveLength(2);
     expect(actions.releaseMaintenanceBlockAction).not.toHaveBeenCalled();
+  });
+
+  it("keeps an applied release result after the released row disappears and allows dismissal", async () => {
+    const { rerender } = render(<ActiveInventoryBlocks blocks={[activeMaintenanceBlock]} role="operations" />);
+    fillReleaseForm();
+    fireEvent.click(screen.getByRole("button", { name: "Release inventory block" }));
+    await waitFor(() => expect(actions.releaseMaintenanceBlockAction).toHaveBeenCalledOnce());
+    rerender(<ActiveInventoryBlocks blocks={[]} role="operations" />);
+    expect(screen.getByText("Inventory block released")).toBeInTheDocument();
+    expect(screen.queryByText(/Release this maintenance block/i)).not.toBeInTheDocument();
+    expect(document.body.innerHTML).not.toContain(activeMaintenanceBlock.reservationId);
+    fireEvent.click(screen.getByRole("button", { name: "Dismiss" }));
+    expect(screen.queryByText("Inventory block released")).not.toBeInTheDocument();
+  });
+
+  it("keeps replay and stale release feedback outside removed rows", async () => {
+    actions.releaseMaintenanceBlockAction
+      .mockResolvedValueOnce({
+        ...blockSuccess,
+        data: { ...blockSuccess.data, result: "block_released", status: "released", applied: false },
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        error: { code: "block_not_active", message: "This inventory block is no longer active." },
+      });
+    const { rerender } = render(<ActiveInventoryBlocks blocks={[activeMaintenanceBlock]} role="operations" />);
+    fillReleaseForm();
+    fireEvent.click(screen.getByRole("button", { name: "Release inventory block" }));
+    await screen.findByText("Completed release replayed");
+    rerender(<ActiveInventoryBlocks blocks={[]} role="operations" />);
+    expect(screen.getByText("Completed release replayed")).toBeInTheDocument();
+
+    rerender(<ActiveInventoryBlocks blocks={[activeMaintenanceBlock]} role="operations" />);
+    fillReleaseForm();
+    fireEvent.click(screen.getByRole("button", { name: "Release inventory block" }));
+    await screen.findByText("Operation not completed");
+    rerender(<ActiveInventoryBlocks blocks={[]} role="operations" />);
+    expect(screen.getByRole("alert")).toHaveTextContent("This inventory block is no longer active.");
+    expect(actions.refresh).toHaveBeenCalled();
+    expect(document.body.innerHTML).not.toContain(activeMaintenanceBlock.reservationId);
   });
 
   it("shows the 31-night date guidance", () => {
@@ -380,6 +435,91 @@ describe("manual-payment eligibility and verification", () => {
     expect(screen.getByRole("link", { name: "Open recovery queue" })).toHaveAttribute("href", "/admin/recovery");
   });
 
+  it("keeps a confirmed payment result after the candidate becomes unavailable, then dismisses it", async () => {
+    actions.verifyManualPaymentAction.mockResolvedValue({
+      ok: true,
+      data: {
+        result: "confirmed",
+        bookingReference: manualPaymentCandidate.bookingReference,
+        bookingStatus: "confirmed",
+        reservationType: "manual_booking",
+        reservationStatus: "active",
+        paymentStatus: "manually_verified",
+        manualProvider: "manual_upi",
+        expectedAmountPaise: 500_000,
+        observedAmountPaise: 500_000,
+        currency: "INR",
+        applied: true,
+      },
+    });
+    const { rerender } = render(<ManualPaymentVerificationPanel candidate={manualPaymentCandidate} />);
+    fillManualPayment();
+    fireEvent.click(screen.getByRole("button", { name: "Submit verified payment observation" }));
+    await screen.findByText("Manual payment confirmed");
+    rerender(<ManualPaymentVerificationPanel candidate={null} />);
+    expect(screen.getByText("Manual payment confirmed")).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Verify a manual payment" })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Dismiss" }));
+    expect(screen.queryByText("Manual payment confirmed")).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ["confirmed", false, "Completed verification replayed", "/admin/bookings/SOE-20260801-ABCDEF12"],
+    ["reconciliation_required", true, "Reconciliation required", "/admin/recovery"],
+    ["reconciliation_required", false, "Completed reconciliation result replayed", "/admin/recovery"],
+  ] as const)("persists %s payment result applied=%s across a candidate refresh", async (result, applied, title, href) => {
+    actions.verifyManualPaymentAction.mockResolvedValue({
+      ok: true,
+      data: {
+        result,
+        bookingReference: manualPaymentCandidate.bookingReference,
+        bookingStatus: result === "confirmed" ? "confirmed" : "expired",
+        reservationType: "manual_booking",
+        reservationStatus: result === "confirmed" ? "active" : "expired",
+        paymentStatus: result === "confirmed" ? "manually_verified" : "reconciliation_required",
+        manualProvider: "manual_upi",
+        expectedAmountPaise: 500_000,
+        observedAmountPaise: result === "confirmed" ? 500_000 : 400_000,
+        currency: "INR",
+        applied,
+      },
+    });
+    const { rerender } = render(<ManualPaymentVerificationPanel candidate={manualPaymentCandidate} />);
+    fillManualPayment(result === "confirmed" ? "5000" : "4000");
+    fireEvent.click(screen.getByRole("button", { name: "Submit verified payment observation" }));
+    await screen.findByText(title);
+    rerender(<ManualPaymentVerificationPanel candidate={null} />);
+    expect(screen.getByText(title)).toBeInTheDocument();
+    expect(screen.getByRole("link")).toHaveAttribute("href", href);
+  });
+
+  it("renders nothing for an unavailable candidate and resets feedback for a new booking key", async () => {
+    const { container, rerender } = render(<ManualPaymentVerificationPanel candidate={null} />);
+    expect(container).toBeEmptyDOMElement();
+    actions.verifyManualPaymentAction.mockResolvedValue({
+      ok: true,
+      data: {
+        result: "confirmed",
+        bookingReference: manualPaymentCandidate.bookingReference,
+        bookingStatus: "confirmed",
+        reservationType: "manual_booking",
+        reservationStatus: "active",
+        paymentStatus: "manually_verified",
+        manualProvider: "manual_upi",
+        expectedAmountPaise: 500_000,
+        observedAmountPaise: 500_000,
+        currency: "INR",
+        applied: true,
+      },
+    });
+    rerender(<ManualPaymentVerificationPanel key="SOE-20260801-ABCDEF12" candidate={manualPaymentCandidate} />);
+    fillManualPayment();
+    fireEvent.click(screen.getByRole("button", { name: "Submit verified payment observation" }));
+    await screen.findByText("Manual payment confirmed");
+    rerender(<ManualPaymentVerificationPanel key="SOE-20260802-ABCDEF12" candidate={null} />);
+    expect(container).toBeEmptyDOMElement();
+  });
+
   it("offers no file, URL, image or data-url input", () => {
     render(<ManualPaymentVerificationForm candidate={{
       bookingReference: "SOE-20260801-ABCDEF12",
@@ -401,6 +541,7 @@ describe("client mutation boundary", () => {
       "inventory-block-form.tsx",
       "manual-booking-form.tsx",
       "manual-payment-verification-form.tsx",
+      "manual-payment-verification-panel.tsx",
       "release-inventory-block-form.tsx",
     ];
     const source = files.map((file) => readFileSync(

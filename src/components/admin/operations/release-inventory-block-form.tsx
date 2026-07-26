@@ -34,7 +34,13 @@ const releaseReasons = [
   ["other", "Other"],
 ] as const;
 
-export function ReleaseInventoryBlockForm({ block }: { block: ReleasableBlock }) {
+export function ReleaseInventoryBlockForm({
+  block,
+  onOperationFeedback,
+}: {
+  block: ReleasableBlock;
+  onOperationFeedback: (feedback: AdminOperationFeedback | null) => void;
+}) {
   const [pending, setPending] = useState(false);
   const [feedback, setFeedback] = useState<AdminOperationFeedback | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
@@ -83,20 +89,24 @@ export function ReleaseInventoryBlockForm({ block }: { block: ReleasableBlock })
     setPending(true);
     setFieldErrors({});
     setFeedback(null);
+    onOperationFeedback(null);
     try {
       const result = block.reservationType === "owner_block"
         ? await releaseOwnerBlockAction(input)
         : await releaseMaintenanceBlockAction(input);
       if (!result.ok) {
         setFieldErrors(result.error.fieldErrors ?? {});
-        setFeedback(failureFeedback(result));
+        const failure = failureFeedback(result);
         if (["block_not_found", "block_not_active", "wrong_block_type"].includes(result.error.code)) {
+          onOperationFeedback(failure);
           router.refresh();
+        } else {
+          setFeedback(failure);
         }
         return;
       }
       clearCompletedIntent();
-      setFeedback({
+      onOperationFeedback({
         kind: result.data.applied ? "success" : "replayed",
         title: result.data.applied ? "Inventory block released" : "Completed release replayed",
         message: result.data.applied

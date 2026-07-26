@@ -1,4 +1,11 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
 import type { AdminActiveInventoryBlock } from "@/lib/admin/types";
+import {
+  AdminOperationResult,
+  type AdminOperationFeedback,
+} from "./admin-operation-result";
 import type { AdminUiRole } from "./form-helpers";
 import { ReleaseInventoryBlockForm } from "./release-inventory-block-form";
 
@@ -17,7 +24,13 @@ export function ActiveInventoryBlocks({
   blocks: AdminActiveInventoryBlock[];
   role: AdminUiRole;
 }) {
+  const [feedback, setFeedback] = useState<AdminOperationFeedback | null>(null);
+  const resultRef = useRef<HTMLDivElement>(null);
   const canManageOwnerBlocks = role === "admin" || role === "super_admin";
+
+  useEffect(() => {
+    if (feedback) resultRef.current?.focus();
+  }, [feedback]);
 
   return (
     <section className="rounded border border-[var(--border)] bg-white p-5">
@@ -25,6 +38,13 @@ export function ActiveInventoryBlocks({
       <p className="mt-2 text-sm text-[var(--muted-foreground)]">
         Server-loaded owner and maintenance blocks. Identifiers remain hidden in the interface.
       </p>
+      <div className="mt-5">
+        <AdminOperationResult
+          ref={resultRef}
+          feedback={feedback}
+          onDismiss={() => setFeedback(null)}
+        />
+      </div>
       {blocks.length === 0 ? (
         <p className="mt-5 rounded bg-stone-50 p-4 text-sm">No active owner or maintenance blocks.</p>
       ) : (
@@ -42,7 +62,7 @@ export function ActiveInventoryBlocks({
                   <div><dt className="text-stone-500">Created</dt><dd>{formatDateTime(block.createdAt)}</dd></div>
                 </dl>
                 {canRelease ? (
-                  <ReleaseInventoryBlockForm block={block} />
+                  <ReleaseInventoryBlockForm block={block} onOperationFeedback={setFeedback} />
                 ) : (
                   <p className="mt-3 text-sm text-stone-600">
                     Owner-block release requires an admin or super-admin.

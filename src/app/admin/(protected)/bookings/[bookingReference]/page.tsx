@@ -1,9 +1,7 @@
 import { notFound } from "next/navigation";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { NotificationTable } from "@/components/admin/notification-table";
-import {
-  ManualPaymentVerificationForm,
-} from "@/components/admin/operations/manual-payment-verification-form";
+import { ManualPaymentVerificationPanel } from "@/components/admin/operations/manual-payment-verification-panel";
 import { resolveManualPaymentCandidate } from "@/components/admin/operations/manual-payment-candidate";
 import { PaymentTable } from "@/components/admin/payment-table";
 import { StatusBadge } from "@/components/admin/status-badge";
@@ -68,8 +66,13 @@ export default async function AdminBookingDetailPage({
       </section>
 
       <section className="mt-8"><h2 className="mb-4 text-xl font-bold">Payment-attempt history</h2><PaymentTable items={detail.payments} recovery={detail.interventionRequired} /></section>
-      {manualPaymentCandidate && <ManualPaymentVerificationForm candidate={manualPaymentCandidate} />}
-      {hasEligibleManualPayment && !manualPaymentCandidate && (
+      {(admin.role === "admin" || admin.role === "super_admin") && (
+        <ManualPaymentVerificationPanel
+          key={booking.bookingReference}
+          candidate={manualPaymentCandidate}
+        />
+      )}
+      {admin.role === "operations" && hasEligibleManualPayment && (
         <p className="mt-4 rounded border border-stone-200 bg-stone-50 p-4 text-sm">
           Manual-payment verification requires an admin or super-admin.
         </p>

@@ -34,8 +34,10 @@ function formatExpectedAmount(candidate: ManualPaymentCandidate) {
 
 export function ManualPaymentVerificationForm({
   candidate,
+  onOperationFeedback,
 }: {
   candidate: ManualPaymentCandidate;
+  onOperationFeedback?: (feedback: AdminOperationFeedback | null) => void;
 }) {
   const [pending, setPending] = useState(false);
   const [feedback, setFeedback] = useState<AdminOperationFeedback | null>(null);
@@ -103,6 +105,7 @@ export function ManualPaymentVerificationForm({
     setPending(true);
     setFieldErrors({});
     setFeedback(null);
+    onOperationFeedback?.(null);
     try {
       const result = await verifyManualPaymentAction(input);
       if (!result.ok) {
@@ -112,7 +115,7 @@ export function ManualPaymentVerificationForm({
       }
       clearCompletedIntent();
       if (result.data.result === "reconciliation_required") {
-        setFeedback({
+        const completionFeedback: AdminOperationFeedback = {
           kind: "warning",
           title: result.data.applied
             ? "Reconciliation required"
@@ -125,9 +128,11 @@ export function ManualPaymentVerificationForm({
             `Payment status: ${result.data.paymentStatus.replaceAll("_", " ")}`,
           ],
           link: { href: "/admin/recovery", label: "Open recovery queue" },
-        });
+        };
+        if (onOperationFeedback) onOperationFeedback(completionFeedback);
+        else setFeedback(completionFeedback);
       } else {
-        setFeedback({
+        const completionFeedback: AdminOperationFeedback = {
           kind: result.data.applied ? "success" : "replayed",
           title: result.data.applied ? "Manual payment confirmed" : "Completed verification replayed",
           message: result.data.applied
@@ -141,7 +146,9 @@ export function ManualPaymentVerificationForm({
             href: `/admin/bookings/${result.data.bookingReference}`,
             label: "Open refreshed booking detail",
           },
-        });
+        };
+        if (onOperationFeedback) onOperationFeedback(completionFeedback);
+        else setFeedback(completionFeedback);
       }
       router.refresh();
     } catch {
