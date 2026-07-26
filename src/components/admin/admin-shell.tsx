@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 
 const links = [
+  ["/admin/operations", "Operations"],
   ["/admin/bookings", "Bookings"],
   ["/admin/payments", "Payments"],
   ["/admin/recovery", "Recovery"],
@@ -23,8 +24,8 @@ export function AdminShell({
     <>
       <div className="border-b border-[var(--border)] bg-amber-50 text-amber-950">
         <Container className="flex flex-col gap-2 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
-          <p><strong>Test mode only.</strong> Live Razorpay and production operations are not enabled.</p>
-          <span className="font-mono text-xs uppercase tracking-[0.14em]">Read-only recovery</span>
+          <p><strong>Test mode only.</strong> Controlled manual booking and inventory operations are enabled for authorized roles. Live Razorpay, automatic refunds and automatic reconciliation remain disabled.</p>
+          <span className="font-mono text-xs uppercase tracking-[0.14em]">Diagnosis-only recovery</span>
         </Container>
       </div>
       <header className="border-b border-[var(--border)] bg-[var(--surface)]">
