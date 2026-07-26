@@ -774,6 +774,26 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      create_admin_manual_booking: {
+        Args: {
+          p_check_in_date: string
+          p_customer_email: string
+          p_customer_name: string
+          p_customer_phone: string
+          p_guest_count: number
+          p_manual_provider: string
+          p_overnight_guest_count: number
+          p_request_id: string
+          p_special_requests: string
+        }
+        Returns: Database["public"]["CompositeTypes"]["admin_manual_booking_result"]
+        SetofOptions: {
+          from: "*"
+          to: "admin_manual_booking_result"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       create_admin_owner_block: {
         Args: {
           p_first_blocked_date: string
@@ -1023,6 +1043,23 @@ export type Database = {
         status: Database["public"]["Enums"]["reservation_status"] | null
         first_blocked_date: string | null
         last_blocked_date: string | null
+        applied: boolean | null
+      }
+      admin_manual_booking_result: {
+        result: string | null
+        booking_reference: string | null
+        booking_status: Database["public"]["Enums"]["booking_status"] | null
+        reservation_status:
+          | Database["public"]["Enums"]["reservation_status"]
+          | null
+        payment_provider: string | null
+        check_in_at: string | null
+        check_out_at: string | null
+        total_amount_paise: number | null
+        advance_amount_paise: number | null
+        balance_amount_paise: number | null
+        currency: string | null
+        hold_expires_at: string | null
         applied: boolean | null
       }
     }
