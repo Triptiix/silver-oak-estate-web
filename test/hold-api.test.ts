@@ -46,6 +46,34 @@ describe("hold API", () => {
       p_whatsapp: "+919999000002",
     }));
   });
+  it("ignores browser forwarding headers outside Vercel", async () => {
+    const incoming = request(input);
+    incoming.headers.set("x-vercel-forwarded-for", "203.0.113.10");
+    incoming.headers.set("x-forwarded-for", "203.0.113.11");
+    const previousVercel = process.env.VERCEL;
+    delete process.env.VERCEL;
+    try {
+      expect((await POST(incoming)).status).toBe(201);
+      expect(verifyTurnstile).toHaveBeenCalledWith(
+        input.turnstileToken,
+        "unknown",
+        "dummy",
+      );
+      expect(createHold).toHaveBeenCalledOnce();
+    } finally {
+      if (previousVercel === undefined) delete process.env.VERCEL;
+      else process.env.VERCEL = previousVercel;
+    }
+  });
+  it("finishes Turnstile verification before the fingerprint-backed booking RPC", async () => {
+    const response = await POST(request(input));
+    expect(response.status).toBe(201);
+    expect(verifyTurnstile.mock.invocationCallOrder[0])
+      .toBeLessThan(createHold.mock.invocationCallOrder[0]!);
+    expect(createHold).toHaveBeenCalledWith(expect.objectContaining({
+      p_request_fingerprint_hash: expect.stringMatching(/^[a-f0-9]{64}$/),
+    }));
+  });
   it("returns 200 for an idempotent retry", async () => { createHold.mockResolvedValue({ ...result, created: false }); expect((await POST(request(input))).status).toBe(200); });
   it("rejects malformed dates", async () => expect((await POST(request({ ...input, checkInDate: "2026-02-31" }))).status).toBe(400));
   it("rejects capacity above 30", async () => expect((await POST(request({ ...input, guestCount: 31 }))).status).toBe(400));

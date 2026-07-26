@@ -15,7 +15,14 @@ export function assertPaymentConfiguration() {
   return {
     keyId: envClient.NEXT_PUBLIC_RAZORPAY_KEY_ID,
     keySecret: envServer.RAZORPAY_KEY_SECRET,
-    webhookSecret: envServer.PAYMENT_WEBHOOK_SECRET,
   };
 }
 
+export function assertPaymentWebhookConfiguration() {
+  if (envServer.PAYMENT_PROVIDER !== "razorpay") {
+    throw new Error("Payment provider is unavailable.");
+  }
+  return {
+    webhookSecret: envServer.PAYMENT_WEBHOOK_SECRET,
+  };
+}

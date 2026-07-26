@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { assertPaymentConfiguration } from "@/lib/payments/config";
+import { assertPaymentWebhookConfiguration } from "@/lib/payments/config";
 import { hashWebhookPayload, verifyWebhookSignature } from "@/lib/payments/crypto";
 import {
   beginPaymentWebhook,
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
   let began = false;
   try {
     const rawBody = await readBoundedRawBody(request, MAX_WEBHOOK_BYTES);
-    const config = assertPaymentConfiguration();
+    const config = assertPaymentWebhookConfiguration();
     if (!verifyWebhookSignature(rawBody, signature, config.webhookSecret)) {
       return response({ received: false }, 400);
     }
