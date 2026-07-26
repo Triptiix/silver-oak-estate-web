@@ -7,11 +7,14 @@ import { orderAdminTimeline } from "./timeline";
 import type {
   AdminBookingDetail,
   AdminBookingListItem,
+  AdminActiveInventoryBlock,
   AdminListQuery,
   AdminNotificationItem,
   AdminPageResult,
   AdminPaymentItem,
 } from "./types";
+
+const MAX_ADMIN_ACTIVE_BLOCKS = 100;
 
 type UnknownRow = Record<string, unknown>;
 type BookingStatus = Database["public"]["Enums"]["booking_status"];
@@ -328,4 +331,27 @@ export async function getAdminBookingDetail(
     notifications,
     timeline,
   };
+}
+
+export async function listAdminActiveInventoryBlocks(): Promise<AdminActiveInventoryBlock[]> {
+  const client = createServiceRoleClient();
+  const { data, error } = await client
+    .from("inventory_reservations")
+    .select("id,reservation_type,status,start_at,end_at,created_at")
+    .in("reservation_type", ["owner_block", "maintenance_block"])
+    .eq("status", "active")
+    .order("start_at", { ascending: true })
+    .order("id", { ascending: true })
+    .limit(MAX_ADMIN_ACTIVE_BLOCKS);
+
+  if (error) throw new Error("admin_active_inventory_blocks_failed");
+
+  return asRows(data).map((row) => ({
+    reservationId: text(row.id),
+    reservationType: text(row.reservation_type) as AdminActiveInventoryBlock["reservationType"],
+    status: "active",
+    startAt: text(row.start_at),
+    endAt: text(row.end_at),
+    createdAt: text(row.created_at),
+  }));
 }

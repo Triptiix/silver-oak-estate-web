@@ -15,4 +15,49 @@ To build a luxury web application serving as a direct booking platform. The dire
 ## Repository Rules
 This repository strictly contains the Next.js/Supabase source code for the public website and internal admin dashboard. OTA integrations (beyond basic iCal feeds) are deferred to post-launch stages.
 
+## Completed Phase 5B backend
+- Owner inventory blocks
+- Maintenance inventory blocks
+- Release of owner blocks
+- Release of maintenance blocks
+- Manual bookings
+- Expiring manual-booking reservations
+- Audited manual-payment verification
+- Administrator mutation receipts
+- Role enforcement
+- Same-origin protection
+- Strict input and output validation
+- Least-privilege authenticated database boundary
+- Canonical phone identity
+- Bounded request bodies
+- Capability-scoped environment validation
+- Vercel-attested client-address handling
+
+## Completed Phase 5B UI
+- `/admin/operations`
+- Manual booking form
+- Inventory block creation
+- Active-block list
+- Block-release forms
+- Booking-level manual-payment verification
+- Role-gated controls
+- Idempotent request-ID lifecycle
+- Exact INR-to-paise parsing
+- Persistent results across `router.refresh()`
+- Accessible results and validation
+
+## Current limitations
+- Hosted Phase 5A and Phase 5B migrations have not been deployed
+- Hosted Supabase has no administrator account
+- No demo username or password exists
+- Production deployment has not occurred
+- Live Razorpay is not configured
+- Refund execution is not implemented
+- Automatic reconciliation is not implemented
+- Notification delivery is not implemented
+- Public premium visual redesign has not started
+- Recovery remains diagnosis-only
+
+The authoritative Phase 5B reference is [`docs/admin/phase-5b-manual-operations.md`](docs/admin/phase-5b-manual-operations.md).
+
 *See the `docs/architecture/` folder for complete technical blueprints.*

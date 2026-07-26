@@ -18,3 +18,8 @@ We will not silently apply production database migrations during every automated
 - **Preview:** Vercel preview environments per PR (using a dedicated Supabase Staging environment).
 - **Production:** Vercel Production paired with Supabase Production.
 - **Razorpay Modes:** Test credentials for Local/Preview; Live credentials for Production.
+- **Production Domain:** `https://silveroakestate.online`.
+- **Platform Attestation:** Keep Vercel system environment variables enabled in
+  Preview and Production. The application uses Vercel-provided `VERCEL=1` only
+  to decide whether forwarding headers can supply a validated client address;
+  local and non-Vercel runtimes ignore those headers.

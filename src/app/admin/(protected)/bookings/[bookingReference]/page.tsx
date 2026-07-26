@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { NotificationTable } from "@/components/admin/notification-table";
+import { ManualPaymentVerificationPanel } from "@/components/admin/operations/manual-payment-verification-panel";
+import { resolveManualPaymentCandidate } from "@/components/admin/operations/manual-payment-candidate";
 import { PaymentTable } from "@/components/admin/payment-table";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { formatAdminDateTime, formatPaise } from "@/lib/admin/format";
@@ -19,15 +21,26 @@ export default async function AdminBookingDetailPage({
 }: {
   params: Promise<{ bookingReference: string }>;
 }) {
-  await requireAdminRole("operations", "admin", "super_admin");
+  const admin = await requireAdminRole("operations", "admin", "super_admin");
   const { bookingReference } = await params;
   if (!isCanonicalBookingReference(bookingReference)) notFound();
   const detail = await getAdminBookingDetail(bookingReference);
   if (!detail) notFound();
   const { booking } = detail;
+  const latestPayment = detail.payments.at(-1);
+  const hasEligibleManualPayment = Boolean(
+    latestPayment
+    && ["manual_upi", "payment_link"].includes(latestPayment.provider)
+    && ["pending", "expired"].includes(latestPayment.status),
+  );
+  const manualPaymentCandidate = resolveManualPaymentCandidate(
+    admin.role,
+    booking.bookingReference,
+    detail.payments,
+  );
 
   return (
-    <AdminShell title={booking.bookingReference} description="Unified read-only operational diagnosis. No control on this page can confirm, revive, refund or reconcile a booking.">
+    <AdminShell title={booking.bookingReference} description="Unified operational diagnosis. Eligible manual-payment observation is role-gated; refund, revival and reconciliation controls remain absent.">
       {detail.interventionRequired && <div role="alert" className="mb-6 rounded border border-amber-300 bg-amber-50 p-4 text-amber-950"><strong>Administrator intervention required.</strong> Policy and execution remain outside Phase 5A.</div>}
       <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Fact label="Booking state" value="" state={booking.bookingStatus} />
@@ -53,6 +66,17 @@ export default async function AdminBookingDetailPage({
       </section>
 
       <section className="mt-8"><h2 className="mb-4 text-xl font-bold">Payment-attempt history</h2><PaymentTable items={detail.payments} recovery={detail.interventionRequired} /></section>
+      {(admin.role === "admin" || admin.role === "super_admin") && (
+        <ManualPaymentVerificationPanel
+          key={booking.bookingReference}
+          candidate={manualPaymentCandidate}
+        />
+      )}
+      {admin.role === "operations" && hasEligibleManualPayment && (
+        <p className="mt-4 rounded border border-stone-200 bg-stone-50 p-4 text-sm">
+          Manual-payment verification requires an admin or super-admin.
+        </p>
+      )}
       <section className="mt-8"><h2 className="mb-4 text-xl font-bold">Audit and operational timeline</h2>
         <ol className="space-y-3 border-l border-stone-300 pl-5">
           {detail.timeline.map((item, index) => <li key={`${item.kind}-${item.occurredAt}-${index}`} className="relative rounded border border-[var(--border)] bg-white p-4 before:absolute before:-left-[1.55rem] before:top-5 before:h-2 before:w-2 before:rounded-full before:bg-stone-800"><div className="flex flex-wrap items-center justify-between gap-2"><strong className="capitalize">{item.label}</strong><time className="font-mono text-xs text-stone-500">{formatAdminDateTime(item.occurredAt)}</time></div><p className="mt-1 text-xs uppercase tracking-wide text-stone-500">{item.kind}{item.state ? ` · ${item.state.replaceAll("_", " ")}` : ""}</p></li>)}

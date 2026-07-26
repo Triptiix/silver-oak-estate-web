@@ -30,7 +30,7 @@ select results_eq(
       and relkind = 'r'
       and relrowsecurity
   $$,
-  array[11::bigint],
+  array[12::bigint],
   'RLS is enabled on every Phase 1 application table'
 );
 
@@ -73,24 +73,20 @@ select results_eq(
   'an authenticated non-admin cannot read administrator rows'
 );
 
-select results_eq(
-  $$select count(*)::bigint from public.customers$$,
-  array[0::bigint],
-  'an authenticated non-admin cannot read customer data'
+select throws_ok(
+  $$select * from public.customers$$,
+  '42501',
+  null,
+  'an authenticated non-admin has no direct customer access'
 );
 
 select is(public.is_active_admin(), false, 'non-admin helper result is false');
 
-select results_eq(
-  $$
-    with changed as (
-      update public.admins set role = 'super_admin'
-      returning id
-    )
-    select count(*)::bigint from changed
-  $$,
-  array[0::bigint],
-  'a non-admin cannot elevate administrator roles'
+select throws_ok(
+  $$update public.admins set role = 'super_admin'$$,
+  '42501',
+  null,
+  'a non-admin has no direct administrator update privilege'
 );
 
 set local "request.jwt.claim.sub" = '10000000-0000-0000-0000-000000000002';
@@ -103,36 +99,31 @@ select is(
 );
 
 select results_eq(
-  $$select count(*)::bigint from public.customers$$,
-  array[1::bigint],
-  'active operations administrator receives intended private read access'
+  $$select auth_user_id from public.admins$$,
+  array['10000000-0000-0000-0000-000000000002'::uuid],
+  'active operations administrator reads only its own membership'
 );
 
-select results_eq(
-  $$
-    with changed as (
-      update public.admins set role = 'super_admin'
-      where auth_user_id = '10000000-0000-0000-0000-000000000002'
-      returning id
-    )
-    select count(*)::bigint from changed
-  $$,
-  array[0::bigint],
-  'operations cannot assign the super-admin role'
+select throws_ok(
+  $$select * from public.customers$$,
+  '42501',
+  null,
+  'active operations administrator cannot directly read customer data'
 );
 
 set local "request.jwt.claim.sub" = '10000000-0000-0000-0000-000000000003';
 
 select is(public.is_active_admin(), false, 'inactive administrator is denied');
-select results_eq(
-  $$select count(*)::bigint from public.site_settings$$,
-  array[0::bigint],
-  'inactive administrator cannot read site settings'
+select throws_ok(
+  $$select * from public.site_settings$$,
+  '42501',
+  null,
+  'inactive administrator cannot directly read site settings'
 );
 
 set local "request.jwt.claim.sub" = '10000000-0000-0000-0000-000000000004';
 
-select lives_ok(
+select throws_ok(
   $$
     insert into public.admins (auth_user_id, role, name, email)
     values (
@@ -142,13 +133,15 @@ select lives_ok(
       'provision@example.test'
     )
   $$,
-  'super-admin can provision an administrator membership'
+  '42501',
+  null,
+  'super-admin cannot provision administrators through PostgREST'
 );
 
 select results_eq(
-  $$select count(*)::bigint from public.site_settings$$,
-  array[5::bigint],
-  'active super-admin can read private site settings'
+  $$select auth_user_id from public.admins$$,
+  array['10000000-0000-0000-0000-000000000004'::uuid],
+  'super-admin direct access remains limited to its own membership'
 );
 
 select * from finish();

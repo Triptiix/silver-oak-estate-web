@@ -81,6 +81,10 @@ describe("server-side administrator authorization", () => {
       authUserId: "auth-user-1",
       role: "operations",
     });
+    expect(client.from).toHaveBeenCalledWith("admins");
+    expect(client.from().select).toHaveBeenCalledWith(
+      "id, auth_user_id, role, name, email",
+    );
     expect(client.from().eq).toHaveBeenCalledWith("is_active", true);
   });
 

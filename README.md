@@ -8,7 +8,9 @@ Please review the extensive architecture documentation before contributing:
 - [System Architecture](docs/architecture/01-system-architecture.md)
 - [Project Context](PROJECT_CONTEXT.md)
 
-**Current Implementation Status:** Phase 5A read-only administrator booking and payment operations over the Phase 4 test-mode foundation.
+**Current Implementation Status:** Phase 5B controlled administrator manual
+operations (inventory blocks, manual bookings, manual-payment verification) over
+the Phase 5A read-only visibility layer and the Phase 4 test-mode foundation.
 **IMPORTANT:** Production payment configuration, automatic refunds, OTA synchronization, and production deployment are **NOT** implemented. This codebase is not production-ready.
 
 Temporary holds expire after the private `booking_hold_minutes` setting (10
@@ -129,6 +131,9 @@ operational procedure.
   design.
 - See [Phase 5A Admin Operations](docs/admin/phase-5a-admin-operations.md) for
   authenticated booking, payment, recovery, audit, and notification visibility.
+- See [Phase 5B Manual Operations](docs/admin/phase-5b-manual-operations.md) for
+  the role matrix, mutation architecture, idempotency model, security
+  boundaries, and rollback boundary of the six administrator manual operations.
 
 ## Available Commands
 
@@ -176,9 +181,28 @@ implemented.
 
 Active `operations`, `admin`, and `super_admin` members can access protected,
 server-rendered views at `/admin/bookings`, `/admin/payments`,
-`/admin/recovery`, and `/admin/notifications`. Recovery is diagnosis-only:
-Phase 5A exposes no route or control that confirms, revives, refunds, or
-financially overrides a booking or payment.
+`/admin/recovery`, and `/admin/notifications`. Booking, payment, notification,
+and recovery data is loaded through protected server-side read models.
+Eligible booking-detail pages may expose role-gated manual-payment verification
+for `admin` and `super_admin`.
+
+## Phase 5B Admin Manual Operations
+
+Phase 5B adds six controlled administrator mutations at `/admin/operations` and
+on the booking detail page: create and release owner blocks, create and release
+maintenance blocks, create manual bookings, and verify manual payments.
+
+`operations` may create manual bookings and create or release maintenance
+blocks. Owner blocks and manual-payment verification require `admin` or
+`super_admin`. UI hiding is not the authorization boundary — every mutation is
+enforced independently by the Server Action and by the PostgreSQL function.
+
+Recovery remains diagnosis-only: it exposes no route or control that refunds,
+revives, or financially overrides a booking or payment. Automatic refunds and
+automatic reconciliation are still not implemented, and a notification-outbox
+row is never presented as proof of delivery.
+
+See [Phase 5B Manual Operations](docs/admin/phase-5b-manual-operations.md).
 
 ## Continuous Integration
 

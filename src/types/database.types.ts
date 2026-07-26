@@ -34,6 +34,83 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_operation_events: {
+        Row: {
+          action_type: Database["public"]["Enums"]["admin_operation_action"]
+          actor_admin_id: string
+          booking_id: string | null
+          created_at: string
+          id: string
+          internal_note: string | null
+          inventory_reservation_id: string | null
+          payment_id: string | null
+          previous_state: string | null
+          reason_category: string | null
+          request_fingerprint: string
+          request_id: string
+          resulting_state: string
+        }
+        Insert: {
+          action_type: Database["public"]["Enums"]["admin_operation_action"]
+          actor_admin_id: string
+          booking_id?: string | null
+          created_at?: string
+          id?: string
+          internal_note?: string | null
+          inventory_reservation_id?: string | null
+          payment_id?: string | null
+          previous_state?: string | null
+          reason_category?: string | null
+          request_fingerprint: string
+          request_id: string
+          resulting_state: string
+        }
+        Update: {
+          action_type?: Database["public"]["Enums"]["admin_operation_action"]
+          actor_admin_id?: string
+          booking_id?: string | null
+          created_at?: string
+          id?: string
+          internal_note?: string | null
+          inventory_reservation_id?: string | null
+          payment_id?: string | null
+          previous_state?: string | null
+          reason_category?: string | null
+          request_fingerprint?: string
+          request_id?: string
+          resulting_state?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_operation_events_actor_admin_id_fkey"
+            columns: ["actor_admin_id"]
+            isOneToOne: false
+            referencedRelation: "admins"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_operation_events_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_operation_events_inventory_reservation_id_fkey"
+            columns: ["inventory_reservation_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_reservations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_operation_events_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admins: {
         Row: {
           auth_user_id: string
@@ -363,12 +440,18 @@ export type Database = {
           checkout_started_at: string | null
           created_at: string
           currency: string
+          evidence_descriptor: string | null
           failed_at: string | null
           failure_code: string | null
           failure_reason: string | null
           id: string
           idempotency_key: string
           last_provider_event_id: string | null
+          manual_reference: string | null
+          manual_verified_at: string | null
+          observed_amount_paise: number | null
+          observed_currency: string | null
+          operator_note: string | null
           order_created_at: string | null
           provider: string
           provider_order_id: string | null
@@ -381,6 +464,7 @@ export type Database = {
           updated_at: string
           verification_source: string | null
           verified_at: string | null
+          verified_by_admin_id: string | null
         }
         Insert: {
           amount_paise: number
@@ -391,12 +475,18 @@ export type Database = {
           checkout_started_at?: string | null
           created_at?: string
           currency?: string
+          evidence_descriptor?: string | null
           failed_at?: string | null
           failure_code?: string | null
           failure_reason?: string | null
           id?: string
           idempotency_key: string
           last_provider_event_id?: string | null
+          manual_reference?: string | null
+          manual_verified_at?: string | null
+          observed_amount_paise?: number | null
+          observed_currency?: string | null
+          operator_note?: string | null
           order_created_at?: string | null
           provider: string
           provider_order_id?: string | null
@@ -409,6 +499,7 @@ export type Database = {
           updated_at?: string
           verification_source?: string | null
           verified_at?: string | null
+          verified_by_admin_id?: string | null
         }
         Update: {
           amount_paise?: number
@@ -419,12 +510,18 @@ export type Database = {
           checkout_started_at?: string | null
           created_at?: string
           currency?: string
+          evidence_descriptor?: string | null
           failed_at?: string | null
           failure_code?: string | null
           failure_reason?: string | null
           id?: string
           idempotency_key?: string
           last_provider_event_id?: string | null
+          manual_reference?: string | null
+          manual_verified_at?: string | null
+          observed_amount_paise?: number | null
+          observed_currency?: string | null
+          operator_note?: string | null
           order_created_at?: string | null
           provider?: string
           provider_order_id?: string | null
@@ -437,6 +534,7 @@ export type Database = {
           updated_at?: string
           verification_source?: string | null
           verified_at?: string | null
+          verified_by_admin_id?: string | null
         }
         Relationships: [
           {
@@ -444,6 +542,13 @@ export type Database = {
             columns: ["booking_id"]
             isOneToOne: false
             referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_verified_by_admin_id_fkey"
+            columns: ["verified_by_admin_id"]
+            isOneToOne: false
+            referencedRelation: "admins"
             referencedColumns: ["id"]
           },
         ]
@@ -659,6 +764,58 @@ export type Database = {
         }
         Returns: undefined
       }
+      create_admin_maintenance_block: {
+        Args: {
+          p_first_blocked_date: string
+          p_internal_note?: string
+          p_last_blocked_date: string
+          p_reason_category: string
+          p_request_id: string
+        }
+        Returns: Database["public"]["CompositeTypes"]["admin_inventory_block_result"]
+        SetofOptions: {
+          from: "*"
+          to: "admin_inventory_block_result"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      create_admin_manual_booking: {
+        Args: {
+          p_check_in_date: string
+          p_customer_email: string
+          p_customer_name: string
+          p_customer_phone: string
+          p_guest_count: number
+          p_manual_provider: string
+          p_overnight_guest_count: number
+          p_request_id: string
+          p_special_requests: string
+        }
+        Returns: Database["public"]["CompositeTypes"]["admin_manual_booking_result"]
+        SetofOptions: {
+          from: "*"
+          to: "admin_manual_booking_result"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      create_admin_owner_block: {
+        Args: {
+          p_first_blocked_date: string
+          p_internal_note?: string
+          p_last_blocked_date: string
+          p_reason_category: string
+          p_request_id: string
+        }
+        Returns: Database["public"]["CompositeTypes"]["admin_inventory_block_result"]
+        SetofOptions: {
+          from: "*"
+          to: "admin_inventory_block_result"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       create_booking_hold: {
         Args: {
           p_check_in_date: string
@@ -734,6 +891,36 @@ export type Database = {
         }
         Returns: Json
       }
+      release_admin_maintenance_block: {
+        Args: {
+          p_internal_note?: string
+          p_inventory_reservation_id: string
+          p_reason_category: string
+          p_request_id: string
+        }
+        Returns: Database["public"]["CompositeTypes"]["admin_inventory_block_result"]
+        SetofOptions: {
+          from: "*"
+          to: "admin_inventory_block_result"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      release_admin_owner_block: {
+        Args: {
+          p_internal_note?: string
+          p_inventory_reservation_id: string
+          p_reason_category: string
+          p_request_id: string
+        }
+        Returns: Database["public"]["CompositeTypes"]["admin_inventory_block_result"]
+        SetofOptions: {
+          from: "*"
+          to: "admin_inventory_block_result"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       release_booking_hold: {
         Args: { p_booking_id: string; p_hold_token_nonce: string }
         Returns: boolean
@@ -807,8 +994,35 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      verify_admin_manual_payment: {
+        Args: {
+          p_booking_reference: string
+          p_evidence_descriptor?: string
+          p_external_reference: string
+          p_observed_amount_paise: number
+          p_observed_currency: string
+          p_operator_note?: string
+          p_request_id: string
+        }
+        Returns: Database["public"]["CompositeTypes"]["admin_manual_payment_result"]
+        SetofOptions: {
+          from: "*"
+          to: "admin_manual_payment_result"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
+      admin_operation_action:
+        | "owner_block_created"
+        | "maintenance_block_created"
+        | "owner_block_released"
+        | "maintenance_block_released"
+        | "manual_booking_created"
+        | "manual_booking_expired"
+        | "manual_payment_verified"
+        | "manual_payment_reconciliation_required"
       admin_role: "super_admin" | "admin" | "operations"
       booking_status:
         | "draft"
@@ -828,6 +1042,7 @@ export type Database = {
         | "authorized"
         | "captured"
         | "verified"
+        | "manually_verified"
         | "failed"
         | "expired"
         | "refund_pending"
@@ -846,7 +1061,46 @@ export type Database = {
       webhook_processing_status: "pending" | "processed" | "failed"
     }
     CompositeTypes: {
-      [_ in never]: never
+      admin_inventory_block_result: {
+        result: string | null
+        reservation_type: Database["public"]["Enums"]["reservation_type"] | null
+        status: Database["public"]["Enums"]["reservation_status"] | null
+        first_blocked_date: string | null
+        last_blocked_date: string | null
+        applied: boolean | null
+      }
+      admin_manual_booking_result: {
+        result: string | null
+        booking_reference: string | null
+        booking_status: Database["public"]["Enums"]["booking_status"] | null
+        reservation_status:
+          | Database["public"]["Enums"]["reservation_status"]
+          | null
+        payment_provider: string | null
+        check_in_at: string | null
+        check_out_at: string | null
+        total_amount_paise: number | null
+        advance_amount_paise: number | null
+        balance_amount_paise: number | null
+        currency: string | null
+        hold_expires_at: string | null
+        applied: boolean | null
+      }
+      admin_manual_payment_result: {
+        result: string | null
+        booking_reference: string | null
+        booking_status: Database["public"]["Enums"]["booking_status"] | null
+        reservation_type: Database["public"]["Enums"]["reservation_type"] | null
+        reservation_status:
+          | Database["public"]["Enums"]["reservation_status"]
+          | null
+        payment_status: Database["public"]["Enums"]["payment_status"] | null
+        manual_provider: string | null
+        expected_amount_paise: number | null
+        observed_amount_paise: number | null
+        currency: string | null
+        applied: boolean | null
+      }
     }
   }
 }
@@ -974,6 +1228,16 @@ export const Constants = {
   },
   public: {
     Enums: {
+      admin_operation_action: [
+        "owner_block_created",
+        "maintenance_block_created",
+        "owner_block_released",
+        "maintenance_block_released",
+        "manual_booking_created",
+        "manual_booking_expired",
+        "manual_payment_verified",
+        "manual_payment_reconciliation_required",
+      ],
       admin_role: ["super_admin", "admin", "operations"],
       booking_status: [
         "draft",
@@ -994,6 +1258,7 @@ export const Constants = {
         "authorized",
         "captured",
         "verified",
+        "manually_verified",
         "failed",
         "expired",
         "refund_pending",

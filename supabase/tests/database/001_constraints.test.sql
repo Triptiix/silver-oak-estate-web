@@ -63,7 +63,7 @@ select throws_ok(
     insert into public.inventory_reservations (
       property_id, reservation_type, status, start_at, end_at, source
     )
-    select property_id, 'manual_booking', 'active',
+    select property_id, 'maintenance_block', 'active',
       '2026-08-04 12:00+00', '2026-08-04 13:00+00', 'test'
     from test_context
   $$,

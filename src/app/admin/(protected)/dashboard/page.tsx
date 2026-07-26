@@ -7,9 +7,10 @@ export const metadata = {
 
 export default function AdminDashboardPage() {
   return (
-    <AdminShell title="Operations dashboard" description="Authenticated test-mode visibility across bookings, payments, recovery and the notification outbox.">
+    <AdminShell title="Operations dashboard" description="Authenticated test-mode visibility and role-gated manual operations.">
       <div className="grid gap-4 md:grid-cols-2">
         {[
+          ["/admin/operations", "Controlled operations", "Create manual bookings and manage complete-property inventory blocks within your role."],
           ["/admin/bookings", "Booking operations", "Inspect bookings, holds, reservations and the unified audit timeline."],
           ["/admin/payments", "Payment attempts", "Review provider references, lifecycle state and verification timestamps."],
           ["/admin/recovery", "Recovery queue", "Diagnose refund_pending and reconciliation_required without mutation controls."],

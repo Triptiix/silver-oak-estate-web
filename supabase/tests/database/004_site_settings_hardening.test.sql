@@ -167,38 +167,43 @@ reset role;
 set local role authenticated;
 set local "request.jwt.claim.sub" = '20000000-0000-0000-0000-000000000001';
 
-select results_eq(
-  $$select count(*)::bigint from public.site_settings$$,
-  array[0::bigint],
-  'authenticated non-admin users cannot read settings'
+select throws_ok(
+  $$select * from public.site_settings$$,
+  '42501',
+  null,
+  'authenticated non-admin users have no direct settings access'
 );
 
 set local "request.jwt.claim.sub" = '20000000-0000-0000-0000-000000000004';
 
-select results_eq(
-  $$select count(*)::bigint from public.site_settings$$,
-  array[0::bigint],
-  'inactive administrators cannot read settings'
+select throws_ok(
+  $$select * from public.site_settings$$,
+  '42501',
+  null,
+  'inactive administrators have no direct settings access'
 );
 
 set local "request.jwt.claim.sub" = '20000000-0000-0000-0000-000000000002';
 
-select results_eq(
-  $$select count(*)::bigint from public.site_settings where not is_sensitive$$,
-  array[5::bigint],
-  'operations can read non-sensitive settings'
+select throws_ok(
+  $$select setting_key from public.site_settings where not is_sensitive$$,
+  '42501',
+  null,
+  'operations cannot directly read non-sensitive settings'
 );
 
-select results_eq(
-  $$select count(*)::bigint from public.site_settings where is_sensitive$$,
-  array[0::bigint],
-  'operations cannot read sensitive settings'
+select throws_ok(
+  $$select setting_key from public.site_settings where is_sensitive$$,
+  '42501',
+  null,
+  'operations cannot directly read sensitive settings'
 );
 
-select results_eq(
-  $$select count(*)::bigint from (select * from public.site_settings) as visible where is_sensitive$$,
-  array[0::bigint],
-  'operations SELECT star cannot expose sensitive rows'
+select throws_ok(
+  $$select * from public.site_settings$$,
+  '42501',
+  null,
+  'operations SELECT star is denied'
 );
 
 select throws_ok(
@@ -231,22 +236,25 @@ select throws_ok(
 
 set local "request.jwt.claim.sub" = '20000000-0000-0000-0000-000000000003';
 
-select results_eq(
-  $$select count(*)::bigint from public.site_settings where not is_sensitive$$,
-  array[5::bigint],
-  'admin can read non-sensitive settings'
+select throws_ok(
+  $$select setting_key from public.site_settings where not is_sensitive$$,
+  '42501',
+  null,
+  'admin cannot directly read non-sensitive settings'
 );
 
-select results_eq(
-  $$select count(*)::bigint from public.site_settings where is_sensitive$$,
-  array[0::bigint],
-  'admin cannot read sensitive settings'
+select throws_ok(
+  $$select setting_key from public.site_settings where is_sensitive$$,
+  '42501',
+  null,
+  'admin cannot directly read sensitive settings'
 );
 
-select results_eq(
-  $$select count(*)::bigint from (select * from public.site_settings) as visible where is_sensitive$$,
-  array[0::bigint],
-  'admin SELECT star cannot expose sensitive rows'
+select throws_ok(
+  $$select * from public.site_settings$$,
+  '42501',
+  null,
+  'admin SELECT star is denied'
 );
 
 select lives_ok(
@@ -254,17 +262,21 @@ select lives_ok(
   'admin can create a non-sensitive setting'
 );
 
+reset role;
 select results_eq(
   $$select updated_by from public.site_settings where setting_key = 'admin_setting'$$,
   array['20000000-0000-0000-0000-000000000003'::uuid],
   'admin create binds updated_by to auth.uid()'
 );
 
+set local role authenticated;
+set local "request.jwt.claim.sub" = '20000000-0000-0000-0000-000000000003';
 select lives_ok(
   $$select public.upsert_non_sensitive_setting('admin_setting', '"updated"'::jsonb, 'Admin-updated setting')$$,
   'admin can update a non-sensitive setting'
 );
 
+reset role;
 select results_eq(
   $$select setting_value::text from public.site_settings where setting_key = 'admin_setting'$$,
   array['"updated"'::text],
@@ -277,6 +289,8 @@ select results_eq(
   'admin update binds updated_by to auth.uid()'
 );
 
+set local role authenticated;
+set local "request.jwt.claim.sub" = '20000000-0000-0000-0000-000000000003';
 select throws_ok(
   $$insert into public.site_settings (setting_key, setting_value, is_sensitive) values ('admin_direct_sensitive', '"forbidden"'::jsonb, true)$$,
   '42501',
@@ -365,16 +379,18 @@ select results_eq(
 set local role authenticated;
 set local "request.jwt.claim.sub" = '20000000-0000-0000-0000-000000000005';
 
-select results_eq(
-  $$select count(*)::bigint from public.site_settings$$,
-  array[7::bigint],
-  'super-admin can read both sensitive and non-sensitive settings'
+select throws_ok(
+  $$select * from public.site_settings$$,
+  '42501',
+  null,
+  'super-admin has no direct broad settings read'
 );
 
-select results_eq(
-  $$select count(*)::bigint from public.site_settings where is_sensitive$$,
-  array[1::bigint],
-  'super-admin can read sensitive settings'
+select throws_ok(
+  $$select setting_key from public.site_settings where is_sensitive$$,
+  '42501',
+  null,
+  'super-admin has no direct sensitive settings read'
 );
 
 select lives_ok(
@@ -382,6 +398,7 @@ select lives_ok(
   'super-admin can update a sensitive setting'
 );
 
+reset role;
 select results_eq(
   $$select updated_by from public.site_settings where setting_key = 'sensitive_test'$$,
   array['20000000-0000-0000-0000-000000000005'::uuid],
@@ -394,23 +411,29 @@ select results_eq(
   'super-admin can replace a sensitive value'
 );
 
+set local role authenticated;
+set local "request.jwt.claim.sub" = '20000000-0000-0000-0000-000000000005';
 select lives_ok(
   $$select public.upsert_sensitive_setting('super_created_sensitive', '"super-secret"'::jsonb, 'Created by super-admin')$$,
   'super-admin can create a sensitive setting'
 );
 
+reset role;
 select results_eq(
   $$select updated_by from public.site_settings where setting_key = 'super_created_sensitive'$$,
   array['20000000-0000-0000-0000-000000000005'::uuid],
   'super-admin create binds updated_by to auth.uid()'
 );
 
+set local role authenticated;
+set local "request.jwt.claim.sub" = '20000000-0000-0000-0000-000000000005';
 select results_eq(
   $$select public.delete_setting('sensitive_test')$$,
   array[true],
   'super-admin can delete a sensitive setting'
 );
 
+reset role;
 select results_eq(
   $$select count(*)::bigint from public.site_settings where setting_key = 'sensitive_test'$$,
   array[0::bigint],

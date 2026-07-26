@@ -111,7 +111,7 @@ jobs:
       - name: Verify generated database types
         run: git diff --exit-code -- src/types/database.types.ts
 
-      - name: Test booking concurrency
+      - name: Test booking and administrator concurrency
         run: npm run test:concurrency
 
       - name: Check whitespace

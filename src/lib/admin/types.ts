@@ -99,3 +99,12 @@ export type AdminPageResult<T> = {
   total: number;
   totalPages: number;
 };
+
+export type AdminActiveInventoryBlock = {
+  reservationId: string;
+  reservationType: "owner_block" | "maintenance_block";
+  status: "active";
+  startAt: string;
+  endAt: string;
+  createdAt: string;
+};
