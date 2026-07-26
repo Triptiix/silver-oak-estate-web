@@ -758,6 +758,38 @@ export type Database = {
         }
         Returns: undefined
       }
+      create_admin_maintenance_block: {
+        Args: {
+          p_first_blocked_date: string
+          p_internal_note?: string
+          p_last_blocked_date: string
+          p_reason_category: string
+          p_request_id: string
+        }
+        Returns: Database["public"]["CompositeTypes"]["admin_inventory_block_result"]
+        SetofOptions: {
+          from: "*"
+          to: "admin_inventory_block_result"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      create_admin_owner_block: {
+        Args: {
+          p_first_blocked_date: string
+          p_internal_note?: string
+          p_last_blocked_date: string
+          p_reason_category: string
+          p_request_id: string
+        }
+        Returns: Database["public"]["CompositeTypes"]["admin_inventory_block_result"]
+        SetofOptions: {
+          from: "*"
+          to: "admin_inventory_block_result"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       create_booking_hold: {
         Args: {
           p_check_in_date: string
@@ -832,6 +864,36 @@ export type Database = {
           p_provider: string
         }
         Returns: Json
+      }
+      release_admin_maintenance_block: {
+        Args: {
+          p_internal_note?: string
+          p_inventory_reservation_id: string
+          p_reason_category: string
+          p_request_id: string
+        }
+        Returns: Database["public"]["CompositeTypes"]["admin_inventory_block_result"]
+        SetofOptions: {
+          from: "*"
+          to: "admin_inventory_block_result"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      release_admin_owner_block: {
+        Args: {
+          p_internal_note?: string
+          p_inventory_reservation_id: string
+          p_reason_category: string
+          p_request_id: string
+        }
+        Returns: Database["public"]["CompositeTypes"]["admin_inventory_block_result"]
+        SetofOptions: {
+          from: "*"
+          to: "admin_inventory_block_result"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       release_booking_hold: {
         Args: { p_booking_id: string; p_hold_token_nonce: string }
@@ -955,7 +1017,14 @@ export type Database = {
       webhook_processing_status: "pending" | "processed" | "failed"
     }
     CompositeTypes: {
-      [_ in never]: never
+      admin_inventory_block_result: {
+        result: string | null
+        reservation_type: Database["public"]["Enums"]["reservation_type"] | null
+        status: Database["public"]["Enums"]["reservation_status"] | null
+        first_blocked_date: string | null
+        last_blocked_date: string | null
+        applied: boolean | null
+      }
     }
   }
 }
