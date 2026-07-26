@@ -449,6 +449,8 @@ export type Database = {
           last_provider_event_id: string | null
           manual_reference: string | null
           manual_verified_at: string | null
+          observed_amount_paise: number | null
+          observed_currency: string | null
           operator_note: string | null
           order_created_at: string | null
           provider: string
@@ -482,6 +484,8 @@ export type Database = {
           last_provider_event_id?: string | null
           manual_reference?: string | null
           manual_verified_at?: string | null
+          observed_amount_paise?: number | null
+          observed_currency?: string | null
           operator_note?: string | null
           order_created_at?: string | null
           provider: string
@@ -515,6 +519,8 @@ export type Database = {
           last_provider_event_id?: string | null
           manual_reference?: string | null
           manual_verified_at?: string | null
+          observed_amount_paise?: number | null
+          observed_currency?: string | null
           operator_note?: string | null
           order_created_at?: string | null
           provider?: string
@@ -988,6 +994,24 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      verify_admin_manual_payment: {
+        Args: {
+          p_booking_reference: string
+          p_evidence_descriptor?: string
+          p_external_reference: string
+          p_observed_amount_paise: number
+          p_observed_currency: string
+          p_operator_note?: string
+          p_request_id: string
+        }
+        Returns: Database["public"]["CompositeTypes"]["admin_manual_payment_result"]
+        SetofOptions: {
+          from: "*"
+          to: "admin_manual_payment_result"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       admin_operation_action:
@@ -1060,6 +1084,21 @@ export type Database = {
         balance_amount_paise: number | null
         currency: string | null
         hold_expires_at: string | null
+        applied: boolean | null
+      }
+      admin_manual_payment_result: {
+        result: string | null
+        booking_reference: string | null
+        booking_status: Database["public"]["Enums"]["booking_status"] | null
+        reservation_type: Database["public"]["Enums"]["reservation_type"] | null
+        reservation_status:
+          | Database["public"]["Enums"]["reservation_status"]
+          | null
+        payment_status: Database["public"]["Enums"]["payment_status"] | null
+        manual_provider: string | null
+        expected_amount_paise: number | null
+        observed_amount_paise: number | null
+        currency: string | null
         applied: boolean | null
       }
     }
