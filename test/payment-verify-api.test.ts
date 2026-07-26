@@ -17,14 +17,14 @@ vi.mock("@/lib/payments/razorpay", () => ({
 import { NextRequest } from "next/server";
 import { POST } from "@/app/api/payments/verify/route";
 
-function request(overrides: Record<string, string> = {}) {
+function request(overrides: Record<string, string> = {}, origin: string | null = "http://localhost:3000") {
   const orderId = overrides.razorpay_order_id ?? "order_test_1";
   const paymentId = overrides.razorpay_payment_id ?? "pay_test_1";
   const signature = overrides.razorpay_signature
     ?? createHmac("sha256", "private-payment-secret").update(`${orderId}|${paymentId}`).digest("hex");
   return new NextRequest("http://localhost/api/payments/verify", {
     method: "POST",
-    headers: { "content-type": "application/json", origin: "http://localhost:3000" },
+    headers: { "content-type": "application/json", ...(origin ? { origin } : {}) },
     body: JSON.stringify({
       razorpay_order_id: orderId,
       razorpay_payment_id: paymentId,
@@ -84,6 +84,16 @@ describe("payment verification API", () => {
       captured: true,
     });
     expect((await POST(request())).status).toBe(400);
+    expect(mocks.finalizeVerifiedPayment).not.toHaveBeenCalled();
+  });
+
+  it.each([null, "https://evil.example"])("rejects origin %s before parsing or payment work", async (origin) => {
+    const incoming = request({}, origin);
+    const json = vi.spyOn(incoming, "json");
+    const response = await POST(incoming);
+    expect(response.status).toBe(403);
+    expect(json).not.toHaveBeenCalled();
+    expect(mocks.fetchPayment).not.toHaveBeenCalled();
     expect(mocks.finalizeVerifiedPayment).not.toHaveBeenCalled();
   });
 

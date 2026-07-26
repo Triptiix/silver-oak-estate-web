@@ -8,11 +8,11 @@ import { createRequestFingerprint, getTrustedClientAddress } from "@/lib/booking
 import { signHoldToken } from "@/lib/booking/hold-token";
 import { HOLD_COOKIE_NAME, holdCookieOptions } from "@/lib/booking/hold-cookie";
 import { holdRequestSchema, normalizePhone } from "@/lib/booking/schemas";
-import { hasAllowedOrigin } from "@/lib/booking/security";
 import { verifyTurnstile } from "@/lib/booking/turnstile";
+import { hasTrustedMutationOrigin } from "@/lib/security/mutation-origin";
 
 export async function POST(request: NextRequest) {
-  if (!hasAllowedOrigin(request, envClient.NEXT_PUBLIC_SITE_URL)) {
+  if (!hasTrustedMutationOrigin(request, envClient.NEXT_PUBLIC_SITE_URL)) {
     return bookingError(403, "ORIGIN_REJECTED", "Request origin was rejected.");
   }
   const parsed = holdRequestSchema.safeParse(await request.json().catch(() => null));

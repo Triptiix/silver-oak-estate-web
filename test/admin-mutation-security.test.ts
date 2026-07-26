@@ -1,4 +1,5 @@
 // @vitest-environment node
+import { readFileSync } from "node:fs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -32,6 +33,12 @@ describe("administrator mutation request integrity", () => {
         code: "invalid_origin",
       });
     }
+  });
+
+  it("uses the shared strict mutation-origin policy", () => {
+    const source = readFileSync("src/lib/admin/request-integrity.ts", "utf8");
+    expect(source).toContain("@/lib/security/mutation-origin");
+    expect(source).toContain("isTrustedMutationOrigin");
   });
 
   it("checks origin before querying administrator membership", async () => {

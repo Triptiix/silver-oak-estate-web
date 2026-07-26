@@ -38,7 +38,7 @@ const prepared = {
   reused: false,
 };
 
-function request(origin = "http://localhost:3000") {
+function request(origin: string | null = "http://localhost:3000") {
   const token = signHoldToken({
     v: 1,
     bookingId: "22000000-0000-4000-8000-000000000001",
@@ -47,7 +47,7 @@ function request(origin = "http://localhost:3000") {
   }, "dummy");
   return new NextRequest("http://localhost/api/payments/order", {
     method: "POST",
-    headers: { origin, cookie: `soe_booking_hold=${token}` },
+    headers: { ...(origin ? { origin } : {}), cookie: `soe_booking_hold=${token}` },
   });
 }
 
@@ -113,6 +113,13 @@ describe("payment order API", () => {
     expect((await POST(withoutCookie)).status).toBe(400);
     expect((await POST(request("https://evil.example"))).status).toBe(403);
     expect(mocks.preparePaymentOrder).not.toHaveBeenCalled();
+  });
+
+  it.each([null, "https://evil.example"])("rejects origin %s before hold or provider work", async (origin) => {
+    const response = await POST(request(origin));
+    expect(response.status).toBe(403);
+    expect(mocks.preparePaymentOrder).not.toHaveBeenCalled();
+    expect(mocks.createOrder).not.toHaveBeenCalled();
   });
 
   it("keeps an ambiguous timeout on the same attempt for safe retry", async () => {

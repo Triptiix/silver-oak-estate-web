@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { bookingError } from "@/lib/booking/api-errors";
-import { hasAllowedOrigin } from "@/lib/booking/security";
 import { HOLD_COOKIE_NAME } from "@/lib/booking/hold-cookie";
 import { verifyHoldToken } from "@/lib/booking/hold-token";
 import { envClient } from "@/lib/env/client";
@@ -13,11 +12,12 @@ import {
   preparePaymentOrder,
 } from "@/lib/payments/database";
 import { createRazorpayGateway, PaymentProviderError } from "@/lib/payments/razorpay";
+import { hasTrustedMutationOrigin } from "@/lib/security/mutation-origin";
 
 const noStoreHeaders = { "Cache-Control": "no-store, max-age=0" };
 
 export async function POST(request: NextRequest) {
-  if (!hasAllowedOrigin(request, envClient.NEXT_PUBLIC_SITE_URL)) {
+  if (!hasTrustedMutationOrigin(request, envClient.NEXT_PUBLIC_SITE_URL)) {
     return bookingError(403, "ORIGIN_REJECTED", "Request origin was rejected.");
   }
 

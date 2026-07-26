@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { bookingError } from "@/lib/booking/api-errors";
-import { hasAllowedOrigin } from "@/lib/booking/security";
 import { HOLD_COOKIE_NAME, holdCookieOptions } from "@/lib/booking/hold-cookie";
 import { envClient } from "@/lib/env/client";
 import { envServer } from "@/lib/env/server";
@@ -9,6 +8,7 @@ import { verifyCheckoutSignature } from "@/lib/payments/crypto";
 import { finalizeVerifiedPayment } from "@/lib/payments/database";
 import { createRazorpayGateway } from "@/lib/payments/razorpay";
 import { verifyPaymentRequestSchema } from "@/lib/payments/schemas";
+import { hasTrustedMutationOrigin } from "@/lib/security/mutation-origin";
 
 function clearHoldCookie(response: NextResponse) {
   response.cookies.set(HOLD_COOKIE_NAME, "", {
@@ -19,7 +19,7 @@ function clearHoldCookie(response: NextResponse) {
 }
 
 export async function POST(request: NextRequest) {
-  if (!hasAllowedOrigin(request, envClient.NEXT_PUBLIC_SITE_URL)) {
+  if (!hasTrustedMutationOrigin(request, envClient.NEXT_PUBLIC_SITE_URL)) {
     return bookingError(403, "ORIGIN_REJECTED", "Request origin was rejected.");
   }
 
@@ -67,4 +67,3 @@ export async function POST(request: NextRequest) {
     return bookingError(500, "SERVER_ERROR", "Payment verification is still pending.");
   }
 }
-
