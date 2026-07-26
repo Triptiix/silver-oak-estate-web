@@ -20,15 +20,53 @@ function getContrast(color1: [number, number, number], color2: [number, number, 
 }
 
 // Simple parser for our hex colors to rgb
-function hexToRgb(hex: string): [number, number, number] {
-  hex = hex.replace("#", "");
+function parseColor(val: string): [number, number, number] {
+  if (val === "transparent") return [0, 0, 0];
+  if (val.startsWith("rgba")) {
+    const match = val.match(/rgba\((\d+),\s*(\d+),\s*(\d+)/);
+    if (match) return [parseInt(match[1]), parseInt(match[2]), parseInt(match[3])];
+  }
+  let hex = val.replace("#", "").trim();
   if (hex.length === 3) {
     hex = hex.split("").map(c => c + c).join("");
   }
   const r = parseInt(hex.substring(0, 2), 16);
   const g = parseInt(hex.substring(2, 4), 16);
   const b = parseInt(hex.substring(4, 6), 16);
+  if (isNaN(r) || isNaN(g) || isNaN(b)) {
+    throw new Error(`Invalid color value: ${val}`);
+  }
   return [r, g, b];
+}
+
+// Extract variables from a block
+function parseRules(css: string): Record<string, string> {
+  const rules: Record<string, string> = {};
+  const regex = /(--[a-zA-Z0-9-]+)\s*:\s*([^;]+);/g;
+  let match;
+  while ((match = regex.exec(css)) !== null) {
+    rules[match[1]] = match[2].trim();
+  }
+  return rules;
+}
+
+// Recursive var resolution
+function resolveVar(val: string, scope: Record<string, string>): string {
+  let current = val;
+  let iterations = 0;
+  while (current.includes("var(") && iterations < 20) {
+    const match = current.match(/var\((--[a-zA-Z0-9-]+)\)/);
+    if (match) {
+      const varName = match[1];
+      const resolved = scope[varName];
+      if (!resolved) {
+        throw new Error(`Cannot resolve variable ${varName} inside ${val}`);
+      }
+      current = current.replace(match[0], resolved);
+    }
+    iterations++;
+  }
+  return current.trim();
 }
 
 describe("Estate UI Token Contract", () => {
@@ -72,19 +110,42 @@ describe("Estate UI Token Contract", () => {
     expect(missing).toEqual([]);
   });
 
-  it("verifies shared typography, spacing, container and motion tokens are declared in the root foundation rather than only in the dark block", () => {
+  it("verifies shared typography, spacing, section spacing, container, radius, shadow, duration and easing tokens are in :root and NOT in dark", () => {
     const rootBlockRegex = /:root\s*{([\s\S]*?)}/;
     const rootMatch = cssContent.match(rootBlockRegex);
     expect(rootMatch).not.toBeNull();
     const rootTokens = rootMatch![1];
 
-    expect(rootTokens).toContain("--soe-text-base:");
-    expect(rootTokens).toContain("--soe-space-4:");
-    expect(rootTokens).toContain("--soe-container-content:");
-    expect(rootTokens).toContain("--soe-duration-interface:");
-    expect(rootTokens).toContain("--soe-leading-body:");
-    expect(rootTokens).toContain("--soe-tracking-heading:");
-    expect(rootTokens).toContain("--soe-section-space-md:");
+    const darkBlockRegex = /\[data-estate-theme="dark"\]\s*{([\s\S]*?)}/;
+    const darkMatch = cssContent.match(darkBlockRegex);
+    expect(darkMatch).not.toBeNull();
+    const darkTokens = darkMatch![1];
+
+    const sharedPrefixes = [
+      "--soe-text-",
+      "--soe-leading-",
+      "--soe-tracking-",
+      "--soe-space-",
+      "--soe-section-space-",
+      "--soe-container-",
+      "--soe-radius-",
+      "--soe-shadow-",
+      "--soe-duration-",
+      "--soe-ease-"
+    ];
+
+    const rootRules = parseRules(rootTokens);
+    const darkRules = parseRules(darkTokens);
+
+    for (const prefix of sharedPrefixes) {
+      // Find at least one matching in root to ensure it exists
+      const foundInRoot = Object.keys(rootRules).some(k => k.startsWith(prefix));
+      expect(foundInRoot, `Expected to find tokens with prefix ${prefix} in :root`).toBe(true);
+
+      // Ensure none exist in dark
+      const foundInDark = Object.keys(darkRules).some(k => k.startsWith(prefix));
+      expect(foundInDark, `Expected NOT to find tokens with prefix ${prefix} in dark selector`).toBe(false);
+    }
   });
 
   it("verifies Tailwind font mappings exist for all font utility classes used", () => {
@@ -121,34 +182,65 @@ describe("Estate UI Token Contract", () => {
   });
 
   it("verifies light and dark action contracts contain all required semantic variables and meet contrast", () => {
-    // We will do a basic contrast check on known colors from the palette to verify the contract is met.
-    
-    // Hardcoded expected values based on the spec
-    // Light primary: Olive bg (#47543a), Ivory text (#f5f1e8) -> checking contrast
-    const oliveBg = hexToRgb("#47543a");
-    const ivoryText = hexToRgb("#f5f1e8");
-    expect(getContrast(oliveBg, ivoryText)).toBeGreaterThan(3);
+    const rootBlockRegex = /:root\s*{([\s\S]*?)}/;
+    const lightBlockRegex = /\[data-estate-theme="light"\]\s*{([\s\S]*?)}/;
+    const darkBlockRegex = /\[data-estate-theme="dark"\]\s*{([\s\S]*?)}/;
 
-    // Dark primary: Brand-soft/light bg (#e7e8de), Dark ink text (#20231f)
-    const softBg = hexToRgb("#e7e8de");
-    const inkText = hexToRgb("#20231f");
-    expect(getContrast(softBg, inkText)).toBeGreaterThan(3);
+    const rootTokens = parseRules(cssContent.match(rootBlockRegex)![1]);
+    const lightOverrides = cssContent.match(lightBlockRegex) ? parseRules(cssContent.match(lightBlockRegex)![1]) : {};
+    const darkOverrides = cssContent.match(darkBlockRegex) ? parseRules(cssContent.match(darkBlockRegex)![1]) : {};
 
-    // Light secondary: Light surface (#fbfaf7), Dark text (#20231f)
-    const lightSurface = hexToRgb("#fbfaf7");
-    expect(getContrast(lightSurface, inkText)).toBeGreaterThan(3);
+    const lightScope = { ...rootTokens, ...lightOverrides };
+    const darkScope = { ...rootTokens, ...darkOverrides };
 
-    // Focus against light surface (#195aa8)
-    const focusLight = hexToRgb("#195aa8");
-    expect(getContrast(focusLight, lightSurface)).toBeGreaterThan(3);
+    const requiredMappings = [
+      "--soe-surface-bg-primary",
+      "--soe-surface-bg-surface",
+      "--soe-surface-text-primary",
+      "--soe-surface-text-inverse",
+      "--soe-surface-text-secondary",
+      "--soe-surface-action-primary",
+      "--soe-surface-action-secondary",
+      "--soe-surface-action-hover",
+      "--soe-surface-action-quiet-hover",
+      "--soe-color-focus-ring",
+      "--soe-surface-color-error"
+    ];
 
-    // Focus against dark surface (#9cc7ff)
-    const darkNight = hexToRgb("#0d0f0e");
-    const focusDark = hexToRgb("#9cc7ff");
-    expect(getContrast(focusDark, darkNight)).toBeGreaterThan(3);
+    for (const scope of [lightScope, darkScope]) {
+      // 1. Fails when a semantic mapping is removed or changed
+      for (const token of requiredMappings) {
+        expect(scope[token], `Token ${token} should exist`).toBeDefined();
 
-    // Error text against light surface (#9b2c2c)
-    const errorRed = hexToRgb("#9b2c2c");
-    expect(getContrast(errorRed, lightSurface)).toBeGreaterThan(3);
+        // Ensure it can be resolved without throwing
+        const resolved = resolveVar(`var(${token})`, scope);
+        expect(resolved, `Token ${token} should resolve to a valid color string`).toBeTruthy();
+      }
+
+      // Check primary contrast (normal text >= 4.5:1)
+      const bgPrimary = parseColor(resolveVar(`var(--soe-surface-bg-primary)`, scope));
+      const textPrimary = parseColor(resolveVar(`var(--soe-surface-text-primary)`, scope));
+      expect(getContrast(textPrimary, bgPrimary), `Primary text contrast`).toBeGreaterThanOrEqual(4.5);
+
+      const textSecondary = parseColor(resolveVar(`var(--soe-surface-text-secondary)`, scope));
+      expect(getContrast(textSecondary, bgPrimary), `Secondary text contrast`).toBeGreaterThanOrEqual(4.5);
+
+      // Check action primary contrast (text inverse vs action primary)
+      const actionPrimary = parseColor(resolveVar(`var(--soe-surface-action-primary)`, scope));
+      const textInverse = parseColor(resolveVar(`var(--soe-surface-text-inverse)`, scope));
+      expect(getContrast(textInverse, actionPrimary), `Action primary text contrast`).toBeGreaterThanOrEqual(4.5);
+
+      // Check action hover contrast (text inverse vs action hover)
+      const actionHover = parseColor(resolveVar(`var(--soe-surface-action-hover)`, scope));
+      expect(getContrast(textInverse, actionHover), `Action hover text contrast`).toBeGreaterThanOrEqual(4.5);
+
+      // Check non-text boundary (focus ring vs bg primary >= 3:1)
+      const focusRing = parseColor(resolveVar(`var(--soe-color-focus-ring)`, scope));
+      expect(getContrast(focusRing, bgPrimary), `Focus ring contrast against primary bg`).toBeGreaterThanOrEqual(3);
+
+      // Check error text contrast (error text vs bg primary >= 4.5:1)
+      const errorText = parseColor(resolveVar(`var(--soe-surface-color-error)`, scope));
+      expect(getContrast(errorText, bgPrimary), `Error text contrast against primary bg`).toBeGreaterThanOrEqual(4.5);
+    }
   });
 });
