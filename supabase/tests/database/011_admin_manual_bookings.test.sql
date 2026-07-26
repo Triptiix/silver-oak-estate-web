@@ -121,10 +121,24 @@ select results_eq(
 );
 
 -- Test-only receipt visibility; rolled back with this transaction.
-grant select on public.admin_operation_events to authenticated;
+grant select on public.admin_operation_events, public.bookings,
+  public.customers, public.inventory_reservations, public.payments,
+  public.booking_events, public.properties
+to authenticated;
 create policy phase5b_manual_test_receipt_read
 on public.admin_operation_events for select to authenticated using (true);
-grant select on public.payments to authenticated;
+create policy phase5b_manual_test_booking_read
+on public.bookings for select to authenticated using (true);
+create policy phase5b_manual_test_customer_read
+on public.customers for select to authenticated using (true);
+create policy phase5b_manual_test_reservation_read
+on public.inventory_reservations for select to authenticated using (true);
+create policy phase5b_manual_test_payment_read
+on public.payments for select to authenticated using (true);
+create policy phase5b_manual_test_booking_event_read
+on public.booking_events for select to authenticated using (true);
+create policy phase5b_manual_test_property_read
+on public.properties for select to authenticated using (true);
 
 set local role authenticated;
 select throws_ok(

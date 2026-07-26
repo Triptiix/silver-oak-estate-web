@@ -106,9 +106,21 @@ select results_eq(
 
 -- Test-only visibility for inspecting receipts produced by SECURITY DEFINER
 -- functions. Both the grant and policy roll back with this pgTAP transaction.
-grant select on public.admin_operation_events to authenticated;
+grant select on public.admin_operation_events, public.inventory_reservations,
+  public.properties
+to authenticated;
 create policy phase5b_test_receipt_read
 on public.admin_operation_events
+for select
+to authenticated
+using (true);
+create policy phase5b_test_reservation_read
+on public.inventory_reservations
+for select
+to authenticated
+using (true);
+create policy phase5b_test_property_read
+on public.properties
 for select
 to authenticated
 using (true);

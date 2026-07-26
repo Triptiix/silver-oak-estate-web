@@ -111,6 +111,16 @@ grant select on public.bookings, public.inventory_reservations, public.payments,
 to authenticated;
 create policy phase5b_verify_test_receipts
 on public.admin_operation_events for select to authenticated using (true);
+create policy phase5b_verify_test_bookings
+on public.bookings for select to authenticated using (true);
+create policy phase5b_verify_test_reservations
+on public.inventory_reservations for select to authenticated using (true);
+create policy phase5b_verify_test_payments
+on public.payments for select to authenticated using (true);
+create policy phase5b_verify_test_booking_events
+on public.booking_events for select to authenticated using (true);
+create policy phase5b_verify_test_notifications
+on public.notification_events for select to authenticated using (true);
 
 set local role authenticated;
 select throws_ok(
