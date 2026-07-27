@@ -52,11 +52,26 @@ export function parseColor(val: string): ColorRGBA {
 }
 
 export function compositeColor(fg: ColorRGBA, bg: ColorRGBA): ColorRGBA {
-  const r = fg.r * fg.a + bg.r * (1 - fg.a);
-  const g = fg.g * fg.a + bg.g * (1 - fg.a);
-  const b = fg.b * fg.a + bg.b * (1 - fg.a);
-  const a = fg.a + bg.a * (1 - fg.a);
-  return { r: Math.round(r), g: Math.round(g), b: Math.round(b), a };
+  const fgA = Math.min(1, Math.max(0, fg.a));
+  const bgA = Math.min(1, Math.max(0, bg.a));
+
+  const outA = fgA + bgA * (1 - fgA);
+  const outAClamped = Math.min(1, Math.max(0, outA));
+
+  if (outAClamped === 0) {
+    return { r: 0, g: 0, b: 0, a: 0 };
+  }
+
+  const r = (fg.r * fgA + bg.r * bgA * (1 - fgA)) / outAClamped;
+  const g = (fg.g * fgA + bg.g * bgA * (1 - fgA)) / outAClamped;
+  const b = (fg.b * fgA + bg.b * bgA * (1 - fgA)) / outAClamped;
+
+  return {
+    r: Math.min(255, Math.max(0, r)),
+    g: Math.min(255, Math.max(0, g)),
+    b: Math.min(255, Math.max(0, b)),
+    a: outAClamped,
+  };
 }
 
 export function getLuminance(r: number, g: number, b: number): number {
@@ -69,7 +84,7 @@ export function getLuminance(r: number, g: number, b: number): number {
 
 export function getContrast(color1: ColorRGBA, color2: ColorRGBA): number {
   const final1 = color1.a < 1 ? compositeColor(color1, color2) : color1;
-  const final2 = color2.a < 1 ? compositeColor(color2, { r: 255, g: 255, b: 255, a: 1 }) : color2;
+  const final2 = color2;
 
   const l1 = getLuminance(final1.r, final1.g, final1.b);
   const l2 = getLuminance(final2.r, final2.g, final2.b);
@@ -199,16 +214,23 @@ export function validateScopeContrasts(scope: Record<string, string>, scopeName:
   const textSecondary = parseColor(resolveVar("var(--soe-surface-text-secondary)", scope));
   const textInverse = parseColor(resolveVar("var(--soe-surface-text-inverse)", scope));
 
-  const actionPrimary = parseColor(resolveVar("var(--soe-surface-action-primary)", scope));
-  const actionHover = parseColor(resolveVar("var(--soe-surface-action-hover)", scope));
+  const actionPrimaryRaw = parseColor(resolveVar("var(--soe-surface-action-primary)", scope));
+  const actionHoverRaw = parseColor(resolveVar("var(--soe-surface-action-hover)", scope));
 
-  const actionSec = parseColor(resolveVar("var(--soe-surface-action-secondary)", scope));
-  const actionSecHover = parseColor(resolveVar("var(--soe-surface-action-secondary-hover)", scope));
+  const actionSecRaw = parseColor(resolveVar("var(--soe-surface-action-secondary)", scope));
+  const actionSecHoverRaw = parseColor(resolveVar("var(--soe-surface-action-secondary-hover)", scope));
   const border = parseColor(resolveVar("var(--soe-surface-control-border)", scope));
 
-  const quietHover = parseColor(resolveVar("var(--soe-surface-action-quiet-hover)", scope));
+  const quietHoverRaw = parseColor(resolveVar("var(--soe-surface-action-quiet-hover)", scope));
   const focusRing = parseColor(resolveVar("var(--soe-color-focus-ring)", scope));
   const errorText = parseColor(resolveVar("var(--soe-surface-color-error)", scope));
+
+  // Composite action backgrounds over bgPrimary if translucent
+  const actionPrimaryBg = actionPrimaryRaw.a < 1 ? compositeColor(actionPrimaryRaw, bgPrimary) : actionPrimaryRaw;
+  const actionHoverBg = actionHoverRaw.a < 1 ? compositeColor(actionHoverRaw, bgPrimary) : actionHoverRaw;
+  const actionSecBg = actionSecRaw.a < 1 ? compositeColor(actionSecRaw, bgPrimary) : actionSecRaw;
+  const actionSecHoverBg = actionSecHoverRaw.a < 1 ? compositeColor(actionSecHoverRaw, bgPrimary) : actionSecHoverRaw;
+  const quietHoverBg = quietHoverRaw.a < 1 ? compositeColor(quietHoverRaw, bgPrimary) : quietHoverRaw;
 
   // Primary
   if (getContrast(textPrimary, bgPrimary) < 4.5) {
@@ -217,37 +239,31 @@ export function validateScopeContrasts(scope: Record<string, string>, scopeName:
   if (getContrast(textSecondary, bgPrimary) < 4.5) {
     throw new Error(`[${scopeName}] Secondary text contrast < 4.5`);
   }
-  if (getContrast(textInverse, actionPrimary) < 4.5) {
+  if (getContrast(textInverse, actionPrimaryBg) < 4.5) {
     throw new Error(`[${scopeName}] Primary action text contrast < 4.5`);
   }
-  if (getContrast(textInverse, actionHover) < 4.5) {
+  if (getContrast(textInverse, actionHoverBg) < 4.5) {
     throw new Error(`[${scopeName}] Primary action hover text contrast < 4.5`);
   }
 
   // Secondary Action
-  const compositedSecBg = compositeColor(actionSec, bgPrimary);
-  if (getContrast(textPrimary, compositedSecBg) < 4.5) {
+  if (getContrast(textPrimary, actionSecBg) < 4.5) {
     throw new Error(`[${scopeName}] Secondary action primary text contrast < 4.5`);
   }
-
-  const compositedSecHoverBg = compositeColor(actionSecHover, bgPrimary);
-  if (getContrast(textPrimary, compositedSecHoverBg) < 4.5) {
+  if (getContrast(textPrimary, actionSecHoverBg) < 4.5) {
     throw new Error(`[${scopeName}] Secondary action hover text contrast < 4.5`);
   }
 
-  if (actionSec.a === 0 || scopeName === "dark") {
-    if (getContrast(border, bgPrimary) < 3.0) {
-      throw new Error(`[${scopeName}] Secondary action border contrast < 3.0`);
-    }
+  // Secondary Action Border (TASK 2: Always checked for both light and dark!)
+  if (getContrast(border, bgPrimary) < 3.0) {
+    throw new Error(`[${scopeName}] Secondary action border contrast < 3.0`);
   }
 
   // Quiet Action
   if (getContrast(textPrimary, bgPrimary) < 4.5) {
     throw new Error(`[${scopeName}] Quiet action primary text contrast < 4.5`);
   }
-
-  const compositedQuietHoverBg = compositeColor(quietHover, bgPrimary);
-  if (getContrast(textPrimary, compositedQuietHoverBg) < 4.5) {
+  if (getContrast(textPrimary, quietHoverBg) < 4.5) {
     throw new Error(`[${scopeName}] Quiet action hover text contrast < 4.5`);
   }
 
@@ -382,6 +398,17 @@ describe("Parser & Contract Validation Unit Tests", () => {
     expect(composited.a).toBe(1);
   });
 
+  it("composites two translucent colours correctly (nested-alpha test)", () => {
+    const fg = { r: 255, g: 0, b: 0, a: 0.5 };
+    const bg = { r: 0, g: 0, b: 255, a: 0.5 };
+    const composited = compositeColor(fg, bg);
+
+    expect(composited.a).toBeCloseTo(0.75, 5);
+    expect(composited.r).toBeCloseTo(170, 2);
+    expect(composited.g).toBeCloseTo(0, 2);
+    expect(composited.b).toBeCloseTo(85, 2);
+  });
+
   it("reports missing token when one required token is removed from CSS fixture", () => {
     const modifiedCss = cssContent.replace("--soe-space-4:", "--soe-removed-token:");
     const result = validateRequiredSharedTokens(modifiedCss);
@@ -389,14 +416,17 @@ describe("Parser & Contract Validation Unit Tests", () => {
   });
 
   it("fails contrast validation when a semantic action colour is changed in an in-memory fixture", () => {
-    const modifiedCss = cssContent.replace(
-      "--soe-color-ink: #20231f;",
-      "--soe-color-ink: #f0f0f0;"
+    const modifiedCss = cssContent.replaceAll(
+      "--soe-surface-action-primary: var(--soe-color-brand);",
+      "--soe-surface-action-primary: var(--soe-color-canvas);"
     );
     const rootTokens = parseRules(modifiedCss.match(/:root\s*{([\s\S]*?)}/)![1]);
-    const lightOverrides = parseRules(modifiedCss.match(/\[data-estate-theme="light"\]\s*{([\s\S]*?)}/)![1]);
+    const lightMatch = modifiedCss.match(/\[data-estate-theme="light"\]\s*{([\s\S]*?)}/);
+    const lightOverrides = lightMatch ? parseRules(lightMatch[1]) : {};
     const lightScope = { ...rootTokens, ...lightOverrides };
 
-    expect(() => validateScopeContrasts(lightScope, "light")).toThrow();
+    expect(() => validateScopeContrasts(lightScope, "light")).toThrow(
+      "[light] Primary action text contrast < 4.5"
+    );
   });
 });

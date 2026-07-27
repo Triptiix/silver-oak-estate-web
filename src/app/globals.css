@@ -135,7 +135,7 @@
     --soe-surface-text-secondary: var(--soe-color-ink-muted);
     --soe-surface-text-inverse: var(--soe-color-canvas);
     --soe-surface-text-quiet: var(--soe-color-ink-muted);
-    --soe-surface-control-border: var(--soe-color-border);
+    --soe-surface-control-border: var(--soe-color-ink-muted);
     --soe-surface-action-primary: var(--soe-color-brand);
     --soe-surface-action-hover: var(--soe-color-brand-strong);
     --soe-surface-action-secondary: var(--soe-color-surface);
@@ -218,7 +218,7 @@
     --soe-surface-text-secondary: var(--soe-color-ink-muted);
     --soe-surface-text-inverse: var(--soe-color-canvas);
     --soe-surface-text-quiet: var(--soe-color-ink-muted);
-    --soe-surface-control-border: var(--soe-color-border);
+    --soe-surface-control-border: var(--soe-color-ink-muted);
     --soe-surface-action-primary: var(--soe-color-brand);
     --soe-surface-action-hover: var(--soe-color-brand-strong);
     --soe-surface-action-secondary: var(--soe-color-surface);
