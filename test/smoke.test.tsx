@@ -62,7 +62,7 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
 
     it("2. renders Silver Oak Estate on marketing homepage", () => {
       render(<HomePage />);
-      expect(screen.getByText("Silver Oak Estate")).toBeInTheDocument();
+      expect(screen.getAllByText(/Silver Oak Estate/i).length).toBeGreaterThan(0);
     });
 
     it("3. verifies starter copy is absent from homepage", () => {
@@ -71,6 +71,96 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
       expect(screen.queryByText(/Deploy Now/i)).not.toBeInTheDocument();
       expect(screen.queryByText(/Templates/i)).not.toBeInTheDocument();
       expect(screen.queryByText(/Learning/i)).not.toBeInTheDocument();
+    });
+
+    it("4. verifies Gate 3 homepage imports Estate UI primitives and not legacy Container", () => {
+      const filePath = path.resolve(__dirname, "../src/app/(marketing)/page.tsx");
+      const content = fs.readFileSync(filePath, "utf-8");
+
+      expect(content).toContain("@/components/estate-ui/estate-section");
+      expect(content).toContain("@/components/estate-ui/estate-container");
+      expect(content).toContain("@/components/estate-ui/estate-heading");
+      expect(content).toContain("@/components/estate-ui/estate-text");
+      expect(content).toContain("@/components/estate-ui/estate-media-frame");
+      expect(content).toContain("@/components/estate-ui/estate-action-link");
+
+      expect(content).not.toContain("@/components/ui/container");
+      expect(content).not.toContain("var(--muted-foreground)");
+      expect(content).not.toContain("[Estate Image Placeholder]");
+    });
+
+    it("5. verifies heading hierarchy has exactly one H1", () => {
+      render(<HomePage />);
+      const h1s = screen.getAllByRole("heading", { level: 1 });
+      expect(h1s).toHaveLength(1);
+      expect(h1s[0]).toHaveTextContent("A Private Escape for Stays, Gatherings and Celebrations");
+    });
+
+    it("6. verifies all required CTA links are present with correct hrefs", () => {
+      const { container } = render(<HomePage />);
+
+      const links = container.querySelectorAll("a");
+      const hrefs = Array.from(links).map((l) => l.getAttribute("href"));
+
+      expect(hrefs).toContain("/availability");
+      expect(hrefs).toContain("/estate");
+      expect(hrefs).toContain("/book");
+      expect(hrefs).toContain("/contact");
+      expect(hrefs).toContain("/gallery");
+      expect(hrefs).toContain("/pricing");
+      expect(hrefs).toContain("/location");
+      expect(hrefs).toContain("mailto:contact@silveroakestate.online");
+
+      hrefs.forEach((h) => {
+        expect(h).not.toMatch(/^tel:/i);
+        expect(h).not.toContain("wa.me");
+      });
+    });
+
+    it("7. verifies all homepage image sources use /images/estate/home/ with valid alt text including corrected bedroom alt", () => {
+      const { container } = render(<HomePage />);
+      const imgs = container.querySelectorAll("img");
+
+      expect(imgs.length).toBeGreaterThan(0);
+      imgs.forEach((img) => {
+        const src = img.getAttribute("src") || "";
+        const alt = img.getAttribute("alt");
+
+        expect(decodeURIComponent(src)).toContain("/images/estate/home/");
+        expect(alt).toBeTruthy();
+        expect(alt?.trim().length).toBeGreaterThan(5);
+      });
+
+      const bedroomImg = Array.from(imgs).find((img) =>
+        (img.getAttribute("src") || "").includes("estate-bedroom")
+      );
+      expect(bedroomImg).toBeDefined();
+      expect(bedroomImg?.getAttribute("alt")).toBe("Bedroom with a king bed at Silver Oak Estate");
+
+      const text = document.body.textContent || "";
+      expect(text).not.toContain("Master bedroom");
+    });
+
+    it("8. verifies confirmed pricing details and updated pricing wording are present and unsupported claims are absent", () => {
+      render(<HomePage />);
+
+      expect(screen.getByText("₹15,000")).toBeInTheDocument();
+      expect(screen.getByText("₹20,000")).toBeInTheDocument();
+      expect(screen.getByText("₹5,000")).toBeInTheDocument();
+
+      expect(screen.getByText("Weekday")).toBeInTheDocument();
+      expect(screen.getByText("Weekend")).toBeInTheDocument();
+      expect(screen.getByText("CURRENT RATES")).toBeInTheDocument();
+
+      const text = document.body.textContent || "";
+      expect(text).not.toContain("Mon – Fri");
+      expect(text).not.toContain("Sat – Sun");
+      expect(text).not.toContain("TRANSPARENT RATES");
+      expect(text).not.toContain("full property access");
+
+      expect(text).not.toContain("GST");
+      expect(text).not.toContain("security deposit");
+      expect(text).not.toContain("cleaning fee");
     });
   });
 
