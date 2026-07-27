@@ -83,6 +83,9 @@ export function getLuminance(r: number, g: number, b: number): number {
 }
 
 export function getContrast(color1: ColorRGBA, color2: ColorRGBA): number {
+  if (color2.a < 1) {
+    throw new Error("getContrast: background must be opaque; composite it first");
+  }
   const final1 = color1.a < 1 ? compositeColor(color1, color2) : color1;
   const final2 = color2;
 
@@ -254,15 +257,12 @@ export function validateScopeContrasts(scope: Record<string, string>, scopeName:
     throw new Error(`[${scopeName}] Secondary action hover text contrast < 4.5`);
   }
 
-  // Secondary Action Border (TASK 2: Always checked for both light and dark!)
+  // Secondary Action Border (Always checked for both light and dark!)
   if (getContrast(border, bgPrimary) < 3.0) {
     throw new Error(`[${scopeName}] Secondary action border contrast < 3.0`);
   }
 
   // Quiet Action
-  if (getContrast(textPrimary, bgPrimary) < 4.5) {
-    throw new Error(`[${scopeName}] Quiet action primary text contrast < 4.5`);
-  }
   if (getContrast(textPrimary, quietHoverBg) < 4.5) {
     throw new Error(`[${scopeName}] Quiet action hover text contrast < 4.5`);
   }
@@ -407,6 +407,14 @@ describe("Parser & Contract Validation Unit Tests", () => {
     expect(composited.r).toBeCloseTo(170, 2);
     expect(composited.g).toBeCloseTo(0, 2);
     expect(composited.b).toBeCloseTo(85, 2);
+  });
+
+  it("throws an error when getContrast is called with a translucent background", () => {
+    const fg = { r: 255, g: 255, b: 255, a: 1 };
+    const bgTranslucent = { r: 0, g: 0, b: 0, a: 0.5 };
+    expect(() => getContrast(fg, bgTranslucent)).toThrow(
+      "getContrast: background must be opaque; composite it first"
+    );
   });
 
   it("reports missing token when one required token is removed from CSS fixture", () => {

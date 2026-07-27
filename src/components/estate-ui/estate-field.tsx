@@ -27,7 +27,7 @@ export const EstateField = React.forwardRef<HTMLDivElement, EstateFieldProps>(
       <div ref={ref} className={cn("space-y-[var(--soe-space-2)]", className)} {...props}>
         <label htmlFor={id} className="block font-soe-ui text-[length:var(--soe-text-sm)] font-medium text-[var(--soe-surface-text-primary)]">
           {label}
-          {required && <span className="ml-1 text-[var(--soe-color-error)]" aria-hidden="true">*</span>}
+          {required && <span className="ml-1 text-[var(--soe-surface-color-error)]" aria-hidden="true">*</span>}
         </label>
 
         {/* Child form control via typed render prop */}
@@ -44,7 +44,7 @@ export const EstateField = React.forwardRef<HTMLDivElement, EstateFieldProps>(
           </p>
         )}
         {error && (
-          <p id={errorId} className="text-[length:var(--soe-text-sm)] text-[var(--soe-color-error)] font-medium">
+          <p id={errorId} className="text-[length:var(--soe-text-sm)] text-[var(--soe-surface-color-error)] font-medium">
             {error}
           </p>
         )}

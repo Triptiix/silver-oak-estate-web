@@ -51,6 +51,31 @@ describe("Estate UI Primitives", () => {
       render(<EstateButton className="custom-class">Custom</EstateButton>);
       expect(screen.getByRole("button", { name: "Custom" })).toHaveClass("custom-class");
     });
+
+    it("Loading children appear exactly once in the DOM", () => {
+      render(<EstateButton isLoading>UniqueTextChild</EstateButton>);
+      const matches = screen.getAllByText("UniqueTextChild");
+      expect(matches).toHaveLength(1);
+    });
+
+    it("Loading text span uses opacity-0 and does not use invisible", () => {
+      render(<EstateButton isLoading>Loading Span Test</EstateButton>);
+      const textSpan = screen.getByText("Loading Span Test");
+      expect(textSpan).toHaveClass("opacity-0");
+      expect(textSpan).not.toHaveClass("invisible");
+    });
+
+    it("isLoading=true cannot be overridden with unsafe caller aria-busy=false", () => {
+      const unsafeProps = { "aria-busy": false };
+      render(<EstateButton isLoading {...(unsafeProps as Record<string, unknown>)}>Click</EstateButton>);
+      expect(screen.getByRole("button")).toHaveAttribute("aria-busy", "true");
+    });
+
+    it("isLoading=false does not expose aria-busy even when an unsafe caller attempts to set it", () => {
+      const unsafeProps = { "aria-busy": true };
+      render(<EstateButton isLoading={false} {...(unsafeProps as Record<string, unknown>)}>Click</EstateButton>);
+      expect(screen.getByRole("button")).not.toHaveAttribute("aria-busy");
+    });
   });
 
   describe("EstateField", () => {
@@ -143,6 +168,26 @@ describe("Estate UI Primitives", () => {
       );
       expect(screen.getByTestId("i1")).toHaveAttribute("aria-describedby", "f1-description");
       expect(screen.getByTestId("i2")).toHaveAttribute("aria-describedby", "f2-description");
+    });
+
+    it("EstateField required marker uses --soe-surface-color-error", () => {
+      render(
+        <EstateField id="req-marker" label="Req" required>
+          {(props) => <input {...props} />}
+        </EstateField>
+      );
+      const asterisk = screen.getByText("*");
+      expect(asterisk).toHaveClass("text-[var(--soe-surface-color-error)]");
+    });
+
+    it("EstateField error message uses --soe-surface-color-error", () => {
+      render(
+        <EstateField id="err-msg" label="Err" error="Validation error">
+          {(props) => <input {...props} />}
+        </EstateField>
+      );
+      const errorMsg = screen.getByText("Validation error");
+      expect(errorMsg).toHaveClass("text-[var(--soe-surface-color-error)]");
     });
   });
 
