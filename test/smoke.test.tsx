@@ -4,6 +4,7 @@ import * as fs from "fs";
 import * as path from "path";
 import HomePage from "@/app/(marketing)/page";
 import EstatePage from "@/app/(marketing)/estate/page";
+import ExperiencesPage from "@/app/(marketing)/experiences/page";
 import MarketingLayout from "@/app/(marketing)/layout";
 import { SiteHeader } from "@/components/layout/site-header";
 import { MobileBookingCTA } from "@/components/layout/mobile-booking-cta";
@@ -725,6 +726,59 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
       forbidden.forEach((term) => {
         expect(content.toLowerCase()).not.toContain(term.toLowerCase());
       });
+    });
+  });
+
+  describe("ExperiencesPage Architecture and Content Guardrails", () => {
+    it("verifies heading hierarchy has exactly one H1 with correct text", () => {
+      render(<ExperiencesPage />);
+      const h1s = screen.getAllByRole("heading", { level: 1 });
+      expect(h1s).toHaveLength(1);
+      expect(h1s[0]).toHaveTextContent("Experiences at Silver Oak Estate");
+    });
+
+    it("verifies exact metadata title and complete description are exported", async () => {
+      const expModule = await import("@/app/(marketing)/experiences/page");
+      expect(expModule.metadata.title).toBe("Experiences | Private Stays & Gatherings at Silver Oak Estate");
+      expect(expModule.metadata.description).toBe(
+        "Discover private stays, approved gatherings, pool and lawn time at Silver Oak Estate in Sector 135, Noida. Fully furnished 3 BHK farmhouse for 6–10 overnight guests."
+      );
+    });
+
+    it("verifies rendered page images use exact 7 production WebP paths and alt text", () => {
+      const { container } = render(<ExperiencesPage />);
+      const imgs = container.querySelectorAll("img");
+      expect(imgs).toHaveLength(7);
+
+      const expectedPaths = [
+        "/images/estate/experiences/experiences-hero.webp",
+        "/images/estate/experiences/experiences-stay.webp",
+        "/images/estate/experiences/experiences-gather.webp",
+        "/images/estate/experiences/experiences-dining.webp",
+        "/images/estate/experiences/experiences-pool-lawn.webp",
+        "/images/estate/experiences/experiences-residence.webp",
+        "/images/estate/experiences/experiences-lawn-evening.webp",
+      ];
+
+      const actualPaths = Array.from(imgs).map((img) => decodeURIComponent(img.getAttribute("src") || ""));
+      expectedPaths.forEach((expected) => {
+        expect(actualPaths.some((p) => p.includes(expected))).toBe(true);
+      });
+    });
+
+    it("verifies CTA action links queried by accessible names have correct destinations", () => {
+      render(<ExperiencesPage />);
+      const availabilityLinks = screen.getAllByRole("link", { name: "Check Availability" });
+      expect(availabilityLinks.length).toBeGreaterThanOrEqual(1);
+      availabilityLinks.forEach((link) => {
+        expect(link).toHaveAttribute("href", "/availability");
+      });
+
+      const galleryLink = screen.getByRole("link", { name: "View Gallery" });
+      expect(galleryLink).toHaveAttribute("href", "/gallery");
+
+      const emailLink = screen.getByRole("link", { name: "Email an Enquiry" });
+      expect(emailLink).toHaveAttribute("href", "mailto:contact@silveroakestate.online");
     });
   });
 });
