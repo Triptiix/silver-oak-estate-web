@@ -8,6 +8,8 @@ import { EstateSection } from "@/components/estate-ui/estate-section";
 import { EstateActionLink } from "@/components/estate-ui/estate-action-link";
 import { EstateField } from "@/components/estate-ui/estate-field";
 import { EstateMediaFrame } from "@/components/estate-ui/estate-media-frame";
+import { EstateEyebrow } from "@/components/estate-ui/estate-eyebrow";
+import { EstateStatCard } from "@/components/estate-ui/estate-stat-card";
 import React from "react";
 
 describe("Estate UI Primitives", () => {
@@ -332,5 +334,102 @@ describe("Estate UI Primitives", () => {
   it("EstateMediaFrame renders correctly", () => {
     render(<EstateMediaFrame data-testid="media">Media</EstateMediaFrame>);
     expect(screen.getByTestId("media")).toHaveClass("relative");
+  });
+
+  describe("EstateEyebrow", () => {
+    it("Renders a paragraph element", () => {
+      render(<EstateEyebrow data-testid="eyebrow">OVERVIEW</EstateEyebrow>);
+      const el = screen.getByTestId("eyebrow");
+      expect(el.tagName).toBe("P");
+    });
+
+    it("Preserves children", () => {
+      render(<EstateEyebrow>OVERVIEW TEST</EstateEyebrow>);
+      expect(screen.getByText("OVERVIEW TEST")).toBeInTheDocument();
+    });
+
+    it("Applies common Estate eyebrow classes", () => {
+      render(<EstateEyebrow data-testid="eyebrow">EYEBROW</EstateEyebrow>);
+      const el = screen.getByTestId("eyebrow");
+      expect(el).toHaveClass("font-soe-ui");
+      expect(el).toHaveClass("text-[length:var(--soe-text-xs)]");
+      expect(el).toHaveClass("font-semibold");
+      expect(el).toHaveClass("tracking-[var(--soe-tracking-eyebrow)]");
+      expect(el).toHaveClass("uppercase");
+    });
+
+    it("Allows caller colour and margin classes", () => {
+      render(<EstateEyebrow className="text-[var(--soe-color-brand)] mb-2" data-testid="eyebrow">CUSTOM</EstateEyebrow>);
+      const el = screen.getByTestId("eyebrow");
+      expect(el).toHaveClass("text-[var(--soe-color-brand)]");
+      expect(el).toHaveClass("mb-2");
+    });
+
+    it("Forwards standard paragraph attributes", () => {
+      render(<EstateEyebrow id="eyebrow-id" aria-label="custom-eyebrow">ACCESSIBLE</EstateEyebrow>);
+      const el = screen.getByText("ACCESSIBLE");
+      expect(el).toHaveAttribute("id", "eyebrow-id");
+      expect(el).toHaveAttribute("aria-label", "custom-eyebrow");
+    });
+  });
+
+  describe("EstateStatCard", () => {
+    it("Overview variant renders label, value and description", () => {
+      render(
+        <EstateStatCard
+          label="Residence"
+          value="Fully furnished 3 BHK"
+          description="Three themed king-bed bedrooms"
+        />
+      );
+      expect(screen.getByText("Residence")).toBeInTheDocument();
+      expect(screen.getByText("Fully furnished 3 BHK")).toBeInTheDocument();
+      expect(screen.getByText("Three themed king-bed bedrooms")).toBeInTheDocument();
+    });
+
+    it("Overview variant uses the card radius and overview typography", () => {
+      render(
+        <EstateStatCard
+          data-testid="stat-card"
+          label="Residence"
+          value="3 BHK"
+          description="Description"
+        />
+      );
+      const card = screen.getByTestId("stat-card");
+      expect(card).toHaveClass("rounded-[var(--soe-radius-card)]");
+      expect(card).toHaveClass("space-y-2");
+      expect(screen.getByText("3 BHK")).toHaveClass("text-[length:var(--soe-text-xl)]");
+      expect(screen.getByText("Description")).toHaveClass("text-[length:var(--soe-text-sm)]");
+    });
+
+    it("Capacity variant uses the control radius and capacity typography", () => {
+      render(
+        <EstateStatCard
+          variant="capacity"
+          data-testid="stat-card-cap"
+          label="Overnight Stays"
+          value="6–10 Guests"
+          description="Full house"
+        />
+      );
+      const card = screen.getByTestId("stat-card-cap");
+      expect(card).toHaveClass("rounded-[var(--soe-radius-control)]");
+      expect(screen.getByText("6–10 Guests")).toHaveClass("text-[length:var(--soe-text-2xl)]");
+      expect(screen.getByText("Full house")).toHaveClass("text-[length:var(--soe-text-xs)]");
+    });
+
+    it("Caller class extension is preserved", () => {
+      render(
+        <EstateStatCard
+          className="custom-stat-class"
+          data-testid="stat-card-custom"
+          label="Label"
+          value="Value"
+          description="Desc"
+        />
+      );
+      expect(screen.getByTestId("stat-card-custom")).toHaveClass("custom-stat-class");
+    });
   });
 });
