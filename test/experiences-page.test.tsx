@@ -128,7 +128,16 @@ describe("ExperiencesPage Component", () => {
 
   it("verifies optional-service coverage terms together in approved gatherings section", () => {
     render(<ExperiencesPage />);
-    const text = document.body.textContent || "";
+
+    const heading = screen.getByRole("heading", {
+      name: "Thoughtfully Hosted Private Events",
+      level: 2,
+    });
+    const section = heading.closest("section");
+
+    expect(section).not.toBeNull();
+
+    const text = section?.textContent || "";
 
     expect(text).toContain("catering");
     expect(text).toContain("DJ");
