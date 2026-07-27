@@ -568,6 +568,8 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
       expect(content).toContain("@/components/estate-ui/estate-text");
       expect(content).toContain("@/components/estate-ui/estate-media-frame");
       expect(content).toContain("@/components/estate-ui/estate-action-link");
+      expect(content).toContain("@/components/estate-ui/estate-eyebrow");
+      expect(content).toContain("@/components/estate-ui/estate-stat-card");
       expect(content).toContain("next/image");
 
       expect(content).not.toContain("@/components/ui/container");

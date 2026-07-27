@@ -6,6 +6,8 @@ import { EstateHeading } from "@/components/estate-ui/estate-heading";
 import { EstateText } from "@/components/estate-ui/estate-text";
 import { EstateMediaFrame } from "@/components/estate-ui/estate-media-frame";
 import { EstateActionLink } from "@/components/estate-ui/estate-action-link";
+import { EstateEyebrow } from "@/components/estate-ui/estate-eyebrow";
+import { EstateStatCard } from "@/components/estate-ui/estate-stat-card";
 
 export const metadata: Metadata = {
   title: "The Estate | Silver Oak Estate Private Farmhouse in Noida",
@@ -21,9 +23,9 @@ export default function EstatePage() {
         <EstateContainer variant="visual">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
             <div className="lg:col-span-6 space-y-6">
-              <p className="font-soe-ui text-[length:var(--soe-text-xs)] font-semibold tracking-[var(--soe-tracking-eyebrow)] uppercase text-[var(--soe-surface-accent-metal)]">
+              <EstateEyebrow className="text-[var(--soe-surface-accent-metal)]">
                 THE ESTATE · SECTOR 135, NOIDA
-              </p>
+              </EstateEyebrow>
               <EstateHeading as="h1" variant="hero" className="text-[var(--soe-surface-text-primary)]">
                 A Complete Private Estate for Time Together
               </EstateHeading>
@@ -65,85 +67,44 @@ export default function EstatePage() {
       <EstateSection surface="light" spacing="lg">
         <EstateContainer variant="content">
           <div className="mb-10">
-            <p className="font-soe-ui text-[length:var(--soe-text-xs)] font-semibold tracking-[var(--soe-tracking-eyebrow)] uppercase text-[var(--soe-color-brand)] mb-2">
+            <EstateEyebrow className="text-[var(--soe-color-brand)] mb-2">
               OVERVIEW
-            </p>
+            </EstateEyebrow>
             <EstateHeading as="h2" variant="h2">
               The Estate at a Glance
             </EstateHeading>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="p-6 rounded-[var(--soe-radius-card)] bg-[var(--soe-surface-bg-surface)] border border-[var(--soe-surface-control-border)]/20 space-y-2">
-              <p className="font-soe-ui text-[length:var(--soe-text-xs)] font-semibold uppercase text-[var(--soe-color-brand)]">
-                Residence
-              </p>
-              <p className="font-soe-display text-[length:var(--soe-text-xl)] font-semibold text-[var(--soe-surface-text-primary)]">
-                Fully furnished 3 BHK
-              </p>
-              <p className="text-[length:var(--soe-text-sm)] text-[var(--soe-surface-text-secondary)]">
-                Three themed king-bed bedrooms with air conditioning
-              </p>
-            </div>
-
-            <div className="p-6 rounded-[var(--soe-radius-card)] bg-[var(--soe-surface-bg-surface)] border border-[var(--soe-surface-control-border)]/20 space-y-2">
-              <p className="font-soe-ui text-[length:var(--soe-text-xs)] font-semibold uppercase text-[var(--soe-color-brand)]">
-                Baths & Changing
-              </p>
-              <p className="font-soe-display text-[length:var(--soe-text-xl)] font-semibold text-[var(--soe-surface-text-primary)]">
-                4 Bathrooms + Changing
-              </p>
-              <p className="text-[length:var(--soe-text-sm)] text-[var(--soe-surface-text-secondary)]">
-                Three attached bathrooms, one lawn bathroom, and pool changing room
-              </p>
-            </div>
-
-            <div className="p-6 rounded-[var(--soe-radius-card)] bg-[var(--soe-surface-bg-surface)] border border-[var(--soe-surface-control-border)]/20 space-y-2">
-              <p className="font-soe-ui text-[length:var(--soe-text-xs)] font-semibold uppercase text-[var(--soe-color-brand)]">
-                Overnight Stays
-              </p>
-              <p className="font-soe-display text-[length:var(--soe-text-xl)] font-semibold text-[var(--soe-surface-text-primary)]">
-                6–10 Guests
-              </p>
-              <p className="text-[length:var(--soe-text-sm)] text-[var(--soe-surface-text-secondary)]">
-                Comfortable sleeping capacity for families and small groups
-              </p>
-            </div>
-
-            <div className="p-6 rounded-[var(--soe-radius-card)] bg-[var(--soe-surface-bg-surface)] border border-[var(--soe-surface-control-border)]/20 space-y-2">
-              <p className="font-soe-ui text-[length:var(--soe-text-xs)] font-semibold uppercase text-[var(--soe-color-brand)]">
-                Day Events & Gatherings
-              </p>
-              <p className="font-soe-display text-[length:var(--soe-text-xl)] font-semibold text-[var(--soe-surface-text-primary)]">
-                30–40 Guests
-              </p>
-              <p className="text-[length:var(--soe-text-sm)] text-[var(--soe-surface-text-secondary)]">
-                Lawn, pool deck, and outdoor space for approved celebrations
-              </p>
-            </div>
-
-            <div className="p-6 rounded-[var(--soe-radius-card)] bg-[var(--soe-surface-bg-surface)] border border-[var(--soe-surface-control-border)]/20 space-y-2">
-              <p className="font-soe-ui text-[length:var(--soe-text-xs)] font-semibold uppercase text-[var(--soe-color-brand)]">
-                Indoor Capacity
-              </p>
-              <p className="font-soe-display text-[length:var(--soe-text-xl)] font-semibold text-[var(--soe-surface-text-primary)]">
-                ~15–20 Guests
-              </p>
-              <p className="text-[length:var(--soe-text-sm)] text-[var(--soe-surface-text-secondary)]">
-                Hall seating for 15 and dedicated dining seating for 5
-              </p>
-            </div>
-
-            <div className="p-6 rounded-[var(--soe-radius-card)] bg-[var(--soe-surface-bg-surface)] border border-[var(--soe-surface-control-border)]/20 space-y-2">
-              <p className="font-soe-ui text-[length:var(--soe-text-xs)] font-semibold uppercase text-[var(--soe-color-brand)]">
-                Grounds & Pool
-              </p>
-              <p className="font-soe-display text-[length:var(--soe-text-xl)] font-semibold text-[var(--soe-surface-text-primary)]">
-                Private Lawn & Party Pool
-              </p>
-              <p className="text-[length:var(--soe-text-sm)] text-[var(--soe-surface-text-secondary)]">
-                Spacious open-air grounds with poolside deck area
-              </p>
-            </div>
+            <EstateStatCard
+              label="Residence"
+              value="Fully furnished 3 BHK"
+              description="Three themed king-bed bedrooms with air conditioning"
+            />
+            <EstateStatCard
+              label="Baths & Changing"
+              value="4 Bathrooms + Changing"
+              description="Three attached bathrooms, one lawn bathroom, and pool changing room"
+            />
+            <EstateStatCard
+              label="Overnight Stays"
+              value="6–10 Guests"
+              description="Comfortable sleeping capacity for families and small groups"
+            />
+            <EstateStatCard
+              label="Day Events & Gatherings"
+              value="30–40 Guests"
+              description="Lawn, pool deck, and outdoor space for approved celebrations"
+            />
+            <EstateStatCard
+              label="Indoor Capacity"
+              value="~15–20 Guests"
+              description="Hall seating for 15 and dedicated dining seating for 5"
+            />
+            <EstateStatCard
+              label="Grounds & Pool"
+              value="Private Lawn & Party Pool"
+              description="Spacious open-air grounds with poolside deck area"
+            />
           </div>
         </EstateContainer>
       </EstateSection>
@@ -153,9 +114,9 @@ export default function EstatePage() {
         <EstateContainer variant="content">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center mb-12">
             <div className="lg:col-span-6 space-y-6">
-              <p className="font-soe-ui text-[length:var(--soe-text-xs)] font-semibold tracking-[var(--soe-tracking-eyebrow)] uppercase text-[var(--soe-color-brand)]">
+              <EstateEyebrow className="text-[var(--soe-color-brand)]">
                 INTERIOR SPACES
-              </p>
+              </EstateEyebrow>
               <EstateHeading as="h2" variant="h2">
                 Comfortable Spaces for Unhurried Stays
               </EstateHeading>
@@ -247,9 +208,9 @@ export default function EstatePage() {
             </div>
 
             <div className="lg:col-span-6 order-1 lg:order-2 space-y-6">
-              <p className="font-soe-ui text-[length:var(--soe-text-xs)] font-semibold tracking-[var(--soe-tracking-eyebrow)] uppercase text-[var(--soe-color-brand)]">
+              <EstateEyebrow className="text-[var(--soe-color-brand)]">
                 KITCHEN & DINING
-              </p>
+              </EstateEyebrow>
               <EstateHeading as="h2" variant="h2">
                 A Kitchen Made for Shared Meals
               </EstateHeading>
@@ -269,9 +230,9 @@ export default function EstatePage() {
         <EstateContainer variant="content">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center mb-12">
             <div className="lg:col-span-6 space-y-6">
-              <p className="font-soe-ui text-[length:var(--soe-text-xs)] font-semibold tracking-[var(--soe-tracking-eyebrow)] uppercase text-[var(--soe-color-brand)]">
+              <EstateEyebrow className="text-[var(--soe-color-brand)]">
                 OUTDOOR & GROUNDS
-              </p>
+              </EstateEyebrow>
               <EstateHeading as="h2" variant="h2">
                 Open-Air Time, from Lawn to Poolside
               </EstateHeading>
@@ -311,9 +272,9 @@ export default function EstatePage() {
         <EstateContainer variant="content">
           <div className="p-8 md:p-12 rounded-[var(--soe-radius-card)] bg-[var(--soe-surface-bg-surface)] border border-[var(--soe-surface-control-border)]/20">
             <div className="mb-8">
-              <p className="font-soe-ui text-[length:var(--soe-text-xs)] font-semibold tracking-[var(--soe-tracking-eyebrow)] uppercase text-[var(--soe-color-brand)] mb-2">
+              <EstateEyebrow className="text-[var(--soe-color-brand)] mb-2">
                 OPERATIONS & AMENITIES
-              </p>
+              </EstateEyebrow>
               <EstateHeading as="h2" variant="h2">
                 Prepared for a Comfortable Private Booking
               </EstateHeading>
@@ -400,60 +361,37 @@ export default function EstatePage() {
       <EstateSection surface="light" spacing="lg">
         <EstateContainer variant="content">
           <div className="max-w-3xl space-y-6">
-            <p className="font-soe-ui text-[length:var(--soe-text-xs)] font-semibold tracking-[var(--soe-tracking-eyebrow)] uppercase text-[var(--soe-color-brand)]">
+            <EstateEyebrow className="text-[var(--soe-color-brand)]">
               GUEST CAPACITY
-            </p>
+            </EstateEyebrow>
             <EstateHeading as="h2" variant="h2">
               Designed Around Your Group
             </EstateHeading>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
-              <div className="p-6 rounded-[var(--soe-radius-control)] bg-[var(--soe-surface-bg-surface)] border border-[var(--soe-surface-control-border)]/20">
-                <p className="font-soe-ui text-[length:var(--soe-text-xs)] font-semibold uppercase text-[var(--soe-color-brand)]">
-                  Overnight Stays
-                </p>
-                <p className="font-soe-display text-[length:var(--soe-text-2xl)] font-bold text-[var(--soe-surface-text-primary)] mt-1">
-                  6–10 Guests
-                </p>
-                <p className="text-[length:var(--soe-text-xs)] text-[var(--soe-surface-text-secondary)] mt-1">
-                  Full 3 BHK house accommodation
-                </p>
-              </div>
-
-              <div className="p-6 rounded-[var(--soe-radius-control)] bg-[var(--soe-surface-bg-surface)] border border-[var(--soe-surface-control-border)]/20">
-                <p className="font-soe-ui text-[length:var(--soe-text-xs)] font-semibold uppercase text-[var(--soe-color-brand)]">
-                  Indoor Gatherings
-                </p>
-                <p className="font-soe-display text-[length:var(--soe-text-2xl)] font-bold text-[var(--soe-surface-text-primary)] mt-1">
-                  Approximately 15–20 Guests
-                </p>
-                <p className="text-[length:var(--soe-text-xs)] text-[var(--soe-surface-text-secondary)] mt-1">
-                  Hall seating for approximately 15 and dining seating for 5
-                </p>
-              </div>
-
-              <div className="p-6 rounded-[var(--soe-radius-control)] bg-[var(--soe-surface-bg-surface)] border border-[var(--soe-surface-control-border)]/20">
-                <p className="font-soe-ui text-[length:var(--soe-text-xs)] font-semibold uppercase text-[var(--soe-color-brand)]">
-                  Day Events & Gatherings
-                </p>
-                <p className="font-soe-display text-[length:var(--soe-text-2xl)] font-bold text-[var(--soe-surface-text-primary)] mt-1">
-                  30–40 Guests
-                </p>
-                <p className="text-[length:var(--soe-text-xs)] text-[var(--soe-surface-text-secondary)] mt-1">
-                  Lawn and pool-deck open-air capacity
-                </p>
-              </div>
-
-              <div className="p-6 rounded-[var(--soe-radius-control)] bg-[var(--soe-surface-bg-surface)] border border-[var(--soe-surface-control-border)]/20">
-                <p className="font-soe-ui text-[length:var(--soe-text-xs)] font-semibold uppercase text-[var(--soe-color-brand)]">
-                  Parking
-                </p>
-                <p className="font-soe-display text-[length:var(--soe-text-2xl)] font-bold text-[var(--soe-surface-text-primary)] mt-1">
-                  Approximately 3 Inside · 10+ Outside
-                </p>
-                <p className="text-[length:var(--soe-text-xs)] text-[var(--soe-surface-text-secondary)] mt-1">
-                  Final parking arrangements must be confirmed with the estate team
-                </p>
-              </div>
+              <EstateStatCard
+                variant="capacity"
+                label="Overnight Stays"
+                value="6–10 Guests"
+                description="Full 3 BHK house accommodation"
+              />
+              <EstateStatCard
+                variant="capacity"
+                label="Indoor Gatherings"
+                value="Approximately 15–20 Guests"
+                description="Hall seating for approximately 15 and dining seating for 5"
+              />
+              <EstateStatCard
+                variant="capacity"
+                label="Day Events & Gatherings"
+                value="30–40 Guests"
+                description="Lawn and pool-deck open-air capacity"
+              />
+              <EstateStatCard
+                variant="capacity"
+                label="Parking"
+                value="Approximately 3 Inside · 10+ Outside"
+                description="Final parking arrangements must be confirmed with the estate team"
+              />
             </div>
             <p className="text-[length:var(--soe-text-xs)] text-[var(--soe-surface-text-secondary)] pt-4 border-t border-[var(--soe-surface-control-border)]/15">
               Final guest count, event requirements and permitted arrangements must be confirmed with the estate team before booking.
