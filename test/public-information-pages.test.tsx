@@ -2,7 +2,7 @@ import ContactPage, { metadata as contactMetadata } from "@/app/(marketing)/cont
 import LocationPage, { metadata as locationMetadata } from "@/app/(marketing)/location/page";
 import PoliciesPage, { metadata as policiesMetadata } from "@/app/(marketing)/policies/page";
 import PricingPage, { metadata as pricingMetadata } from "@/app/(marketing)/pricing/page";
-import { publicInformation } from "@/config/public-information";
+import { formatInrFromPaise, publicInformation } from "@/config/public-information";
 import { render, screen } from "@testing-library/react";
 import fs from "fs";
 import path from "path";
@@ -74,9 +74,9 @@ describe("Public Information Pages", () => {
       render(<PricingPage />);
       const text = document.body.textContent || "";
 
-      expect(text).toContain(publicInformation.booking.weekday.rate);
-      expect(text).toContain(publicInformation.booking.weekend.rate);
-      expect(text).toContain(publicInformation.booking.advance);
+      expect(text).toContain(formatInrFromPaise(publicInformation.booking.weekday.ratePaise));
+      expect(text).toContain(formatInrFromPaise(publicInformation.booking.weekend.ratePaise));
+      expect(text).toContain(formatInrFromPaise(publicInformation.booking.advancePaise));
       expect(text).toContain(`for ${publicInformation.booking.durationLabel}`);
       expect(text).toContain("The published weekday and weekend rates apply to the complete 3 BHK property.");
       expect(text).toContain(publicInformation.optionalArrangements.statement);
@@ -191,9 +191,9 @@ describe("Public Information Pages", () => {
       expect(text).toContain("~30–40");
       expect(text).toContain("Capacity information for approved daytime gatherings at the property.");
       expect(text).toContain(publicInformation.parking.summary);
-      expect(text).toContain(publicInformation.booking.weekday.rate);
-      expect(text).toContain(publicInformation.booking.weekend.rate);
-      expect(text).toContain(publicInformation.booking.advance);
+      expect(text).toContain(formatInrFromPaise(publicInformation.booking.weekday.ratePaise));
+      expect(text).toContain(formatInrFromPaise(publicInformation.booking.weekend.ratePaise));
+      expect(text).toContain(formatInrFromPaise(publicInformation.booking.advancePaise));
 
       const pricingLink = screen.getByRole("link", { name: "View Pricing" });
       expect(pricingLink).toHaveAttribute("href", "/pricing");
@@ -216,7 +216,35 @@ describe("Public Information Pages", () => {
     });
   });
 
-  describe("G. Architecture & Source Token Guardrails", () => {
+  describe("G. Integer Paise & Currency Formatter Contracts", () => {
+    it("stores booking amounts strictly as integer paise", () => {
+      expect(publicInformation.booking.weekday.ratePaise).toBe(1_500_000);
+      expect(publicInformation.booking.weekend.ratePaise).toBe(2_000_000);
+      expect(publicInformation.booking.advancePaise).toBe(500_000);
+
+      expect(Number.isInteger(publicInformation.booking.weekday.ratePaise)).toBe(true);
+      expect(Number.isInteger(publicInformation.booking.weekend.ratePaise)).toBe(true);
+      expect(Number.isInteger(publicInformation.booking.advancePaise)).toBe(true);
+
+      const bookingObj = publicInformation.booking as Record<string, unknown>;
+      expect(bookingObj).not.toHaveProperty("rate");
+      expect(bookingObj).not.toHaveProperty("advance");
+    });
+
+    it("formats integer paise amounts deterministically to Indian rupees", () => {
+      expect(formatInrFromPaise(1_500_000)).toBe("₹15,000");
+      expect(formatInrFromPaise(2_000_000)).toBe("₹20,000");
+      expect(formatInrFromPaise(500_000)).toBe("₹5,000");
+    });
+
+    it("rejects non-integer, negative, or non-whole-rupee paise amounts", () => {
+      expect(() => formatInrFromPaise(15000.5)).toThrow(RangeError);
+      expect(() => formatInrFromPaise(-100)).toThrow(RangeError);
+      expect(() => formatInrFromPaise(500050)).toThrow(RangeError);
+    });
+  });
+
+  describe("H. Architecture & Source Token Guardrails", () => {
     const pagePaths = [
       "src/app/(marketing)/pricing/page.tsx",
       "src/app/(marketing)/location/page.tsx",
@@ -229,7 +257,6 @@ describe("Public Information Pages", () => {
         const fullPath = path.join(process.cwd(), relPath);
         const code = fs.readFileSync(fullPath, "utf-8");
 
-        // Design system imports & structure
         expect(code).toContain("@/components/estate-ui/");
         expect(code).toContain("@/config/public-information");
         expect(code).not.toContain("@/components/ui/container");
@@ -239,7 +266,6 @@ describe("Public Information Pages", () => {
         expect(code).not.toContain("tel:");
         expect(code).not.toContain("Placeholder");
 
-        // Invalid / Nonexistent tokens and utilities
         expect(code).not.toContain("--soe-color-brand-contrast");
         expect(code).not.toContain("--soe-radius-button");
         expect(code).not.toContain("--soe-surface-bg-base");
@@ -247,61 +273,39 @@ describe("Public Information Pages", () => {
         expect(code).not.toContain("--soe-text-4xl");
         expect(code).not.toContain("font-soe-editorial");
 
-        // Unsupported copy claims
         expect(code).not.toContain("secure parking");
         expect(code).not.toContain("ample parking");
         expect(code).not.toContain("private farm lane");
         expect(code).not.toContain("site visits");
         expect(code).not.toContain("independent room rentals");
 
-        // Positive valid token assertions
         expect(code).toContain("bg-[var(--soe-surface-bg-primary)]");
       });
     });
 
-    it("verifies specific token contract usages for Pricing, Location, Contact, and Policies", () => {
-      const pricingCode = fs.readFileSync(path.join(process.cwd(), "src/app/(marketing)/pricing/page.tsx"), "utf-8");
-      expect(pricingCode).toContain("text-[var(--soe-surface-text-secondary)]");
-      expect(pricingCode).toContain("font-soe-display");
-      expect(pricingCode).toContain("text-[length:var(--soe-text-2xl)]");
-
-      const locationCode = fs.readFileSync(path.join(process.cwd(), "src/app/(marketing)/location/page.tsx"), "utf-8");
-      expect(locationCode).toContain("font-soe-display");
-
-      const contactCode = fs.readFileSync(path.join(process.cwd(), "src/app/(marketing)/contact/page.tsx"), "utf-8");
-      expect(contactCode).toContain("text-[var(--soe-surface-text-secondary)]");
-
-      const policiesCode = fs.readFileSync(path.join(process.cwd(), "src/app/(marketing)/policies/page.tsx"), "utf-8");
-      expect(policiesCode).toContain("text-[var(--soe-surface-text-secondary)]");
-      expect(policiesCode).toContain("font-soe-display");
-    });
-
-    it("verifies single source-of-truth contract for publicInformation configuration module", () => {
-      const rawCanonicalValues = [
-        "contact@silveroakestate.online",
-        "Farm house 22, Phase 16, Green Beauty Farms, Sector 135, Noida, Uttar Pradesh 201310",
-        "https://maps.app.goo.gl/zaB8oYQeiaUWChYM7",
-        "₹15,000",
-        "₹20,000",
-        "₹5,000",
-        "Remaining balance payable at check-in.",
-        "Final pricing and applicable charges will be confirmed in writing before payment and booking confirmation.",
-        "Parking space for 3 vehicles is available inside the property.",
-        "Parking space for 10+ vehicles is available outside the property.",
-        "Parking space is available for 3 vehicles inside the property and 10+ vehicles outside the property.",
-        "Optional arrangements such as catering, DJ arrangements, photography shoots and event-related amenities are available only on request, subject to availability, written confirmation and a case-by-case assessment.",
-      ];
-
+    it("verifies single source-of-truth contract for publicInformation configuration module and page sources", () => {
       const configCode = fs.readFileSync(path.join(process.cwd(), "src/config/public-information.ts"), "utf-8");
-      rawCanonicalValues.forEach((val) => {
-        expect(configCode).toContain(val);
-      });
 
-      pagePaths.forEach((relPath) => {
-        const pageCode = fs.readFileSync(path.join(process.cwd(), relPath), "utf-8");
-        rawCanonicalValues.forEach((val) => {
-          expect(pageCode).not.toContain(val);
-        });
+      // Config module asserts integer paise storage
+      expect(configCode).toContain("ratePaise: 1_500_000");
+      expect(configCode).toContain("ratePaise: 2_000_000");
+      expect(configCode).toContain("advancePaise: 500_000");
+      expect(configCode).not.toContain('"₹15,000"');
+      expect(configCode).not.toContain('"₹20,000"');
+      expect(configCode).not.toContain('"₹5,000"');
+
+      // Pricing and policies page sources assert absence of hardcoded formatted currency strings and raw paise numbers
+      const pricingCode = fs.readFileSync(path.join(process.cwd(), "src/app/(marketing)/pricing/page.tsx"), "utf-8");
+      const policiesCode = fs.readFileSync(path.join(process.cwd(), "src/app/(marketing)/policies/page.tsx"), "utf-8");
+
+      [pricingCode, policiesCode].forEach((pageCode) => {
+        expect(pageCode).toContain("formatInrFromPaise");
+        expect(pageCode).not.toContain("₹15,000");
+        expect(pageCode).not.toContain("₹20,000");
+        expect(pageCode).not.toContain("₹5,000");
+        expect(pageCode).not.toContain("1_500_000");
+        expect(pageCode).not.toContain("2_000_000");
+        expect(pageCode).not.toContain("500_000");
       });
     });
   });

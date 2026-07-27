@@ -4,7 +4,7 @@ import { EstateEyebrow } from "@/components/estate-ui/estate-eyebrow";
 import { EstateHeading } from "@/components/estate-ui/estate-heading";
 import { EstateSection } from "@/components/estate-ui/estate-section";
 import { EstateText } from "@/components/estate-ui/estate-text";
-import { publicInformation } from "@/config/public-information";
+import { formatInrFromPaise, publicInformation } from "@/config/public-information";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -15,6 +15,9 @@ export const metadata: Metadata = {
 
 export default function PoliciesPage() {
   const { booking, parking, optionalArrangements, contact } = publicInformation;
+  const weekdayRate = formatInrFromPaise(booking.weekday.ratePaise);
+  const weekendRate = formatInrFromPaise(booking.weekend.ratePaise);
+  const advanceAmount = formatInrFromPaise(booking.advancePaise);
 
   return (
     <div className="min-h-screen bg-[var(--soe-surface-bg-primary)] text-[var(--soe-surface-text-primary)]">
@@ -107,15 +110,15 @@ export default function PoliciesPage() {
               <ul className="space-y-3 font-soe-ui text-[length:var(--soe-text-base)] text-[var(--soe-surface-text-secondary)]">
                 <li className="flex items-start gap-3">
                   <span className="inline-block w-2 h-2 mt-2 rounded-full bg-[var(--soe-color-brand)] shrink-0" />
-                  <span><strong>{booking.weekday.label} Booking Rate:</strong> {booking.weekday.rate} for {booking.durationLabel}.</span>
+                  <span><strong>{booking.weekday.label} Booking Rate:</strong> {weekdayRate} for {booking.durationLabel}.</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="inline-block w-2 h-2 mt-2 rounded-full bg-[var(--soe-color-brand)] shrink-0" />
-                  <span><strong>{booking.weekend.label} Booking Rate:</strong> {booking.weekend.rate} for {booking.durationLabel}.</span>
+                  <span><strong>{booking.weekend.label} Booking Rate:</strong> {weekendRate} for {booking.durationLabel}.</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="inline-block w-2 h-2 mt-2 rounded-full bg-[var(--soe-color-brand)] shrink-0" />
-                  <span><strong>Booking Advance:</strong> {booking.advance} flat advance required upon reservation.</span>
+                  <span><strong>Booking Advance:</strong> {advanceAmount} flat advance required upon reservation.</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="inline-block w-2 h-2 mt-2 rounded-full bg-[var(--soe-color-brand)] shrink-0" />

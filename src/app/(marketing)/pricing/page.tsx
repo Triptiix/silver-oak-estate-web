@@ -4,7 +4,7 @@ import { EstateEyebrow } from "@/components/estate-ui/estate-eyebrow";
 import { EstateHeading } from "@/components/estate-ui/estate-heading";
 import { EstateSection } from "@/components/estate-ui/estate-section";
 import { EstateText } from "@/components/estate-ui/estate-text";
-import { publicInformation } from "@/config/public-information";
+import { formatInrFromPaise, publicInformation } from "@/config/public-information";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -15,6 +15,9 @@ export const metadata: Metadata = {
 
 export default function PricingPage() {
   const { booking, optionalArrangements, contact } = publicInformation;
+  const weekdayRate = formatInrFromPaise(booking.weekday.ratePaise);
+  const weekendRate = formatInrFromPaise(booking.weekend.ratePaise);
+  const advanceAmount = formatInrFromPaise(booking.advancePaise);
 
   return (
     <div className="min-h-screen bg-[var(--soe-surface-bg-primary)] text-[var(--soe-surface-text-primary)]">
@@ -58,7 +61,7 @@ export default function PricingPage() {
                   </span>
                   <div className="space-y-1">
                     <p className="font-soe-display text-[length:var(--soe-text-2xl)] font-bold text-[var(--soe-surface-text-primary)]">
-                      {booking.weekday.rate}
+                      {weekdayRate}
                     </p>
                     <p className="font-soe-ui text-[length:var(--soe-text-sm)] text-[var(--soe-surface-text-secondary)]">
                       for {booking.durationLabel}
@@ -78,7 +81,7 @@ export default function PricingPage() {
                   </span>
                   <div className="space-y-1">
                     <p className="font-soe-display text-[length:var(--soe-text-2xl)] font-bold text-[var(--soe-surface-text-primary)]">
-                      {booking.weekend.rate}
+                      {weekendRate}
                     </p>
                     <p className="font-soe-ui text-[length:var(--soe-text-sm)] text-[var(--soe-surface-text-secondary)]">
                       for {booking.durationLabel}
@@ -99,7 +102,7 @@ export default function PricingPage() {
               <ul className="space-y-3 font-soe-ui text-[length:var(--soe-text-base)] text-[var(--soe-surface-text-secondary)]">
                 <li className="flex items-start gap-3">
                   <span className="inline-block w-2 h-2 mt-2 rounded-full bg-[var(--soe-color-brand)] shrink-0" />
-                  <span><strong>Booking Advance:</strong> A flat advance payment of {booking.advance} is required to confirm your reservation.</span>
+                  <span><strong>Booking Advance:</strong> A flat advance payment of {advanceAmount} is required to confirm your reservation.</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="inline-block w-2 h-2 mt-2 rounded-full bg-[var(--soe-color-brand)] shrink-0" />

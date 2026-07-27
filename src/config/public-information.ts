@@ -1,3 +1,25 @@
+const wholeRupeeFormatter = new Intl.NumberFormat("en-IN", {
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+});
+
+/**
+ * Formats an integer paise amount as whole Indian rupees for public display.
+ */
+export function formatInrFromPaise(amountPaise: number): string {
+  if (
+    !Number.isInteger(amountPaise) ||
+    amountPaise < 0 ||
+    amountPaise % 100 !== 0
+  ) {
+    throw new RangeError(
+      "Currency amounts must be non-negative integer paise values representing whole rupees."
+    );
+  }
+
+  return `₹${wholeRupeeFormatter.format(amountPaise / 100)}`;
+}
+
 export const publicInformation = {
   contact: {
     email: "contact@silveroakestate.online",
@@ -29,16 +51,21 @@ export const publicInformation = {
 
   booking: {
     durationLabel: "24 hours",
+
     weekday: {
       label: "Weekday",
-      rate: "₹15,000",
+      ratePaise: 1_500_000,
     },
+
     weekend: {
       label: "Weekend",
-      rate: "₹20,000",
+      ratePaise: 2_000_000,
     },
-    advance: "₹5,000",
+
+    advancePaise: 500_000,
+
     balanceText: "Remaining balance payable at check-in.",
+
     confirmationNotice:
       "Final pricing and applicable charges will be confirmed in writing before payment and booking confirmation.",
   },
