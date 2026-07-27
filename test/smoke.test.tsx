@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach, beforeAll } from "vitest";
 import * as fs from "fs";
 import * as path from "path";
 import HomePage from "@/app/(marketing)/page";
+import EstatePage from "@/app/(marketing)/estate/page";
 import MarketingLayout from "@/app/(marketing)/layout";
 import { SiteHeader } from "@/components/layout/site-header";
 import { MobileBookingCTA } from "@/components/layout/mobile-booking-cta";
@@ -553,6 +554,169 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
       );
       expect(parsed["img-src"]).toEqual(["'self'"]);
       expect(parsed["connect-src"]).toEqual(["'self'"]);
+    });
+  });
+
+  describe("Gate 3 Batch 2: The Estate Page", () => {
+    it("verifies Estate page imports Estate UI primitives and Next Image, and not legacy Container or Button", () => {
+      const filePath = path.resolve(__dirname, "../src/app/(marketing)/estate/page.tsx");
+      const content = fs.readFileSync(filePath, "utf-8");
+
+      expect(content).toContain("@/components/estate-ui/estate-section");
+      expect(content).toContain("@/components/estate-ui/estate-container");
+      expect(content).toContain("@/components/estate-ui/estate-heading");
+      expect(content).toContain("@/components/estate-ui/estate-text");
+      expect(content).toContain("@/components/estate-ui/estate-media-frame");
+      expect(content).toContain("@/components/estate-ui/estate-action-link");
+      expect(content).toContain("next/image");
+
+      expect(content).not.toContain("@/components/ui/container");
+      expect(content).not.toContain("@/components/ui/button");
+      expect(content).not.toContain("var(--muted-foreground)");
+      expect(content).not.toContain("Placeholder");
+    });
+
+    it("verifies heading hierarchy has exactly one H1 with correct text", () => {
+      render(<EstatePage />);
+      const h1s = screen.getAllByRole("heading", { level: 1 });
+      expect(h1s).toHaveLength(1);
+      expect(h1s[0]).toHaveTextContent("A Complete Private Estate for Time Together");
+    });
+
+    it("verifies exact metadata title and complete description are exported", async () => {
+      const estateModule = await import("@/app/(marketing)/estate/page");
+      expect(estateModule.metadata.title).toBe("The Estate | Silver Oak Estate Private Farmhouse in Noida");
+      expect(estateModule.metadata.description).toBe(
+        "Explore the fully furnished 3 BHK residence, lawn, pool, kitchen and private gathering spaces at Silver Oak Estate in Sector 135, Noida."
+      );
+    });
+
+    it("verifies rendered page images use exact 8 production WebP paths and corrected alt text", () => {
+      const { container } = render(<EstatePage />);
+      const imgs = container.querySelectorAll("img");
+      expect(imgs).toHaveLength(8);
+
+      const expectedPaths = [
+        "/images/estate/estate/estate-hero.webp",
+        "/images/estate/estate/estate-living-area.webp",
+        "/images/estate/estate/estate-bedroom.webp",
+        "/images/estate/estate/estate-bathroom.webp",
+        "/images/estate/estate/estate-kitchen.webp",
+        "/images/estate/estate/estate-dining.webp",
+        "/images/estate/estate/estate-pool-deck.webp",
+        "/images/estate/estate/estate-lawn-evening.webp",
+      ];
+
+      const actualPaths = Array.from(imgs).map((img) => decodeURIComponent(img.getAttribute("src") || ""));
+      expectedPaths.forEach((expected) => {
+        expect(actualPaths.some((p) => p.includes(expected))).toBe(true);
+      });
+
+      const livingAreaImg = screen.getByAltText(
+        "Indoor seating area with two chairs and a table at Silver Oak Estate"
+      );
+      expect(livingAreaImg).toBeInTheDocument();
+    });
+
+    it("verifies CTA action links queried by accessible names have correct destinations", () => {
+      render(<EstatePage />);
+
+      const checkAvailLinks = screen.getAllByRole("link", { name: /Check Availability/i });
+      expect(checkAvailLinks.length).toBeGreaterThan(0);
+      checkAvailLinks.forEach((link) => expect(link).toHaveAttribute("href", "/availability"));
+
+      const viewGalleryLink = screen.getByRole("link", { name: /View the Gallery/i });
+      expect(viewGalleryLink).toHaveAttribute("href", "/gallery");
+
+      const planEventLink = screen.getByRole("link", { name: /Plan an Event/i });
+      expect(planEventLink).toHaveAttribute("href", "/contact");
+
+      const emailLink = screen.getByRole("link", { name: /Email the Estate/i });
+      expect(emailLink).toHaveAttribute("href", "mailto:contact@silveroakestate.online");
+    });
+
+    it("verifies capacity section scoped under H2 'Designed Around Your Group' contains all 4 responsive facts", () => {
+      render(<EstatePage />);
+      const h2 = screen.getByRole("heading", { level: 2, name: "Designed Around Your Group" });
+      const section = h2.closest("section");
+      expect(section).not.toBeNull();
+
+      if (section) {
+        const s = within(section);
+        expect(s.getByText("Overnight Stays")).toBeInTheDocument();
+        expect(s.getByText("6–10 Guests")).toBeInTheDocument();
+        expect(s.getByText("Indoor Gatherings")).toBeInTheDocument();
+        expect(s.getByText("Approximately 15–20 Guests")).toBeInTheDocument();
+        expect(s.getByText("Day Events & Gatherings")).toBeInTheDocument();
+        expect(s.getByText("30–40 Guests")).toBeInTheDocument();
+        expect(s.getByText("Parking")).toBeInTheDocument();
+        expect(s.getByText("Approximately 3 Inside · 10+ Outside")).toBeInTheDocument();
+      }
+    });
+
+    it("verifies verified property facts and operational features are present on the rendered page", () => {
+      render(<EstatePage />);
+      expect(screen.getAllByText(/Fully furnished 3 BHK/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/Three themed king-bed bedrooms/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/Three attached bathrooms/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/one lawn bathroom/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/pool changing room/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/6–10 Guests/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/30–40 Guests/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/Approximately 15–20 Guests/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/seating for 5/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/Wi-Fi/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/RO drinking water/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/Diesel generator backup/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/Solar power support/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/Emergency lighting/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/24\/7 caretaker/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/CCTV security/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/Approximately 3 vehicles inside/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/10 or more vehicles outside/i).length).toBeGreaterThan(0);
+    });
+
+    it("verifies unsupported claims are absent from the page source", () => {
+      const filePath = path.resolve(__dirname, "../src/app/(marketing)/estate/page.tsx");
+      const content = fs.readFileSync(filePath, "utf-8");
+
+      const forbidden = [
+        "master bedroom",
+        "luxury bedroom",
+        "resort",
+        "five-star",
+        "premium bedding",
+        "hotel service",
+        "daily housekeeping",
+        "room service",
+        "chef included",
+        "catering included",
+        "grocery included",
+        "pool depth",
+        "pool dimensions",
+        "heated pool",
+        "infinity pool",
+        "lifeguard",
+        "unlimited pool access",
+        "guaranteed internet",
+        "uninterrupted power",
+        "guaranteed security",
+        "GST",
+        "security deposit",
+        "cleaning fee",
+        "extra guest fee",
+        "overtime fee",
+        "tel:",
+        "wa.me",
+        "travel minutes",
+        "travel distance",
+        "airport distance",
+        "metro distance",
+      ];
+
+      forbidden.forEach((term) => {
+        expect(content.toLowerCase()).not.toContain(term.toLowerCase());
+      });
     });
   });
 });
