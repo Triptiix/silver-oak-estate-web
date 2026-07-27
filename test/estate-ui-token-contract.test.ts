@@ -2,8 +2,64 @@ import { describe, it, expect } from "vitest";
 import * as fs from "fs";
 import * as path from "path";
 
-// Small deterministic contrast helper relative luminance
-function getLuminance(r: number, g: number, b: number) {
+export interface ColorRGBA {
+  r: number;
+  g: number;
+  b: number;
+  a: number;
+}
+
+export function parseColor(val: string): ColorRGBA {
+  const str = val.trim();
+  if (str === "transparent") {
+    return { r: 0, g: 0, b: 0, a: 0 };
+  }
+  if (str.startsWith("rgba")) {
+    const match = str.match(/rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)/);
+    if (match) {
+      return {
+        r: parseInt(match[1], 10),
+        g: parseInt(match[2], 10),
+        b: parseInt(match[3], 10),
+        a: parseFloat(match[4]),
+      };
+    }
+  }
+  if (str.startsWith("rgb")) {
+    const match = str.match(/rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/);
+    if (match) {
+      return {
+        r: parseInt(match[1], 10),
+        g: parseInt(match[2], 10),
+        b: parseInt(match[3], 10),
+        a: 1,
+      };
+    }
+  }
+  let hex = str.replace("#", "").trim();
+  if (hex.length === 3) {
+    hex = hex.split("").map(c => c + c).join("");
+  }
+  if (hex.length === 6) {
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    if (!isNaN(r) && !isNaN(g) && !isNaN(b)) {
+      return { r, g, b, a: 1 };
+    }
+  }
+  throw new Error(`Invalid color value: ${val}`);
+}
+
+export function compositeColor(fg: ColorRGBA, bg: ColorRGBA): ColorRGBA {
+  const r = fg.r * fg.a + bg.r * (1 - fg.a);
+  const g = fg.g * fg.a + bg.g * (1 - fg.a);
+  const b = fg.b * fg.a + bg.b * (1 - fg.a);
+  const a = fg.a + bg.a * (1 - fg.a);
+  return { r: Math.round(r), g: Math.round(g), b: Math.round(b), a };
+}
+
+export function getLuminance(r: number, g: number, b: number): number {
   const [a, c, d] = [r, g, b].map(v => {
     v /= 255;
     return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
@@ -11,36 +67,18 @@ function getLuminance(r: number, g: number, b: number) {
   return a * 0.2126 + c * 0.7152 + d * 0.0722;
 }
 
-function getContrast(color1: [number, number, number], color2: [number, number, number]) {
-  const l1 = getLuminance(color1[0], color1[1], color1[2]);
-  const l2 = getLuminance(color2[0], color2[1], color2[2]);
+export function getContrast(color1: ColorRGBA, color2: ColorRGBA): number {
+  const final1 = color1.a < 1 ? compositeColor(color1, color2) : color1;
+  const final2 = color2.a < 1 ? compositeColor(color2, { r: 255, g: 255, b: 255, a: 1 }) : color2;
+
+  const l1 = getLuminance(final1.r, final1.g, final1.b);
+  const l2 = getLuminance(final2.r, final2.g, final2.b);
   const lightest = Math.max(l1, l2);
   const darkest = Math.min(l1, l2);
   return (lightest + 0.05) / (darkest + 0.05);
 }
 
-// Simple parser for our hex colors to rgb
-function parseColor(val: string): [number, number, number] {
-  if (val === "transparent") return [0, 0, 0];
-  if (val.startsWith("rgba")) {
-    const match = val.match(/rgba\((\d+),\s*(\d+),\s*(\d+)/);
-    if (match) return [parseInt(match[1]), parseInt(match[2]), parseInt(match[3])];
-  }
-  let hex = val.replace("#", "").trim();
-  if (hex.length === 3) {
-    hex = hex.split("").map(c => c + c).join("");
-  }
-  const r = parseInt(hex.substring(0, 2), 16);
-  const g = parseInt(hex.substring(2, 4), 16);
-  const b = parseInt(hex.substring(4, 6), 16);
-  if (isNaN(r) || isNaN(g) || isNaN(b)) {
-    throw new Error(`Invalid color value: ${val}`);
-  }
-  return [r, g, b];
-}
-
-// Extract variables from a block
-function parseRules(css: string): Record<string, string> {
+export function parseRules(css: string): Record<string, string> {
   const rules: Record<string, string> = {};
   const regex = /(--[a-zA-Z0-9-]+)\s*:\s*([^;]+);/g;
   let match;
@@ -50,8 +88,7 @@ function parseRules(css: string): Record<string, string> {
   return rules;
 }
 
-// Recursive var resolution
-function resolveVar(val: string, scope: Record<string, string>): string {
+export function resolveVar(val: string, scope: Record<string, string>): string {
   let current = val;
   let iterations = 0;
   while (current.includes("var(") && iterations < 20) {
@@ -69,6 +106,160 @@ function resolveVar(val: string, scope: Record<string, string>): string {
   return current.trim();
 }
 
+export const REQUIRED_SHARED_TOKENS = [
+  // Typography
+  "--soe-text-xs",
+  "--soe-text-sm",
+  "--soe-text-base",
+  "--soe-text-lg",
+  "--soe-text-xl",
+  "--soe-text-2xl",
+  "--soe-text-3xl",
+  "--soe-text-hero",
+
+  // Line heights
+  "--soe-leading-display-tight",
+  "--soe-leading-heading",
+  "--soe-leading-body",
+  "--soe-leading-label",
+
+  // Tracking
+  "--soe-tracking-display",
+  "--soe-tracking-heading",
+  "--soe-tracking-eyebrow",
+  "--soe-tracking-label",
+
+  // Spacing
+  "--soe-space-1",
+  "--soe-space-2",
+  "--soe-space-3",
+  "--soe-space-4",
+  "--soe-space-6",
+  "--soe-space-8",
+  "--soe-space-12",
+  "--soe-space-16",
+  "--soe-space-20",
+  "--soe-space-24",
+  "--soe-space-32",
+
+  // Section spacing
+  "--soe-section-space-sm",
+  "--soe-section-space-md",
+  "--soe-section-space-lg",
+
+  // Containers
+  "--soe-container-visual",
+  "--soe-container-content",
+  "--soe-container-reading",
+
+  // Radius
+  "--soe-radius-control",
+  "--soe-radius-card",
+  "--soe-radius-media",
+  "--soe-radius-pill",
+
+  // Shadows
+  "--soe-shadow-raised",
+  "--soe-shadow-overlay",
+
+  // Motion
+  "--soe-duration-immediate",
+  "--soe-duration-interface",
+  "--soe-duration-editorial",
+  "--soe-ease-standard",
+  "--soe-ease-emphasized",
+  "--soe-ease-editorial"
+];
+
+export function validateRequiredSharedTokens(css: string): { missingInRoot: string[]; presentInDark: string[] } {
+  const rootMatch = css.match(/:root\s*{([\s\S]*?)}/);
+  const rootTokens = rootMatch ? parseRules(rootMatch[1]) : {};
+
+  const darkMatch = css.match(/\[data-estate-theme="dark"\]\s*{([\s\S]*?)}/);
+  const darkTokens = darkMatch ? parseRules(darkMatch[1]) : {};
+
+  const missingInRoot: string[] = [];
+  const presentInDark: string[] = [];
+
+  for (const token of REQUIRED_SHARED_TOKENS) {
+    if (!rootTokens[token]) {
+      missingInRoot.push(token);
+    }
+    if (darkTokens[token]) {
+      presentInDark.push(token);
+    }
+  }
+
+  return { missingInRoot, presentInDark };
+}
+
+export function validateScopeContrasts(scope: Record<string, string>, scopeName: "light" | "dark"): void {
+  const bgPrimary = parseColor(resolveVar("var(--soe-surface-bg-primary)", scope));
+  const textPrimary = parseColor(resolveVar("var(--soe-surface-text-primary)", scope));
+  const textSecondary = parseColor(resolveVar("var(--soe-surface-text-secondary)", scope));
+  const textInverse = parseColor(resolveVar("var(--soe-surface-text-inverse)", scope));
+
+  const actionPrimary = parseColor(resolveVar("var(--soe-surface-action-primary)", scope));
+  const actionHover = parseColor(resolveVar("var(--soe-surface-action-hover)", scope));
+
+  const actionSec = parseColor(resolveVar("var(--soe-surface-action-secondary)", scope));
+  const actionSecHover = parseColor(resolveVar("var(--soe-surface-action-secondary-hover)", scope));
+  const border = parseColor(resolveVar("var(--soe-surface-control-border)", scope));
+
+  const quietHover = parseColor(resolveVar("var(--soe-surface-action-quiet-hover)", scope));
+  const focusRing = parseColor(resolveVar("var(--soe-color-focus-ring)", scope));
+  const errorText = parseColor(resolveVar("var(--soe-surface-color-error)", scope));
+
+  // Primary
+  if (getContrast(textPrimary, bgPrimary) < 4.5) {
+    throw new Error(`[${scopeName}] Primary text contrast < 4.5`);
+  }
+  if (getContrast(textSecondary, bgPrimary) < 4.5) {
+    throw new Error(`[${scopeName}] Secondary text contrast < 4.5`);
+  }
+  if (getContrast(textInverse, actionPrimary) < 4.5) {
+    throw new Error(`[${scopeName}] Primary action text contrast < 4.5`);
+  }
+  if (getContrast(textInverse, actionHover) < 4.5) {
+    throw new Error(`[${scopeName}] Primary action hover text contrast < 4.5`);
+  }
+
+  // Secondary Action
+  const compositedSecBg = compositeColor(actionSec, bgPrimary);
+  if (getContrast(textPrimary, compositedSecBg) < 4.5) {
+    throw new Error(`[${scopeName}] Secondary action primary text contrast < 4.5`);
+  }
+
+  const compositedSecHoverBg = compositeColor(actionSecHover, bgPrimary);
+  if (getContrast(textPrimary, compositedSecHoverBg) < 4.5) {
+    throw new Error(`[${scopeName}] Secondary action hover text contrast < 4.5`);
+  }
+
+  if (actionSec.a === 0 || scopeName === "dark") {
+    if (getContrast(border, bgPrimary) < 3.0) {
+      throw new Error(`[${scopeName}] Secondary action border contrast < 3.0`);
+    }
+  }
+
+  // Quiet Action
+  if (getContrast(textPrimary, bgPrimary) < 4.5) {
+    throw new Error(`[${scopeName}] Quiet action primary text contrast < 4.5`);
+  }
+
+  const compositedQuietHoverBg = compositeColor(quietHover, bgPrimary);
+  if (getContrast(textPrimary, compositedQuietHoverBg) < 4.5) {
+    throw new Error(`[${scopeName}] Quiet action hover text contrast < 4.5`);
+  }
+
+  // Focus and Error
+  if (getContrast(focusRing, bgPrimary) < 3.0) {
+    throw new Error(`[${scopeName}] Focus ring contrast < 3.0`);
+  }
+  if (getContrast(errorText, bgPrimary) < 4.5) {
+    throw new Error(`[${scopeName}] Surface-aware error text contrast < 4.5`);
+  }
+}
+
 describe("Estate UI Token Contract", () => {
   const cssPath = path.resolve(__dirname, "../src/app/globals.css");
   const uiDir = path.resolve(__dirname, "../src/components/estate-ui");
@@ -82,7 +273,6 @@ describe("Estate UI Token Contract", () => {
     }));
 
   it("fails when any component references an undeclared token", () => {
-    // 1. Extract all declared --soe-* custom properties from css
     const declaredTokens = new Set<string>();
     const declRegex = /(--soe-[a-zA-Z0-9-]+):/g;
     let match;
@@ -90,7 +280,6 @@ describe("Estate UI Token Contract", () => {
       declaredTokens.add(match[1]);
     }
 
-    // 2. Extract every var(--soe-...) reference in components
     const referencedTokens = new Set<string>();
     const refRegex = /var\((--soe-[a-zA-Z0-9-]+)\)/g;
     for (const file of uiFiles) {
@@ -99,7 +288,6 @@ describe("Estate UI Token Contract", () => {
       }
     }
 
-    // 3. Verify
     const missing: string[] = [];
     for (const token of referencedTokens) {
       if (!declaredTokens.has(token)) {
@@ -110,46 +298,13 @@ describe("Estate UI Token Contract", () => {
     expect(missing).toEqual([]);
   });
 
-  it("verifies shared typography, spacing, section spacing, container, radius, shadow, duration and easing tokens are in :root and NOT in dark", () => {
-    const rootBlockRegex = /:root\s*{([\s\S]*?)}/;
-    const rootMatch = cssContent.match(rootBlockRegex);
-    expect(rootMatch).not.toBeNull();
-    const rootTokens = rootMatch![1];
-
-    const darkBlockRegex = /\[data-estate-theme="dark"\]\s*{([\s\S]*?)}/;
-    const darkMatch = cssContent.match(darkBlockRegex);
-    expect(darkMatch).not.toBeNull();
-    const darkTokens = darkMatch![1];
-
-    const sharedPrefixes = [
-      "--soe-text-",
-      "--soe-leading-",
-      "--soe-tracking-",
-      "--soe-space-",
-      "--soe-section-space-",
-      "--soe-container-",
-      "--soe-radius-",
-      "--soe-shadow-",
-      "--soe-duration-",
-      "--soe-ease-"
-    ];
-
-    const rootRules = parseRules(rootTokens);
-    const darkRules = parseRules(darkTokens);
-
-    for (const prefix of sharedPrefixes) {
-      // Find at least one matching in root to ensure it exists
-      const foundInRoot = Object.keys(rootRules).some(k => k.startsWith(prefix));
-      expect(foundInRoot, `Expected to find tokens with prefix ${prefix} in :root`).toBe(true);
-
-      // Ensure none exist in dark
-      const foundInDark = Object.keys(darkRules).some(k => k.startsWith(prefix));
-      expect(foundInDark, `Expected NOT to find tokens with prefix ${prefix} in dark selector`).toBe(false);
-    }
+  it("verifies every required shared token is declared in :root and NOT declared in dark theme", () => {
+    const result = validateRequiredSharedTokens(cssContent);
+    expect(result.missingInRoot, "All required shared tokens must be declared in :root").toEqual([]);
+    expect(result.presentInDark, "No shared tokens should be declared in dark theme").toEqual([]);
   });
 
   it("verifies Tailwind font mappings exist for all font utility classes used", () => {
-    // Extract font utility classes used
     const usedFonts = new Set<string>();
     const fontClassRegex = /font-soe-(display|body|ui)/g;
     for (const file of uiFiles) {
@@ -159,7 +314,6 @@ describe("Estate UI Token Contract", () => {
       }
     }
 
-    // Verify they are declared in @theme
     const themeBlockRegex = /@theme\s*{([\s\S]*?)}/;
     const themeMatch = cssContent.match(themeBlockRegex);
     expect(themeMatch).not.toBeNull();
@@ -181,66 +335,68 @@ describe("Estate UI Token Contract", () => {
     }
   });
 
-  it("verifies light and dark action contracts contain all required semantic variables and meet contrast", () => {
-    const rootBlockRegex = /:root\s*{([\s\S]*?)}/;
-    const lightBlockRegex = /\[data-estate-theme="light"\]\s*{([\s\S]*?)}/;
-    const darkBlockRegex = /\[data-estate-theme="dark"\]\s*{([\s\S]*?)}/;
-
-    const rootTokens = parseRules(cssContent.match(rootBlockRegex)![1]);
-    const lightOverrides = cssContent.match(lightBlockRegex) ? parseRules(cssContent.match(lightBlockRegex)![1]) : {};
-    const darkOverrides = cssContent.match(darkBlockRegex) ? parseRules(cssContent.match(darkBlockRegex)![1]) : {};
-
+  it("verifies light action contract meets all required contrast ratios", () => {
+    const rootTokens = parseRules(cssContent.match(/:root\s*{([\s\S]*?)}/)![1]);
+    const lightMatch = cssContent.match(/\[data-estate-theme="light"\]\s*{([\s\S]*?)}/);
+    const lightOverrides = lightMatch ? parseRules(lightMatch[1]) : {};
     const lightScope = { ...rootTokens, ...lightOverrides };
+
+    expect(() => validateScopeContrasts(lightScope, "light")).not.toThrow();
+  });
+
+  it("verifies dark action contract meets all required contrast ratios", () => {
+    const rootTokens = parseRules(cssContent.match(/:root\s*{([\s\S]*?)}/)![1]);
+    const darkMatch = cssContent.match(/\[data-estate-theme="dark"\]\s*{([\s\S]*?)}/);
+    const darkOverrides = darkMatch ? parseRules(darkMatch[1]) : {};
     const darkScope = { ...rootTokens, ...darkOverrides };
 
-    const requiredMappings = [
-      "--soe-surface-bg-primary",
-      "--soe-surface-bg-surface",
-      "--soe-surface-text-primary",
-      "--soe-surface-text-inverse",
-      "--soe-surface-text-secondary",
-      "--soe-surface-action-primary",
-      "--soe-surface-action-secondary",
-      "--soe-surface-action-hover",
-      "--soe-surface-action-quiet-hover",
-      "--soe-color-focus-ring",
-      "--soe-surface-color-error"
-    ];
+    expect(() => validateScopeContrasts(darkScope, "dark")).not.toThrow();
+  });
+});
 
-    for (const scope of [lightScope, darkScope]) {
-      // 1. Fails when a semantic mapping is removed or changed
-      for (const token of requiredMappings) {
-        expect(scope[token], `Token ${token} should exist`).toBeDefined();
+describe("Parser & Contract Validation Unit Tests", () => {
+  const cssPath = path.resolve(__dirname, "../src/app/globals.css");
+  const cssContent = fs.readFileSync(cssPath, "utf-8");
 
-        // Ensure it can be resolved without throwing
-        const resolved = resolveVar(`var(${token})`, scope);
-        expect(resolved, `Token ${token} should resolve to a valid color string`).toBeTruthy();
-      }
+  it("preserves alpha 0.1 for rgba(255, 255, 255, 0.1)", () => {
+    const parsed = parseColor("rgba(255, 255, 255, 0.1)");
+    expect(parsed.a).toBeCloseTo(0.1, 5);
+    expect(parsed.r).toBe(255);
+    expect(parsed.g).toBe(255);
+    expect(parsed.b).toBe(255);
+  });
 
-      // Check primary contrast (normal text >= 4.5:1)
-      const bgPrimary = parseColor(resolveVar(`var(--soe-surface-bg-primary)`, scope));
-      const textPrimary = parseColor(resolveVar(`var(--soe-surface-text-primary)`, scope));
-      expect(getContrast(textPrimary, bgPrimary), `Primary text contrast`).toBeGreaterThanOrEqual(4.5);
+  it("preserves alpha 0 for transparent", () => {
+    const parsed = parseColor("transparent");
+    expect(parsed.a).toBe(0);
+  });
 
-      const textSecondary = parseColor(resolveVar(`var(--soe-surface-text-secondary)`, scope));
-      expect(getContrast(textSecondary, bgPrimary), `Secondary text contrast`).toBeGreaterThanOrEqual(4.5);
+  it("composites white at 10% over #0d0f0e within 1 channel tolerance", () => {
+    const fg = parseColor("rgba(255, 255, 255, 0.1)");
+    const bg = parseColor("#0d0f0e");
+    const composited = compositeColor(fg, bg);
 
-      // Check action primary contrast (text inverse vs action primary)
-      const actionPrimary = parseColor(resolveVar(`var(--soe-surface-action-primary)`, scope));
-      const textInverse = parseColor(resolveVar(`var(--soe-surface-text-inverse)`, scope));
-      expect(getContrast(textInverse, actionPrimary), `Action primary text contrast`).toBeGreaterThanOrEqual(4.5);
+    expect(Math.abs(composited.r - 37)).toBeLessThanOrEqual(1);
+    expect(Math.abs(composited.g - 39)).toBeLessThanOrEqual(1);
+    expect(Math.abs(composited.b - 38)).toBeLessThanOrEqual(1);
+    expect(composited.a).toBe(1);
+  });
 
-      // Check action hover contrast (text inverse vs action hover)
-      const actionHover = parseColor(resolveVar(`var(--soe-surface-action-hover)`, scope));
-      expect(getContrast(textInverse, actionHover), `Action hover text contrast`).toBeGreaterThanOrEqual(4.5);
+  it("reports missing token when one required token is removed from CSS fixture", () => {
+    const modifiedCss = cssContent.replace("--soe-space-4:", "--soe-removed-token:");
+    const result = validateRequiredSharedTokens(modifiedCss);
+    expect(result.missingInRoot).toContain("--soe-space-4");
+  });
 
-      // Check non-text boundary (focus ring vs bg primary >= 3:1)
-      const focusRing = parseColor(resolveVar(`var(--soe-color-focus-ring)`, scope));
-      expect(getContrast(focusRing, bgPrimary), `Focus ring contrast against primary bg`).toBeGreaterThanOrEqual(3);
+  it("fails contrast validation when a semantic action colour is changed in an in-memory fixture", () => {
+    const modifiedCss = cssContent.replace(
+      "--soe-color-ink: #20231f;",
+      "--soe-color-ink: #f0f0f0;"
+    );
+    const rootTokens = parseRules(modifiedCss.match(/:root\s*{([\s\S]*?)}/)![1]);
+    const lightOverrides = parseRules(modifiedCss.match(/\[data-estate-theme="light"\]\s*{([\s\S]*?)}/)![1]);
+    const lightScope = { ...rootTokens, ...lightOverrides };
 
-      // Check error text contrast (error text vs bg primary >= 4.5:1)
-      const errorText = parseColor(resolveVar(`var(--soe-surface-color-error)`, scope));
-      expect(getContrast(errorText, bgPrimary), `Error text contrast against primary bg`).toBeGreaterThanOrEqual(4.5);
-    }
+    expect(() => validateScopeContrasts(lightScope, "light")).toThrow();
   });
 });
