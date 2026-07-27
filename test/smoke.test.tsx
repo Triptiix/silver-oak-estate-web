@@ -312,6 +312,22 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper.style.paddingBottom).toBe("calc(1rem + env(safe-area-inset-bottom))");
     });
+
+    it("CTA wrapper is a labelled complementary landmark", () => {
+      mockPathname = "/";
+      render(<MobileBookingCTA />);
+
+      const landmark = screen.getByRole("complementary", {
+        name: "Booking action",
+      });
+
+      const link = within(landmark).getByRole("link", {
+        name: "Check Availability & Book",
+      });
+
+      expect(landmark).toBeInTheDocument();
+      expect(link).toHaveAttribute("href", "/book");
+    });
   });
 
   describe("Next Image & CSP Security Configuration", () => {

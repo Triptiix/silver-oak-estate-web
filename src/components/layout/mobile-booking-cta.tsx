@@ -16,7 +16,8 @@ export function MobileBookingCTA() {
   }
 
   return (
-    <div
+    <aside
+      aria-label="Booking action"
       className="fixed bottom-0 left-0 right-0 z-40 border-t border-[var(--soe-surface-control-border)] bg-[var(--soe-surface-bg-primary)] p-4 sm:hidden"
       style={{
         paddingBottom: "calc(1rem + env(safe-area-inset-bottom))",
@@ -29,6 +30,6 @@ export function MobileBookingCTA() {
       >
         Check Availability & Book
       </EstateActionLink>
-    </div>
+    </aside>
   );
 }
