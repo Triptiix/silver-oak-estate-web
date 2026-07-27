@@ -618,6 +618,12 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
         "Indoor seating area with two chairs and a table at Silver Oak Estate"
       );
       expect(livingAreaImg).toBeInTheDocument();
+
+      const kitchenImg = screen.getByAltText("Modular kitchen equipped with stove, induction and oven");
+      expect(kitchenImg).toHaveAttribute("sizes", "(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 25vw");
+
+      const diningImg = screen.getByAltText("Dedicated dining table and seating area");
+      expect(diningImg).toHaveAttribute("sizes", "(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 25vw");
     });
 
     it("verifies CTA action links queried by accessible names have correct destinations", () => {

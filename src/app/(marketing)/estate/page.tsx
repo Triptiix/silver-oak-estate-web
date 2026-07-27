@@ -191,7 +191,7 @@ export default function EstatePage() {
                     src="/images/estate/estate/estate-kitchen.webp"
                     alt="Modular kitchen equipped with stove, induction and oven"
                     fill
-                    sizes="(max-width: 640px) 100vw, 25vw"
+                    sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 25vw"
                     className="object-cover"
                   />
                 </EstateMediaFrame>
@@ -200,7 +200,7 @@ export default function EstatePage() {
                     src="/images/estate/estate/estate-dining.webp"
                     alt="Dedicated dining table and seating area"
                     fill
-                    sizes="(max-width: 640px) 100vw, 25vw"
+                    sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 25vw"
                     className="object-cover"
                   />
                 </EstateMediaFrame>
