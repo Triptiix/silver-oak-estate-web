@@ -276,6 +276,64 @@ export function validateScopeContrasts(scope: Record<string, string>, scopeName:
   }
 }
 
+export function validateFontContract(css: string): void {
+  // 1. Body Contract Check
+  const bodyMatch = css.match(/body\s*{([\s\S]*?)}/);
+  if (!bodyMatch) {
+    throw new Error("validateFontContract: missing body CSS rule");
+  }
+  const bodyRules = bodyMatch[1];
+  const bodyFontMatch = bodyRules.match(/font-family\s*:\s*([^;]+);/);
+  if (!bodyFontMatch) {
+    throw new Error("validateFontContract: body rule missing font-family property");
+  }
+  const bodyFontVal = bodyFontMatch[1].trim();
+
+  if (bodyFontVal.includes("Arial") || bodyFontVal.includes("Helvetica")) {
+    throw new Error(`validateFontContract: body font-family contains forbidden font: ${bodyFontVal}`);
+  }
+  if (!bodyFontVal.includes("var(--font-manrope)")) {
+    throw new Error(`validateFontContract: body font-family must reference var(--font-manrope): ${bodyFontVal}`);
+  }
+  if (!bodyFontVal.includes("system-ui") || !bodyFontVal.includes("sans-serif")) {
+    throw new Error(`validateFontContract: body font-family missing system-ui/sans-serif fallbacks: ${bodyFontVal}`);
+  }
+
+  // 2. Tailwind @theme Mappings Check
+  const themeMatch = css.match(/@theme\s*{([\s\S]*?)}/);
+  if (!themeMatch) {
+    throw new Error("validateFontContract: missing @theme block in CSS");
+  }
+  const themeBlock = themeMatch[1];
+  const themeRules = parseRules(themeBlock);
+
+  if (themeRules["--font-soe-display"] !== "var(--font-newsreader), georgia, serif") {
+    throw new Error(`validateFontContract: --font-soe-display theme mapping invalid or missing: ${themeRules["--font-soe-display"] || "undefined"}`);
+  }
+  if (themeRules["--font-soe-body"] !== "var(--font-manrope), system-ui, sans-serif") {
+    throw new Error(`validateFontContract: --font-soe-body theme mapping invalid or missing: ${themeRules["--font-soe-body"] || "undefined"}`);
+  }
+  if (themeRules["--font-soe-ui"] !== "var(--font-manrope), system-ui, sans-serif") {
+    throw new Error(`validateFontContract: --font-soe-ui theme mapping invalid or missing: ${themeRules["--font-soe-ui"] || "undefined"}`);
+  }
+
+  // 3. Explicit Utilities Check (.font-soe-display, .font-soe-body, .font-soe-ui)
+  const displayUtilMatch = css.match(/\.font-soe-display\s*{([\s\S]*?)}/);
+  if (!displayUtilMatch || !displayUtilMatch[1].includes("font-family: var(--font-newsreader), georgia, serif")) {
+    throw new Error("validateFontContract: explicit utility .font-soe-display missing or invalid");
+  }
+
+  const bodyUtilMatch = css.match(/\.font-soe-body\s*{([\s\S]*?)}/);
+  if (!bodyUtilMatch || !bodyUtilMatch[1].includes("font-family: var(--font-manrope), system-ui, sans-serif")) {
+    throw new Error("validateFontContract: explicit utility .font-soe-body missing or invalid");
+  }
+
+  const uiUtilMatch = css.match(/\.font-soe-ui\s*{([\s\S]*?)}/);
+  if (!uiUtilMatch || !uiUtilMatch[1].includes("font-family: var(--font-manrope), system-ui, sans-serif")) {
+    throw new Error("validateFontContract: explicit utility .font-soe-ui missing or invalid");
+  }
+}
+
 describe("Estate UI Token Contract", () => {
   const cssPath = path.resolve(__dirname, "../src/app/globals.css");
   const uiDir = path.resolve(__dirname, "../src/components/estate-ui");
@@ -367,6 +425,74 @@ describe("Estate UI Token Contract", () => {
     const darkScope = { ...rootTokens, ...darkOverrides };
 
     expect(() => validateScopeContrasts(darkScope, "dark")).not.toThrow();
+  });
+
+  it("verifies production stylesheet passes validateFontContract", () => {
+    expect(() => validateFontContract(cssContent)).not.toThrow();
+  });
+
+  it("fails font contract validation when body font-family is changed to Arial", () => {
+    const mod = cssContent.replace(
+      "font-family: var(--font-manrope), system-ui, sans-serif;",
+      "font-family: Arial, Helvetica, sans-serif;"
+    );
+    expect(() => validateFontContract(mod)).toThrow("validateFontContract: body font-family contains forbidden font");
+  });
+
+  it("fails font contract validation when body Manrope declaration is removed", () => {
+    const mod = cssContent.replace(
+      "font-family: var(--font-manrope), system-ui, sans-serif;",
+      "font-family: system-ui, sans-serif;"
+    );
+    expect(() => validateFontContract(mod)).toThrow("validateFontContract: body font-family must reference var(--font-manrope)");
+  });
+
+  it("fails font contract validation when --font-soe-display theme mapping is removed", () => {
+    const mod = cssContent.replace(
+      "--font-soe-display: var(--font-newsreader), georgia, serif;",
+      ""
+    );
+    expect(() => validateFontContract(mod)).toThrow("validateFontContract: --font-soe-display theme mapping invalid or missing");
+  });
+
+  it("fails font contract validation when --font-soe-body theme mapping is removed", () => {
+    const mod = cssContent.replace(
+      "--font-soe-body: var(--font-manrope), system-ui, sans-serif;",
+      ""
+    );
+    expect(() => validateFontContract(mod)).toThrow("validateFontContract: --font-soe-body theme mapping invalid or missing");
+  });
+
+  it("fails font contract validation when --font-soe-ui theme mapping is removed", () => {
+    const mod = cssContent.replace(
+      "--font-soe-ui: var(--font-manrope), system-ui, sans-serif;",
+      ""
+    );
+    expect(() => validateFontContract(mod)).toThrow("validateFontContract: --font-soe-ui theme mapping invalid or missing");
+  });
+
+  it("fails font contract validation when .font-soe-display utility is removed", () => {
+    const mod = cssContent.replace(
+      /\.font-soe-display\s*{[\s\S]*?}/,
+      ""
+    );
+    expect(() => validateFontContract(mod)).toThrow("validateFontContract: explicit utility .font-soe-display missing or invalid");
+  });
+
+  it("fails font contract validation when .font-soe-body utility is removed", () => {
+    const mod = cssContent.replace(
+      /\.font-soe-body\s*{[\s\S]*?}/,
+      ""
+    );
+    expect(() => validateFontContract(mod)).toThrow("validateFontContract: explicit utility .font-soe-body missing or invalid");
+  });
+
+  it("fails font contract validation when .font-soe-ui utility is removed", () => {
+    const mod = cssContent.replace(
+      /\.font-soe-ui\s*{[\s\S]*?}/,
+      ""
+    );
+    expect(() => validateFontContract(mod)).toThrow("validateFontContract: explicit utility .font-soe-ui missing or invalid");
   });
 });
 
