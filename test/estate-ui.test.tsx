@@ -78,6 +78,44 @@ describe("Estate UI Primitives", () => {
     });
   });
 
+  describe("EstateHeading", () => {
+    it("Hero uses --soe-leading-display-tight and --soe-tracking-display", () => {
+      render(<EstateHeading variant="hero">Hero Heading</EstateHeading>);
+      const heading = screen.getByRole("heading");
+      expect(heading).toHaveClass("leading-[var(--soe-leading-display-tight)]");
+      expect(heading).toHaveClass("tracking-[var(--soe-tracking-display)]");
+    });
+
+    it("Normal heading variant uses --soe-leading-heading and --soe-tracking-heading", () => {
+      render(<EstateHeading variant="h1">H1 Heading</EstateHeading>);
+      const heading = screen.getByRole("heading");
+      expect(heading).toHaveClass("leading-[var(--soe-leading-heading)]");
+      expect(heading).toHaveClass("tracking-[var(--soe-tracking-heading)]");
+    });
+
+    it("Heading output does not contain tracking-tight or numeric hard-coded line-height classes", () => {
+      render(<EstateHeading variant="h2">H2 Heading</EstateHeading>);
+      const heading = screen.getByRole("heading");
+      const className = heading.getAttribute("class") || "";
+      expect(className).not.toContain("tracking-tight");
+      expect(className).not.toMatch(/leading-\[\d+(\.\d+)?\]/);
+    });
+  });
+
+  describe("EstateText", () => {
+    it("Uses --soe-leading-body", () => {
+      render(<EstateText>Body Text</EstateText>);
+      const text = screen.getByText("Body Text");
+      expect(text).toHaveClass("leading-[var(--soe-leading-body)]");
+    });
+
+    it("Does not use leading-relaxed", () => {
+      render(<EstateText>Body Text</EstateText>);
+      const text = screen.getByText("Body Text");
+      expect(text).not.toHaveClass("leading-relaxed");
+    });
+  });
+
   describe("EstateField", () => {
     it("Label htmlFor equals control id", () => {
       render(
@@ -189,6 +227,35 @@ describe("Estate UI Primitives", () => {
       const errorMsg = screen.getByText("Validation error");
       expect(errorMsg).toHaveClass("text-[var(--soe-surface-color-error)]");
     });
+
+    it("An error paragraph has role='alert'", () => {
+      render(
+        <EstateField id="alert-field" label="Alert Label" error="Alert error message">
+          {(props) => <input {...props} />}
+        </EstateField>
+      );
+      const alert = screen.getByRole("alert");
+      expect(alert).toHaveTextContent("Alert error message");
+      expect(alert).toHaveAttribute("id", "alert-field-error");
+    });
+
+    it("The control's aria-describedby still includes the error ID when error exists", () => {
+      render(
+        <EstateField id="alert-ctrl-field" label="Label" error="Control error message">
+          {(props) => <input {...props} data-testid="ctrl-input" />}
+        </EstateField>
+      );
+      expect(screen.getByTestId("ctrl-input")).toHaveAttribute("aria-describedby", "alert-ctrl-field-error");
+    });
+
+    it("No alert exists when no error is supplied", () => {
+      render(
+        <EstateField id="no-alert-field" label="No Alert Label">
+          {(props) => <input {...props} />}
+        </EstateField>
+      );
+      expect(screen.queryByRole("alert")).toBeNull();
+    });
   });
 
   describe("Surface and focus contract", () => {
@@ -208,6 +275,29 @@ describe("Estate UI Primitives", () => {
       render(<EstateSection surface="transparent" data-testid="trans-sec" />);
       expect(screen.getByTestId("trans-sec")).not.toHaveAttribute("data-estate-theme");
       expect(screen.getByTestId("trans-sec")).not.toHaveClass("bg-[var(--soe-surface-bg-primary)]");
+    });
+
+    it("surface='light' cannot be overridden by unsafe caller data-estate-theme='dark'", () => {
+      const unsafeProps = { "data-estate-theme": "dark" };
+      render(<EstateSection surface="light" data-testid="sec-override" {...(unsafeProps as Record<string, unknown>)} />);
+      expect(screen.getByTestId("sec-override")).toHaveAttribute("data-estate-theme", "light");
+    });
+
+    it("surface='dark' produces data-estate-theme='dark'", () => {
+      render(<EstateSection surface="dark" data-testid="sec-dark-prod" />);
+      expect(screen.getByTestId("sec-dark-prod")).toHaveAttribute("data-estate-theme", "dark");
+    });
+
+    it("surface='transparent' removes an unsafe caller data-estate-theme value", () => {
+      const unsafeProps = { "data-estate-theme": "dark" };
+      render(<EstateSection surface="transparent" data-testid="sec-trans-override" {...(unsafeProps as Record<string, unknown>)} />);
+      expect(screen.getByTestId("sec-trans-override")).not.toHaveAttribute("data-estate-theme");
+    });
+
+    it("Rejects as='main' at compile time", () => {
+      // @ts-expect-error as='main' is removed from allowed element types in EstateSection
+      render(<EstateSection as="main" data-testid="sec-main" />);
+      expect(screen.getByTestId("sec-main")).toBeInTheDocument();
     });
 
     it("Dark-theme focus token mapping and surface-aware focus offset mapping are applied to Button", () => {

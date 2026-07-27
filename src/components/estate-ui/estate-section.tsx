@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils/cn";
 import * as React from "react";
 
 interface EstateSectionProps extends React.HTMLAttributes<HTMLElement> {
-  as?: "section" | "div" | "article" | "aside" | "main";
+  as?: "section" | "div" | "article" | "aside";
   spacing?: "sm" | "md" | "lg" | "none";
   surface?: "light" | "dark" | "transparent";
 }
@@ -16,6 +16,7 @@ export function EstateSection({
 }: EstateSectionProps) {
   return (
     <Component
+      {...props}
       data-estate-theme={surface !== "transparent" ? surface : undefined}
       className={cn(
         "w-full transition-colors duration-[var(--soe-duration-editorial)]",
@@ -27,7 +28,6 @@ export function EstateSection({
         },
         className
       )}
-      {...props}
     />
   );
 }

@@ -17,7 +17,7 @@ export function EstateText({
   return (
     <p
       className={cn(
-        "font-soe-body leading-relaxed",
+        "font-soe-body",
         {
           "text-[length:var(--soe-text-base)]": variant === "base",
           "text-[length:var(--soe-text-sm)]": variant === "sm",
@@ -27,6 +27,7 @@ export function EstateText({
           "text-[var(--soe-surface-text-secondary)]": tone === "muted",
           "max-w-[var(--soe-container-reading)]": readable,
         },
+        "leading-[var(--soe-leading-body)]",
         className
       )}
       {...props}

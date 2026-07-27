@@ -44,7 +44,7 @@ export const EstateField = React.forwardRef<HTMLDivElement, EstateFieldProps>(
           </p>
         )}
         {error && (
-          <p id={errorId} className="text-[length:var(--soe-text-sm)] text-[var(--soe-surface-color-error)] font-medium">
+          <p id={errorId} role="alert" className="text-[length:var(--soe-text-sm)] text-[var(--soe-surface-color-error)] font-medium">
             {error}
           </p>
         )}

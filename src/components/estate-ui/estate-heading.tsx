@@ -17,13 +17,18 @@ export function EstateHeading({
   return (
     <Component
       className={cn(
-        "font-soe-display text-[var(--soe-surface-text-primary)] tracking-tight",
+        "font-soe-display text-[var(--soe-surface-text-primary)]",
         {
-          "text-[length:var(--soe-text-hero)] leading-[1.1]": variant === "hero",
-          "text-[length:var(--soe-text-3xl)] leading-[1.15]": variant === "h1",
-          "text-[length:var(--soe-text-2xl)] leading-[1.2]": variant === "h2",
-          "text-[length:var(--soe-text-xl)] leading-[1.25]": variant === "h3",
-          "text-[length:var(--soe-text-lg)] leading-[1.3]": variant === "h4",
+          "text-[length:var(--soe-text-hero)] leading-[var(--soe-leading-display-tight)] tracking-[var(--soe-tracking-display)]":
+            variant === "hero",
+          "text-[length:var(--soe-text-3xl)] leading-[var(--soe-leading-heading)] tracking-[var(--soe-tracking-heading)]":
+            variant === "h1",
+          "text-[length:var(--soe-text-2xl)] leading-[var(--soe-leading-heading)] tracking-[var(--soe-tracking-heading)]":
+            variant === "h2",
+          "text-[length:var(--soe-text-xl)] leading-[var(--soe-leading-heading)] tracking-[var(--soe-tracking-heading)]":
+            variant === "h3",
+          "text-[length:var(--soe-text-lg)] leading-[var(--soe-leading-heading)] tracking-[var(--soe-tracking-heading)]":
+            variant === "h4",
           "max-w-[var(--soe-container-reading)]": readable,
         },
         className
