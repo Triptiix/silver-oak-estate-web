@@ -1,21 +1,67 @@
 @import "tailwindcss";
 
 @theme {
+  --font-soe-display: var(--font-newsreader), georgia, serif;
+  --font-soe-body: var(--font-manrope), system-ui, sans-serif;
+  --font-soe-ui: var(--font-manrope), system-ui, sans-serif;
+
   --color-background: var(--background);
   --color-surface: var(--surface);
   --color-foreground: var(--foreground);
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
-  
+
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
-  
+
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
-  
+
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-error: var(--error);
+
+
+  /* SOE Public Primitives (UI-1R Core Palette) */
+  --color-soe-night: var(--soe-color-night);
+  --color-soe-canvas: var(--soe-color-canvas);
+  --color-soe-surface: var(--soe-color-surface);
+  --color-soe-ink: var(--soe-color-ink);
+  --color-soe-ink-muted: var(--soe-color-ink-muted);
+  --color-soe-brand: var(--soe-color-brand);
+  --color-soe-brand-strong: var(--soe-color-brand-strong);
+  --color-soe-brand-soft: var(--soe-color-brand-soft);
+  --color-soe-stone: var(--soe-color-stone);
+  --color-soe-silver: var(--soe-color-silver);
+  --color-soe-gold: var(--soe-color-gold);
+  --color-soe-water: var(--soe-color-water);
+  --color-soe-border: var(--soe-color-border);
+  --color-soe-focus: var(--soe-color-focus);
+  --color-soe-success: var(--soe-color-success);
+  --color-soe-warning: var(--soe-color-warning);
+  --color-soe-error: var(--soe-color-error);
+  --color-soe-surface-error: var(--soe-surface-color-error);
+
+  /* Semantic Aliases mapped to surface contract */
+  --color-soe-text-primary: var(--soe-surface-text-primary);
+  --color-soe-text-secondary: var(--soe-surface-text-secondary);
+  --color-soe-text-inverse: var(--soe-surface-text-inverse);
+  --color-soe-text-quiet: var(--soe-surface-text-quiet);
+
+  --color-soe-background-primary: var(--soe-surface-bg-primary);
+  --color-soe-background-surface: var(--soe-surface-bg-surface);
+
+  --color-soe-action-primary: var(--soe-surface-action-primary);
+  --color-soe-action-primary-hover: var(--soe-surface-action-hover);
+  --color-soe-action-secondary: var(--soe-surface-action-secondary);
+  --color-soe-action-secondary-hover: var(--soe-surface-action-secondary-hover);
+  --color-soe-action-quiet-hover: var(--soe-surface-action-quiet-hover);
+
+  --color-soe-accent-metal: var(--soe-surface-accent-metal);
+  --color-soe-accent-water: var(--soe-color-water);
+  --color-soe-control-border: var(--soe-surface-control-border);
+  --color-soe-focus-ring: var(--soe-color-focus-ring);
+  --color-soe-focus-offset: var(--soe-color-focus-offset);
 
   --radius-radius: var(--radius);
   --spacing-header-height: var(--header-height);
@@ -30,20 +76,185 @@
     --foreground: #1c1917;
     --muted-foreground: #78716c;
     --border: #e7e5e4;
-    
+
     --primary: #292524;
     --primary-foreground: #fafaf9;
-    
+
     --accent: #f5f5f4;
     --accent-foreground: #292524;
-    
+
     --success: #15803d;
     --warning: #b45309;
     --error: #b91c1c;
-    
+
     --radius: 0.25rem;
     --header-height: 4rem;
     --container-width: 80rem;
+
+    /* SOE Public Primitives (UI-1R) */
+    /* Warm ivory: Primary public canvas, Editorial storytelling sections, Light navigation state, Reading sections */
+    --soe-color-canvas: #f5f1e8;
+    --soe-color-surface: #fbfaf7;
+
+    /* Estate night: Cinematic hero treatment, Day-to-night transitions, Footer, Final booking CTA, Gallery presentation moments. (Must not become the background of every page) */
+    --soe-color-night: #0d0f0e;
+
+    --soe-color-ink: #20231f;
+    --soe-color-ink-muted: #666b64;
+
+    /* Olive: Primary public actions, Selected navigation states, Small editorial labels, Nature-related graphic details */
+    --soe-color-brand: #47543a;
+    --soe-color-brand-strong: #344416;
+    --soe-color-brand-soft: #e7e8de;
+
+    --soe-color-stone: #d8d3c9;
+
+    /* Silver: Restrained logo reference, Fine neutral accent, Decorative metallic neutral (no CSS gradients) */
+    --soe-color-silver: #b9b7ae;
+
+    /* Antique gold: Sparingly for logo details, fine divider lines, small icons, selected decorative strokes, premium micro-details */
+    --soe-color-gold: #b79052;
+
+    /* Pool water: Pool-related storytelling, small information highlights, water-themed visual details */
+    --soe-color-water: #4bafc2;
+
+    --soe-color-border: #d8d3c9;
+
+    /* Status (independent) */
+    --soe-color-focus: #195aa8;
+    --soe-color-focus-on-dark: #9cc7ff;
+    --soe-color-success: #276749;
+    --soe-color-warning: #8a5a00;
+    --soe-color-error: #9b2c2c;
+
+    /* Light and Dark Public Surface Contract */
+    /* Default (Light) Semantic Surface */
+    --soe-surface-bg-primary: var(--soe-color-canvas);
+    --soe-surface-bg-surface: var(--soe-color-surface);
+    --soe-surface-text-primary: var(--soe-color-ink);
+    --soe-surface-text-secondary: var(--soe-color-ink-muted);
+    --soe-surface-text-inverse: var(--soe-color-canvas);
+    --soe-surface-text-quiet: var(--soe-color-ink-muted);
+    --soe-surface-control-border: var(--soe-color-ink-muted);
+    --soe-surface-action-primary: var(--soe-color-brand);
+    --soe-surface-action-hover: var(--soe-color-brand-strong);
+    --soe-surface-action-secondary: var(--soe-color-surface);
+    --soe-surface-action-secondary-hover: var(--soe-color-stone);
+    --soe-surface-action-quiet-hover: var(--soe-color-stone);
+    --soe-surface-accent-metal: var(--soe-color-gold);
+    --soe-color-focus-ring: var(--soe-color-focus);
+    --soe-color-focus-offset: var(--soe-surface-bg-primary);
+    --soe-surface-color-error: #9b2c2c;
+
+    /* Shared Typography */
+    --soe-text-xs: 0.75rem;
+    --soe-text-sm: 0.875rem;
+    --soe-text-base: 1rem;
+    --soe-text-lg: clamp(1.0625rem, 1vw + 0.75rem, 1.25rem);
+    --soe-text-xl: clamp(1.25rem, 1.5vw + 0.85rem, 1.75rem);
+    --soe-text-2xl: clamp(1.75rem, 2.4vw + 1rem, 3rem);
+    --soe-text-3xl: clamp(2.4rem, 4.2vw + 1rem, 5.5rem);
+    --soe-text-hero: clamp(2.8rem, 6.5vw, 7.5rem);
+
+    /* Line Heights */
+    --soe-leading-display-tight: 1.1;
+    --soe-leading-heading: 1.2;
+    --soe-leading-body: 1.6;
+    --soe-leading-label: 1.4;
+
+    /* Tracking */
+    --soe-tracking-display: -0.02em;
+    --soe-tracking-heading: -0.01em;
+    --soe-tracking-eyebrow: 0.05em;
+    --soe-tracking-label: 0.01em;
+
+    /* Spacing */
+    --soe-space-1: 0.25rem;
+    --soe-space-2: 0.5rem;
+    --soe-space-3: 0.75rem;
+    --soe-space-4: 1rem;
+    --soe-space-6: 1.5rem;
+    --soe-space-8: 2rem;
+    --soe-space-12: 3rem;
+    --soe-space-16: 4rem;
+    --soe-space-20: 5rem;
+    --soe-space-24: 6rem;
+    --soe-space-32: 8rem;
+
+    /* Section Spacing */
+    --soe-section-space-sm: clamp(2rem, 4vw, 4rem);
+    --soe-section-space-md: clamp(4rem, 8vw, 8rem);
+    --soe-section-space-lg: clamp(6rem, 12vw, 12rem);
+
+    /* Containers */
+    --soe-container-visual: 90rem;
+    --soe-container-content: 80rem;
+    --soe-container-reading: 51.25rem;
+
+    /* Radius */
+    --soe-radius-control: 0.25rem;
+    --soe-radius-card: 0.75rem;
+    --soe-radius-media: 0.5rem;
+    --soe-radius-pill: 9999px;
+
+    /* Shadows */
+    --soe-shadow-raised: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --soe-shadow-overlay: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+    /* Motion */
+    --soe-duration-immediate: 150ms;
+    --soe-duration-interface: 250ms;
+    --soe-duration-editorial: 400ms;
+    --soe-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+    --soe-ease-emphasized: cubic-bezier(0.4, 0, 0.2, 1);
+    --soe-ease-editorial: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Light Theme Override (Explicit) */
+  [data-estate-theme="light"] {
+    --soe-surface-bg-primary: var(--soe-color-canvas);
+    --soe-surface-bg-surface: var(--soe-color-surface);
+    --soe-surface-text-primary: var(--soe-color-ink);
+    --soe-surface-text-secondary: var(--soe-color-ink-muted);
+    --soe-surface-text-inverse: var(--soe-color-canvas);
+    --soe-surface-text-quiet: var(--soe-color-ink-muted);
+    --soe-surface-control-border: var(--soe-color-ink-muted);
+    --soe-surface-action-primary: var(--soe-color-brand);
+    --soe-surface-action-hover: var(--soe-color-brand-strong);
+    --soe-surface-action-secondary: var(--soe-color-surface);
+    --soe-surface-action-secondary-hover: var(--soe-color-stone);
+    --soe-surface-action-quiet-hover: var(--soe-color-stone);
+    --soe-surface-accent-metal: var(--soe-color-gold);
+    --soe-color-focus-ring: var(--soe-color-focus);
+    --soe-color-focus-offset: var(--soe-surface-bg-primary);
+  }
+
+  /* Dark Theme Override */
+  [data-estate-theme="dark"] {
+    --soe-surface-bg-primary: var(--soe-color-night);
+    --soe-surface-bg-surface: var(--soe-color-night);
+    --soe-surface-text-primary: var(--soe-color-canvas);
+    --soe-surface-text-secondary: var(--soe-color-silver);
+    --soe-surface-text-inverse: var(--soe-color-ink);
+    --soe-surface-text-quiet: var(--soe-color-silver);
+    --soe-surface-control-border: var(--soe-color-ink-muted);
+    --soe-surface-action-primary: var(--soe-color-brand-soft);
+    --soe-surface-action-hover: var(--soe-color-canvas);
+    --soe-surface-action-secondary: transparent;
+    --soe-surface-action-secondary-hover: rgba(255, 255, 255, 0.1);
+    --soe-surface-action-quiet-hover: rgba(255, 255, 255, 0.1);
+    --soe-surface-accent-metal: var(--soe-color-gold);
+    --soe-color-focus-ring: var(--soe-color-focus-on-dark);
+    --soe-color-focus-offset: var(--soe-surface-bg-primary);
+    --soe-surface-color-error: #ffb3b3;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --soe-duration-immediate: 0.01ms;
+      --soe-duration-interface: 0.01ms;
+      --soe-duration-editorial: 0.01ms;
+    }
   }
 }
 
@@ -51,6 +262,20 @@
   body {
     background-color: var(--background);
     color: var(--foreground);
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: var(--font-manrope), system-ui, sans-serif;
+  }
+}
+
+@layer utilities {
+  .font-soe-display {
+    font-family: var(--font-newsreader), georgia, serif;
+  }
+
+  .font-soe-body {
+    font-family: var(--font-manrope), system-ui, sans-serif;
+  }
+
+  .font-soe-ui {
+    font-family: var(--font-manrope), system-ui, sans-serif;
   }
 }
