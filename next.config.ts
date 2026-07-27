@@ -7,7 +7,7 @@ const cspDirectives = [
   // Next.js development tooling may require unsafe-eval
   `script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://checkout.razorpay.com${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data:",
+  "img-src 'self' data: https://tcjijcqdulszckbbkbcz.supabase.co",
   "font-src 'self' data:",
   "connect-src 'self' https://challenges.cloudflare.com https://api.razorpay.com https://checkout.razorpay.com",
   "frame-src https://challenges.cloudflare.com https://api.razorpay.com https://checkout.razorpay.com",
@@ -18,6 +18,15 @@ const cspDirectives = [
 ];
 
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "tcjijcqdulszckbbkbcz.supabase.co",
+        pathname: "/storage/v1/object/public/**",
+      },
+    ],
+  },
   async headers() {
     return [
       {
