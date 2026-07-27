@@ -356,13 +356,17 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
       expect(landmark.className).not.toContain("sm:hidden");
     });
 
-    it("renders aria-hidden spacer with h-24 and md:hidden on /", () => {
+    it("renders aria-hidden spacer with safe-area height and md:hidden on /", () => {
       mockPathname = "/";
       render(<MobileBookingCTA />);
       const spacer = screen.getByTestId("mobile-booking-spacer");
+
       expect(spacer).toHaveAttribute("aria-hidden", "true");
-      expect(spacer.className).toContain("h-24");
-      expect(spacer.className).toContain("md:hidden");
+      expect(spacer).toHaveClass("md:hidden");
+      expect(spacer).not.toHaveClass("h-24");
+      expect(spacer).toHaveStyle({
+        height: "calc(6rem + env(safe-area-inset-bottom))",
+      });
     });
 
     it("neither landmark nor spacer renders on /book", () => {

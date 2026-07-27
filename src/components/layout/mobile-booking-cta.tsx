@@ -20,7 +20,10 @@ export function MobileBookingCTA() {
       <div
         aria-hidden="true"
         data-testid="mobile-booking-spacer"
-        className="h-24 md:hidden"
+        className="md:hidden"
+        style={{
+          height: "calc(6rem + env(safe-area-inset-bottom))",
+        }}
       />
       <aside
         aria-label="Booking action"
