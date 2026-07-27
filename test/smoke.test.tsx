@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, within } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, beforeAll } from "vitest";
 import * as fs from "fs";
 import * as path from "path";
 import HomePage from "@/app/(marketing)/page";
@@ -32,14 +32,20 @@ Object.defineProperty(window, "matchMedia", {
 function parseCspDirectives(cspHeader: string): Record<string, string[]> {
   const directives: Record<string, string[]> = {};
   const parts = cspHeader.split(";");
+
   for (const part of parts) {
     const trimmed = part.trim();
     if (!trimmed) continue;
+
     const tokens = trimmed.split(/\s+/);
-    const name = tokens[0];
+    const name = tokens[0].toLowerCase();
     const values = tokens.slice(1);
+
+    if (name in directives) continue;
+
     directives[name] = values;
   }
+
   return directives;
 }
 
@@ -97,6 +103,19 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
       );
       const main = screen.getByRole("main");
       expect(main).toHaveAttribute("tabindex", "-1");
+    });
+
+    it("main element contains flex-1 and no pb-24 padding classes", () => {
+      render(
+        <MarketingLayout>
+          <div>Content</div>
+        </MarketingLayout>
+      );
+      const main = screen.getByRole("main");
+      expect(main.className).toContain("flex-1");
+      expect(main.className).not.toContain("pb-24");
+      expect(main.className).not.toContain("sm:pb-0");
+      expect(main.className).not.toContain("md:pb-0");
     });
   });
 
@@ -301,15 +320,15 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
 
     it("29. CTA wrapper does not include pb-safe", () => {
       mockPathname = "/";
-      const { container } = render(<MobileBookingCTA />);
-      const wrapper = container.firstChild as HTMLElement;
+      render(<MobileBookingCTA />);
+      const wrapper = screen.getByRole("complementary", { name: "Booking action" });
       expect(wrapper.className).not.toContain("pb-safe");
     });
 
     it("30. CTA wrapper contains exact safe-area padding-bottom style", () => {
       mockPathname = "/";
-      const { container } = render(<MobileBookingCTA />);
-      const wrapper = container.firstChild as HTMLElement;
+      render(<MobileBookingCTA />);
+      const wrapper = screen.getByRole("complementary", { name: "Booking action" });
       expect(wrapper.style.paddingBottom).toBe("calc(1rem + env(safe-area-inset-bottom))");
     });
 
@@ -328,9 +347,52 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
       expect(landmark).toBeInTheDocument();
       expect(link).toHaveAttribute("href", "/book");
     });
+
+    it("CTA landmark contains md:hidden and not sm:hidden on /", () => {
+      mockPathname = "/";
+      render(<MobileBookingCTA />);
+      const landmark = screen.getByRole("complementary", { name: "Booking action" });
+      expect(landmark.className).toContain("md:hidden");
+      expect(landmark.className).not.toContain("sm:hidden");
+    });
+
+    it("renders aria-hidden spacer with h-24 and md:hidden on /", () => {
+      mockPathname = "/";
+      render(<MobileBookingCTA />);
+      const spacer = screen.getByTestId("mobile-booking-spacer");
+      expect(spacer).toHaveAttribute("aria-hidden", "true");
+      expect(spacer.className).toContain("h-24");
+      expect(spacer.className).toContain("md:hidden");
+    });
+
+    it("neither landmark nor spacer renders on /book", () => {
+      mockPathname = "/book";
+      render(<MobileBookingCTA />);
+      expect(screen.queryByRole("complementary", { name: "Booking action" })).toBeNull();
+      expect(screen.queryByTestId("mobile-booking-spacer")).toBeNull();
+    });
+
+    it("neither landmark nor spacer renders on /availability", () => {
+      mockPathname = "/availability";
+      render(<MobileBookingCTA />);
+      expect(screen.queryByRole("complementary", { name: "Booking action" })).toBeNull();
+      expect(screen.queryByTestId("mobile-booking-spacer")).toBeNull();
+    });
   });
 
   describe("Next Image & CSP Security Configuration", () => {
+    let cspDirectives: Record<string, string[]>;
+
+    beforeAll(async () => {
+      const headers = await nextConfig.headers!();
+      const cspHeader = headers[0].headers.find(
+        (header) => header.key === "Content-Security-Policy"
+      );
+
+      expect(cspHeader).toBeDefined();
+      cspDirectives = parseCspDirectives(cspHeader!.value);
+    });
+
     it("31. remotePatterns contains exactly approved host", () => {
       const patterns = nextConfig.images?.remotePatterns || [];
       expect(patterns.length).toBe(1);
@@ -354,22 +416,16 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
       });
     });
 
-    it("35. CSP img-src directive equals exactly approved tokens", async () => {
-      const headers = await nextConfig.headers!();
-      const cspHeader = headers[0].headers.find((h) => h.key === "Content-Security-Policy");
-      const directives = parseCspDirectives(cspHeader!.value);
-      expect(directives["img-src"]).toEqual([
+    it("35. CSP img-src directive equals exactly approved tokens", () => {
+      expect(cspDirectives["img-src"]).toEqual([
         "'self'",
         "data:",
         "https://tcjijcqdulszckbbkbcz.supabase.co",
       ]);
     });
 
-    it("36. CSP connect-src directive equals exactly approved tokens", async () => {
-      const headers = await nextConfig.headers!();
-      const cspHeader = headers[0].headers.find((h) => h.key === "Content-Security-Policy");
-      const directives = parseCspDirectives(cspHeader!.value);
-      expect(directives["connect-src"]).toEqual([
+    it("36. CSP connect-src directive equals exactly approved tokens", () => {
+      expect(cspDirectives["connect-src"]).toEqual([
         "'self'",
         "https://challenges.cloudflare.com",
         "https://api.razorpay.com",
@@ -377,36 +433,32 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
       ]);
     });
 
-    it("37. CSP frame-src directive equals exactly approved tokens", async () => {
-      const headers = await nextConfig.headers!();
-      const cspHeader = headers[0].headers.find((h) => h.key === "Content-Security-Policy");
-      const directives = parseCspDirectives(cspHeader!.value);
-      expect(directives["frame-src"]).toEqual([
+    it("37. CSP frame-src directive equals exactly approved tokens", () => {
+      expect(cspDirectives["frame-src"]).toEqual([
         "https://challenges.cloudflare.com",
         "https://api.razorpay.com",
         "https://checkout.razorpay.com",
       ]);
     });
 
-    it("38. existing object-src 'none' remains", async () => {
-      const headers = await nextConfig.headers!();
-      const cspHeader = headers[0].headers.find((h) => h.key === "Content-Security-Policy");
-      const directives = parseCspDirectives(cspHeader!.value);
-      expect(directives["object-src"]).toEqual(["'none'"]);
+    it("38. existing object-src 'none' remains", () => {
+      expect(cspDirectives["object-src"]).toEqual(["'none'"]);
     });
 
-    it("39. existing frame-ancestors 'none' remains", async () => {
-      const headers = await nextConfig.headers!();
-      const cspHeader = headers[0].headers.find((h) => h.key === "Content-Security-Policy");
-      const directives = parseCspDirectives(cspHeader!.value);
-      expect(directives["frame-ancestors"]).toEqual(["'none'"]);
+    it("39. existing frame-ancestors 'none' remains", () => {
+      expect(cspDirectives["frame-ancestors"]).toEqual(["'none'"]);
     });
 
-    it("40. existing form-action 'self' remains", async () => {
-      const headers = await nextConfig.headers!();
-      const cspHeader = headers[0].headers.find((h) => h.key === "Content-Security-Policy");
-      const directives = parseCspDirectives(cspHeader!.value);
-      expect(directives["form-action"]).toEqual(["'self'"]);
+    it("40. existing form-action 'self' remains", () => {
+      expect(cspDirectives["form-action"]).toEqual(["'self'"]);
+    });
+
+    it("41. CSP parser handles case-insensitivity and first duplicate wins", () => {
+      const parsed = parseCspDirectives(
+        "IMG-SRC 'self'; img-src https://unsafe.example; CONNECT-SRC 'self'"
+      );
+      expect(parsed["img-src"]).toEqual(["'self'"]);
+      expect(parsed["connect-src"]).toEqual(["'self'"]);
     });
   });
 });
