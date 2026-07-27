@@ -4,6 +4,7 @@ import { EstateEyebrow } from "@/components/estate-ui/estate-eyebrow";
 import { EstateHeading } from "@/components/estate-ui/estate-heading";
 import { EstateSection } from "@/components/estate-ui/estate-section";
 import { EstateText } from "@/components/estate-ui/estate-text";
+import { publicInformation } from "@/config/public-information";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -13,6 +14,8 @@ export const metadata: Metadata = {
 };
 
 export default function ContactPage() {
+  const { contact, location } = publicInformation;
+
   return (
     <div className="min-h-screen bg-[var(--soe-surface-bg-primary)] text-[var(--soe-surface-text-primary)]">
       {/* HERO SECTION */}
@@ -52,15 +55,15 @@ export default function ContactPage() {
 
               <div className="pt-2">
                 <a
-                  href="mailto:contact@silveroakestate.online"
+                  href={contact.mailtoHref}
                   className="font-soe-ui text-[length:var(--soe-text-xl)] font-bold text-[var(--soe-color-brand)] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--soe-color-brand)]"
                 >
-                  contact@silveroakestate.online
+                  {contact.email}
                 </a>
               </div>
 
               <div className="flex flex-col sm:flex-row items-center gap-4 pt-4">
-                <EstateActionLink href="mailto:contact@silveroakestate.online" variant="button">
+                <EstateActionLink href={contact.mailtoHref} variant="button">
                   Email an Enquiry
                 </EstateActionLink>
                 <EstateActionLink href="/availability" variant="editorial">
@@ -103,7 +106,7 @@ export default function ContactPage() {
                 Property Address
               </EstateHeading>
               <address className="not-italic font-soe-ui text-[length:var(--soe-text-base)] text-[var(--soe-surface-text-primary)] leading-relaxed bg-[var(--soe-surface-bg-surface)] border border-[var(--soe-surface-control-border)]/20 rounded-[var(--soe-radius-card)] p-6">
-                Farm house 22, Phase 16, Green Beauty Farms, Sector 135, Noida, Uttar Pradesh 201310
+                {location.fullAddress}
               </address>
             </div>
           </div>

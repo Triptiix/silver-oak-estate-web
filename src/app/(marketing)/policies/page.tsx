@@ -4,6 +4,7 @@ import { EstateEyebrow } from "@/components/estate-ui/estate-eyebrow";
 import { EstateHeading } from "@/components/estate-ui/estate-heading";
 import { EstateSection } from "@/components/estate-ui/estate-section";
 import { EstateText } from "@/components/estate-ui/estate-text";
+import { publicInformation } from "@/config/public-information";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -13,6 +14,8 @@ export const metadata: Metadata = {
 };
 
 export default function PoliciesPage() {
+  const { booking, parking, optionalArrangements, contact } = publicInformation;
+
   return (
     <div className="min-h-screen bg-[var(--soe-surface-bg-primary)] text-[var(--soe-surface-text-primary)]">
       {/* HERO SECTION */}
@@ -92,7 +95,7 @@ export default function PoliciesPage() {
                 </div>
               </div>
               <EstateText variant="sm" tone="muted">
-                Parking space is available for 3 vehicles inside the property and 10+ vehicles outside the property.
+                {parking.summary}
               </EstateText>
             </div>
 
@@ -104,24 +107,24 @@ export default function PoliciesPage() {
               <ul className="space-y-3 font-soe-ui text-[length:var(--soe-text-base)] text-[var(--soe-surface-text-secondary)]">
                 <li className="flex items-start gap-3">
                   <span className="inline-block w-2 h-2 mt-2 rounded-full bg-[var(--soe-color-brand)] shrink-0" />
-                  <span><strong>Weekday Booking Rate:</strong> ₹15,000 for 24 hours.</span>
+                  <span><strong>{booking.weekday.label} Booking Rate:</strong> {booking.weekday.rate} for {booking.durationLabel}.</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="inline-block w-2 h-2 mt-2 rounded-full bg-[var(--soe-color-brand)] shrink-0" />
-                  <span><strong>Weekend Booking Rate:</strong> ₹20,000 for 24 hours.</span>
+                  <span><strong>{booking.weekend.label} Booking Rate:</strong> {booking.weekend.rate} for {booking.durationLabel}.</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="inline-block w-2 h-2 mt-2 rounded-full bg-[var(--soe-color-brand)] shrink-0" />
-                  <span><strong>Booking Advance:</strong> ₹5,000 flat advance required upon reservation.</span>
+                  <span><strong>Booking Advance:</strong> {booking.advance} flat advance required upon reservation.</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="inline-block w-2 h-2 mt-2 rounded-full bg-[var(--soe-color-brand)] shrink-0" />
-                  <span><strong>Balance Payment:</strong> Remaining balance is payable at check-in.</span>
+                  <span><strong>Balance Payment:</strong> {booking.balanceText}</span>
                 </li>
               </ul>
               <div className="pt-4 border-t border-[var(--soe-surface-control-border)]/20">
                 <p className="font-soe-ui text-[length:var(--soe-text-sm)] font-medium text-[var(--soe-surface-text-primary)] leading-relaxed">
-                  Final pricing and applicable charges will be confirmed in writing before payment and booking confirmation.
+                  {booking.confirmationNotice}
                 </p>
               </div>
             </div>
@@ -132,7 +135,7 @@ export default function PoliciesPage() {
                 Optional Service Arrangements
               </EstateHeading>
               <EstateText tone="muted">
-                Catering, DJ arrangements, photography shoots and event-related amenities are available only on request, subject to availability, written confirmation and a case-by-case assessment.
+                {optionalArrangements.statement}
               </EstateText>
             </div>
 
@@ -141,7 +144,7 @@ export default function PoliciesPage() {
               <EstateActionLink href="/pricing" variant="button">
                 View Pricing
               </EstateActionLink>
-              <EstateActionLink href="mailto:contact@silveroakestate.online" variant="editorial">
+              <EstateActionLink href={contact.mailtoHref} variant="editorial">
                 Email an Enquiry
               </EstateActionLink>
             </div>

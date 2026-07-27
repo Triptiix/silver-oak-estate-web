@@ -4,15 +4,18 @@ import { EstateEyebrow } from "@/components/estate-ui/estate-eyebrow";
 import { EstateHeading } from "@/components/estate-ui/estate-heading";
 import { EstateSection } from "@/components/estate-ui/estate-section";
 import { EstateText } from "@/components/estate-ui/estate-text";
+import { publicInformation } from "@/config/public-information";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Location | Silver Oak Estate, Sector 135 Noida",
   description:
-    "Find Silver Oak Estate at Farm house 22, Phase 16, Green Beauty Farms, Sector 135, Noida, Uttar Pradesh 201310 and open the official Google Maps location.",
+    `Find Silver Oak Estate at ${publicInformation.location.fullAddress} and open the official Google Maps location.`,
 };
 
 export default function LocationPage() {
+  const { location, parking } = publicInformation;
+
   return (
     <div className="min-h-screen bg-[var(--soe-surface-bg-primary)] text-[var(--soe-surface-text-primary)]">
       {/* HERO SECTION */}
@@ -43,7 +46,7 @@ export default function LocationPage() {
                 Property Address
               </EstateHeading>
               <address className="not-italic font-soe-ui text-[length:var(--soe-text-lg)] text-[var(--soe-surface-text-primary)] leading-relaxed bg-[var(--soe-surface-bg-surface)] border border-[var(--soe-surface-control-border)]/20 rounded-[var(--soe-radius-card)] p-8">
-                Farm house 22, Phase 16, Green Beauty Farms, Sector 135, Noida, Uttar Pradesh 201310
+                {location.fullAddress}
               </address>
             </div>
 
@@ -58,10 +61,10 @@ export default function LocationPage() {
                     ON-SITE PARKING
                   </p>
                   <p className="font-soe-display text-[length:var(--soe-text-2xl)] font-bold text-[var(--soe-surface-text-primary)]">
-                    3 Vehicles
+                    {parking.inside.valueLabel}
                   </p>
                   <EstateText variant="sm" tone="muted">
-                    Parking space for 3 vehicles is available inside the property.
+                    {parking.inside.description}
                   </EstateText>
                 </div>
 
@@ -70,10 +73,10 @@ export default function LocationPage() {
                     OUTSIDE PARKING
                   </p>
                   <p className="font-soe-display text-[length:var(--soe-text-2xl)] font-bold text-[var(--soe-surface-text-primary)]">
-                    10+ Vehicles
+                    {parking.outside.valueLabel}
                   </p>
                   <EstateText variant="sm" tone="muted">
-                    Parking space for 10+ vehicles is available outside the property.
+                    {parking.outside.description}
                   </EstateText>
                 </div>
               </div>
@@ -82,7 +85,7 @@ export default function LocationPage() {
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row items-center gap-4 pt-4">
               <EstateActionLink
-                href="https://maps.app.goo.gl/zaB8oYQeiaUWChYM7"
+                href={location.mapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 variant="button"

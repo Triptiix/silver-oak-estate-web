@@ -4,6 +4,7 @@ import { EstateEyebrow } from "@/components/estate-ui/estate-eyebrow";
 import { EstateHeading } from "@/components/estate-ui/estate-heading";
 import { EstateSection } from "@/components/estate-ui/estate-section";
 import { EstateText } from "@/components/estate-ui/estate-text";
+import { publicInformation } from "@/config/public-information";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -13,6 +14,8 @@ export const metadata: Metadata = {
 };
 
 export default function PricingPage() {
+  const { booking, optionalArrangements, contact } = publicInformation;
+
   return (
     <div className="min-h-screen bg-[var(--soe-surface-bg-primary)] text-[var(--soe-surface-text-primary)]">
       {/* HERO SECTION */}
@@ -51,14 +54,14 @@ export default function PricingPage() {
               <div className="bg-[var(--soe-surface-bg-surface)] border border-[var(--soe-surface-control-border)]/20 rounded-[var(--soe-radius-card)] p-8 flex flex-col justify-between space-y-6">
                 <div className="space-y-4">
                   <span className="inline-block px-3 py-1 font-soe-ui text-[length:var(--soe-text-xs)] font-semibold uppercase tracking-wider bg-[var(--soe-color-brand)]/10 text-[var(--soe-color-brand)] rounded-[var(--soe-radius-pill)]">
-                    Weekday
+                    {booking.weekday.label}
                   </span>
                   <div className="space-y-1">
                     <p className="font-soe-display text-[length:var(--soe-text-2xl)] font-bold text-[var(--soe-surface-text-primary)]">
-                      ₹15,000
+                      {booking.weekday.rate}
                     </p>
                     <p className="font-soe-ui text-[length:var(--soe-text-sm)] text-[var(--soe-surface-text-secondary)]">
-                      for 24 hours
+                      for {booking.durationLabel}
                     </p>
                   </div>
                   <EstateText variant="sm" tone="muted">
@@ -71,14 +74,14 @@ export default function PricingPage() {
               <div className="bg-[var(--soe-surface-bg-surface)] border border-[var(--soe-surface-control-border)]/20 rounded-[var(--soe-radius-card)] p-8 flex flex-col justify-between space-y-6">
                 <div className="space-y-4">
                   <span className="inline-block px-3 py-1 font-soe-ui text-[length:var(--soe-text-xs)] font-semibold uppercase tracking-wider bg-[var(--soe-color-brand)]/10 text-[var(--soe-color-brand)] rounded-[var(--soe-radius-pill)]">
-                    Weekend
+                    {booking.weekend.label}
                   </span>
                   <div className="space-y-1">
                     <p className="font-soe-display text-[length:var(--soe-text-2xl)] font-bold text-[var(--soe-surface-text-primary)]">
-                      ₹20,000
+                      {booking.weekend.rate}
                     </p>
                     <p className="font-soe-ui text-[length:var(--soe-text-sm)] text-[var(--soe-surface-text-secondary)]">
-                      for 24 hours
+                      for {booking.durationLabel}
                     </p>
                   </div>
                   <EstateText variant="sm" tone="muted">
@@ -96,23 +99,23 @@ export default function PricingPage() {
               <ul className="space-y-3 font-soe-ui text-[length:var(--soe-text-base)] text-[var(--soe-surface-text-secondary)]">
                 <li className="flex items-start gap-3">
                   <span className="inline-block w-2 h-2 mt-2 rounded-full bg-[var(--soe-color-brand)] shrink-0" />
-                  <span><strong>Booking Advance:</strong> A flat advance payment of ₹5,000 is required to confirm your reservation.</span>
+                  <span><strong>Booking Advance:</strong> A flat advance payment of {booking.advance} is required to confirm your reservation.</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="inline-block w-2 h-2 mt-2 rounded-full bg-[var(--soe-color-brand)] shrink-0" />
-                  <span><strong>Balance Payment:</strong> The remaining balance is payable at check-in.</span>
+                  <span><strong>Balance Payment:</strong> {booking.balanceText}</span>
                 </li>
               </ul>
 
               <div className="pt-4 border-t border-[var(--soe-surface-control-border)]/20">
                 <p className="font-soe-ui text-[length:var(--soe-text-sm)] font-medium text-[var(--soe-surface-text-primary)] leading-relaxed">
-                  Final pricing and applicable charges will be confirmed in writing before payment and booking confirmation.
+                  {booking.confirmationNotice}
                 </p>
               </div>
 
               <div className="pt-2">
                 <EstateText variant="sm" tone="muted">
-                  Optional arrangements such as catering, DJ arrangements, photography shoots and event-related amenities are available only on request, subject to availability, written confirmation and a case-by-case assessment.
+                  {optionalArrangements.statement}
                 </EstateText>
               </div>
             </div>
@@ -122,7 +125,7 @@ export default function PricingPage() {
               <EstateActionLink href="/availability" variant="button">
                 Check Availability
               </EstateActionLink>
-              <EstateActionLink href="mailto:contact@silveroakestate.online" variant="editorial">
+              <EstateActionLink href={contact.mailtoHref} variant="editorial">
                 Email an Enquiry
               </EstateActionLink>
             </div>

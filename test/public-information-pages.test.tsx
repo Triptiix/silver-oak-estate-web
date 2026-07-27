@@ -2,6 +2,7 @@ import ContactPage, { metadata as contactMetadata } from "@/app/(marketing)/cont
 import LocationPage, { metadata as locationMetadata } from "@/app/(marketing)/location/page";
 import PoliciesPage, { metadata as policiesMetadata } from "@/app/(marketing)/policies/page";
 import PricingPage, { metadata as pricingMetadata } from "@/app/(marketing)/pricing/page";
+import { publicInformation } from "@/config/public-information";
 import { render, screen } from "@testing-library/react";
 import fs from "fs";
 import path from "path";
@@ -73,24 +74,20 @@ describe("Public Information Pages", () => {
       render(<PricingPage />);
       const text = document.body.textContent || "";
 
-      expect(text).toContain("₹15,000");
-      expect(text).toContain("₹20,000");
-      expect(text).toContain("₹5,000");
-      expect(text).toContain("for 24 hours");
+      expect(text).toContain(publicInformation.booking.weekday.rate);
+      expect(text).toContain(publicInformation.booking.weekend.rate);
+      expect(text).toContain(publicInformation.booking.advance);
+      expect(text).toContain(`for ${publicInformation.booking.durationLabel}`);
       expect(text).toContain("The published weekday and weekend rates apply to the complete 3 BHK property.");
-      expect(text).toContain(
-        "Optional arrangements such as catering, DJ arrangements, photography shoots and event-related amenities are available only on request, subject to availability, written confirmation and a case-by-case assessment."
-      );
-      expect(text).toContain("balance is payable at check-in");
-      expect(text).toContain(
-        "Final pricing and applicable charges will be confirmed in writing before payment and booking confirmation."
-      );
+      expect(text).toContain(publicInformation.optionalArrangements.statement);
+      expect(text).toContain(publicInformation.booking.balanceText);
+      expect(text).toContain(publicInformation.booking.confirmationNotice);
 
       const availabilityLink = screen.getByRole("link", { name: "Check Availability" });
       expect(availabilityLink).toHaveAttribute("href", "/availability");
 
       const emailLink = screen.getByRole("link", { name: "Email an Enquiry" });
-      expect(emailLink).toHaveAttribute("href", "mailto:contact@silveroakestate.online");
+      expect(emailLink).toHaveAttribute("href", publicInformation.contact.mailtoHref);
     });
 
     it("verifies absence of prohibited pricing terms and unconfirmed room claims", () => {
@@ -113,13 +110,13 @@ describe("Public Information Pages", () => {
       render(<LocationPage />);
       const text = document.body.textContent || "";
 
-      expect(text).toContain("Farm house 22, Phase 16, Green Beauty Farms, Sector 135, Noida, Uttar Pradesh 201310");
+      expect(text).toContain(publicInformation.location.fullAddress);
       expect(screen.getByRole("heading", { name: "Parking" })).toBeInTheDocument();
-      expect(text).toContain("Parking space for 3 vehicles is available inside the property.");
-      expect(text).toContain("Parking space for 10+ vehicles is available outside the property.");
+      expect(text).toContain(publicInformation.parking.inside.description);
+      expect(text).toContain(publicInformation.parking.outside.description);
 
       const mapsLink = screen.getByRole("link", { name: "Open in Google Maps" });
-      expect(mapsLink).toHaveAttribute("href", "https://maps.app.goo.gl/zaB8oYQeiaUWChYM7");
+      expect(mapsLink).toHaveAttribute("href", publicInformation.location.mapsUrl);
       expect(mapsLink).toHaveAttribute("target", "_blank");
       expect(mapsLink.getAttribute("rel")).toContain("noopener");
       expect(mapsLink.getAttribute("rel")).toContain("noreferrer");
@@ -148,15 +145,15 @@ describe("Public Information Pages", () => {
       render(<ContactPage />);
       const text = document.body.textContent || "";
 
-      expect(text).toContain("contact@silveroakestate.online");
-      expect(text).toContain("Farm house 22, Phase 16, Green Beauty Farms, Sector 135, Noida, Uttar Pradesh 201310");
+      expect(text).toContain(publicInformation.contact.email);
+      expect(text).toContain(publicInformation.location.fullAddress);
       expect(text).toContain("Preferred booking date or date range.");
       expect(text).toContain("Expected Group Size");
 
-      const mailLinks = screen.getAllByRole("link", { name: /contact@silveroakestate.online|Email an Enquiry/i });
+      const mailLinks = screen.getAllByRole("link", { name: new RegExp(`${publicInformation.contact.email}|Email an Enquiry`, "i") });
       expect(mailLinks.length).toBeGreaterThanOrEqual(1);
       mailLinks.forEach((link) => {
-        expect(link).toHaveAttribute("href", "mailto:contact@silveroakestate.online");
+        expect(link).toHaveAttribute("href", publicInformation.contact.mailtoHref);
       });
 
       const availabilityLink = screen.getByRole("link", { name: "Check Availability" });
@@ -193,16 +190,16 @@ describe("Public Information Pages", () => {
       expect(text).toContain("~15–20");
       expect(text).toContain("~30–40");
       expect(text).toContain("Capacity information for approved daytime gatherings at the property.");
-      expect(text).toContain("Parking space is available for 3 vehicles inside the property and 10+ vehicles outside the property.");
-      expect(text).toContain("₹15,000");
-      expect(text).toContain("₹20,000");
-      expect(text).toContain("₹5,000");
+      expect(text).toContain(publicInformation.parking.summary);
+      expect(text).toContain(publicInformation.booking.weekday.rate);
+      expect(text).toContain(publicInformation.booking.weekend.rate);
+      expect(text).toContain(publicInformation.booking.advance);
 
       const pricingLink = screen.getByRole("link", { name: "View Pricing" });
       expect(pricingLink).toHaveAttribute("href", "/pricing");
 
       const emailLink = screen.getByRole("link", { name: "Email an Enquiry" });
-      expect(emailLink).toHaveAttribute("href", "mailto:contact@silveroakestate.online");
+      expect(emailLink).toHaveAttribute("href", publicInformation.contact.mailtoHref);
     });
 
     it("verifies absence of check-in/checkout times, estate compound, pool deck, and final legal claims", () => {
@@ -228,12 +225,13 @@ describe("Public Information Pages", () => {
     ];
 
     pagePaths.forEach((relPath) => {
-      it(`verifies valid design system tokens and absence of invalid tokens in ${relPath}`, () => {
+      it(`verifies design system primitives, single import of publicInformation, and absence of invalid tokens in ${relPath}`, () => {
         const fullPath = path.join(process.cwd(), relPath);
         const code = fs.readFileSync(fullPath, "utf-8");
 
         // Design system imports & structure
         expect(code).toContain("@/components/estate-ui/");
+        expect(code).toContain("@/config/public-information");
         expect(code).not.toContain("@/components/ui/container");
         expect(code).not.toContain("@/components/ui/button");
         expect(code).not.toContain("<main");
@@ -276,6 +274,35 @@ describe("Public Information Pages", () => {
       const policiesCode = fs.readFileSync(path.join(process.cwd(), "src/app/(marketing)/policies/page.tsx"), "utf-8");
       expect(policiesCode).toContain("text-[var(--soe-surface-text-secondary)]");
       expect(policiesCode).toContain("font-soe-display");
+    });
+
+    it("verifies single source-of-truth contract for publicInformation configuration module", () => {
+      const rawCanonicalValues = [
+        "contact@silveroakestate.online",
+        "Farm house 22, Phase 16, Green Beauty Farms, Sector 135, Noida, Uttar Pradesh 201310",
+        "https://maps.app.goo.gl/zaB8oYQeiaUWChYM7",
+        "₹15,000",
+        "₹20,000",
+        "₹5,000",
+        "Remaining balance payable at check-in.",
+        "Final pricing and applicable charges will be confirmed in writing before payment and booking confirmation.",
+        "Parking space for 3 vehicles is available inside the property.",
+        "Parking space for 10+ vehicles is available outside the property.",
+        "Parking space is available for 3 vehicles inside the property and 10+ vehicles outside the property.",
+        "Optional arrangements such as catering, DJ arrangements, photography shoots and event-related amenities are available only on request, subject to availability, written confirmation and a case-by-case assessment.",
+      ];
+
+      const configCode = fs.readFileSync(path.join(process.cwd(), "src/config/public-information.ts"), "utf-8");
+      rawCanonicalValues.forEach((val) => {
+        expect(configCode).toContain(val);
+      });
+
+      pagePaths.forEach((relPath) => {
+        const pageCode = fs.readFileSync(path.join(process.cwd(), relPath), "utf-8");
+        rawCanonicalValues.forEach((val) => {
+          expect(pageCode).not.toContain(val);
+        });
+      });
     });
   });
 });
