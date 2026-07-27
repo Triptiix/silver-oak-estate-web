@@ -1,19 +1,101 @@
-import { Container } from "@/components/ui/container";
+import { EstateActionLink } from "@/components/estate-ui/estate-action-link";
+import { EstateContainer } from "@/components/estate-ui/estate-container";
+import { EstateEyebrow } from "@/components/estate-ui/estate-eyebrow";
+import { EstateHeading } from "@/components/estate-ui/estate-heading";
+import { EstateSection } from "@/components/estate-ui/estate-section";
+import { EstateText } from "@/components/estate-ui/estate-text";
+import type { Metadata } from "next";
 
-export const metadata = {
-  title: "Location",
+export const metadata: Metadata = {
+  title: "Location | Silver Oak Estate, Sector 135 Noida",
+  description:
+    "Find Silver Oak Estate at Farm house 22, Phase 16, Green Beauty Farms, Sector 135, Noida, Uttar Pradesh 201310 and open the official Google Maps location.",
 };
 
 export default function LocationPage() {
   return (
-    <Container className="py-16 text-center max-w-2xl">
-      <h1 className="text-4xl font-bold mb-8">Location</h1>
-      <p className="text-[var(--muted-foreground)] mb-8">
-        We are located in Sector 135, Noida. Detailed directions will be provided upon booking confirmation.
-      </p>
-      <div className="bg-[var(--accent)] aspect-[16/9] rounded-[var(--radius)] flex items-center justify-center text-[var(--muted-foreground)]">
-        [Map Placeholder]
-      </div>
-    </Container>
+    <div className="min-h-screen bg-[var(--soe-surface-bg-primary)] text-[var(--soe-surface-text-primary)]">
+      {/* HERO SECTION */}
+      <EstateSection surface="dark" spacing="lg">
+        <EstateContainer variant="content">
+          <div className="max-w-3xl space-y-6">
+            <EstateEyebrow className="text-[var(--soe-surface-accent-metal)]">
+              LOCATION · SECTOR 135, NOIDA
+            </EstateEyebrow>
+            <EstateHeading as="h1" variant="hero">
+              Location & Address
+            </EstateHeading>
+            <EstateText variant="lg" tone="muted">
+              Situated within Green Beauty Farms in Sector 135, Noida.
+            </EstateText>
+          </div>
+        </EstateContainer>
+      </EstateSection>
+
+      {/* ADDRESS & PARKING DETAILS */}
+      <EstateSection surface="light" spacing="md">
+        <EstateContainer variant="content">
+          <div className="max-w-4xl space-y-12">
+            {/* Property Address */}
+            <div className="space-y-4">
+              <EstateEyebrow>CONFIRMED ADDRESS</EstateEyebrow>
+              <EstateHeading as="h2" variant="h2">
+                Property Address
+              </EstateHeading>
+              <address className="not-italic font-soe-ui text-[length:var(--soe-text-lg)] text-[var(--soe-surface-text-primary)] leading-relaxed bg-[var(--soe-surface-bg-surface)] border border-[var(--soe-surface-control-border)]/20 rounded-[var(--soe-radius-card)] p-8">
+                Farm house 22, Phase 16, Green Beauty Farms, Sector 135, Noida, Uttar Pradesh 201310
+              </address>
+            </div>
+
+            {/* Parking Information */}
+            <div className="space-y-6">
+              <EstateHeading as="h2" variant="h2">
+                Parking
+              </EstateHeading>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-[var(--soe-surface-bg-surface)] border border-[var(--soe-surface-control-border)]/20 rounded-[var(--soe-radius-card)] p-6 space-y-2">
+                  <p className="font-soe-ui text-[length:var(--soe-text-xs)] font-semibold uppercase text-[var(--soe-color-brand)]">
+                    ON-SITE PARKING
+                  </p>
+                  <p className="font-soe-display text-[length:var(--soe-text-2xl)] font-bold text-[var(--soe-surface-text-primary)]">
+                    3 Vehicles
+                  </p>
+                  <EstateText variant="sm" tone="muted">
+                    Parking space for 3 vehicles is available inside the property.
+                  </EstateText>
+                </div>
+
+                <div className="bg-[var(--soe-surface-bg-surface)] border border-[var(--soe-surface-control-border)]/20 rounded-[var(--soe-radius-card)] p-6 space-y-2">
+                  <p className="font-soe-ui text-[length:var(--soe-text-xs)] font-semibold uppercase text-[var(--soe-color-brand)]">
+                    OUTSIDE PARKING
+                  </p>
+                  <p className="font-soe-display text-[length:var(--soe-text-2xl)] font-bold text-[var(--soe-surface-text-primary)]">
+                    10+ Vehicles
+                  </p>
+                  <EstateText variant="sm" tone="muted">
+                    Parking space for 10+ vehicles is available outside the property.
+                  </EstateText>
+                </div>
+              </div>
+            </div>
+
+            {/* CTAs */}
+            <div className="flex flex-col sm:flex-row items-center gap-4 pt-4">
+              <EstateActionLink
+                href="https://maps.app.goo.gl/zaB8oYQeiaUWChYM7"
+                target="_blank"
+                rel="noopener noreferrer"
+                variant="button"
+              >
+                Open in Google Maps
+              </EstateActionLink>
+              <EstateActionLink href="/availability" variant="editorial">
+                Check Availability
+              </EstateActionLink>
+            </div>
+          </div>
+        </EstateContainer>
+      </EstateSection>
+    </div>
   );
 }

@@ -5,6 +5,10 @@ import * as path from "path";
 import HomePage from "@/app/(marketing)/page";
 import EstatePage from "@/app/(marketing)/estate/page";
 import ExperiencesPage from "@/app/(marketing)/experiences/page";
+import PricingPage from "@/app/(marketing)/pricing/page";
+import LocationPage from "@/app/(marketing)/location/page";
+import ContactPage from "@/app/(marketing)/contact/page";
+import PoliciesPage from "@/app/(marketing)/policies/page";
 import MarketingLayout from "@/app/(marketing)/layout";
 import { SiteHeader } from "@/components/layout/site-header";
 import { MobileBookingCTA } from "@/components/layout/mobile-booking-cta";
@@ -779,6 +783,45 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
 
       const emailLink = screen.getByRole("link", { name: "Email an Enquiry" });
       expect(emailLink).toHaveAttribute("href", "mailto:contact@silveroakestate.online");
+    });
+  });
+
+  describe("PublicInformationPages Smoke Architecture", () => {
+    it("renders expected H1 heading and metadata title for Pricing Page", async () => {
+      render(<PricingPage />);
+      expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Pricing at Silver Oak Estate");
+      const pricingMod = await import("@/app/(marketing)/pricing/page");
+      expect(pricingMod.metadata.title).toBe("Pricing | Silver Oak Estate");
+      expect(screen.getByRole("link", { name: "Check Availability" })).toHaveAttribute("href", "/availability");
+    });
+
+    it("renders expected H1 heading and metadata title for Location Page", async () => {
+      render(<LocationPage />);
+      expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Location & Address");
+      const locationMod = await import("@/app/(marketing)/location/page");
+      expect(locationMod.metadata.title).toBe("Location | Silver Oak Estate, Sector 135 Noida");
+      expect(screen.getByRole("link", { name: "Open in Google Maps" })).toHaveAttribute(
+        "href",
+        "https://maps.app.goo.gl/zaB8oYQeiaUWChYM7"
+      );
+    });
+
+    it("renders expected H1 heading and metadata title for Contact Page", async () => {
+      render(<ContactPage />);
+      expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Contact & Enquiries");
+      const contactMod = await import("@/app/(marketing)/contact/page");
+      expect(contactMod.metadata.title).toBe("Contact | Silver Oak Estate");
+      const emailLinks = screen.getAllByRole("link", { name: "Email an Enquiry" });
+      expect(emailLinks.length).toBeGreaterThanOrEqual(1);
+      expect(emailLinks[0]).toHaveAttribute("href", "mailto:contact@silveroakestate.online");
+    });
+
+    it("renders expected H1 heading and metadata title for Policies Page", async () => {
+      render(<PoliciesPage />);
+      expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Booking Information & Current Policies");
+      const policiesMod = await import("@/app/(marketing)/policies/page");
+      expect(policiesMod.metadata.title).toBe("Booking Information | Silver Oak Estate");
+      expect(screen.getByRole("link", { name: "View Pricing" })).toHaveAttribute("href", "/pricing");
     });
   });
 });
