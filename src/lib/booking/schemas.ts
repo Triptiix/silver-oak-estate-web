@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+  OVERNIGHT_GUEST_CAPACITY,
+  STANDARD_DAY_EVENT_CAPACITY,
+} from "@/config/public-information";
 export { normalizePhone } from "@/lib/phone";
 
 const optionalTrimmed = (max: number) =>
@@ -18,8 +22,8 @@ export const holdRequestSchema = z.strictObject({
   customerEmail: optionalTrimmed(254).pipe(z.string().email().optional()),
   customerPhone: z.string().trim().min(7).max(24),
   whatsapp: optionalTrimmed(24),
-  guestCount: z.number().int().min(1).max(30),
-  overnightGuestCount: z.number().int().min(0).max(8).optional(),
+  guestCount: z.number().int().min(1).max(STANDARD_DAY_EVENT_CAPACITY),
+  overnightGuestCount: z.number().int().min(0).max(OVERNIGHT_GUEST_CAPACITY).optional(),
   specialRequests: optionalTrimmed(1000),
   turnstileToken: z.string().min(1).max(4096),
 }).refine((value) => (value.overnightGuestCount ?? 0) <= value.guestCount, {

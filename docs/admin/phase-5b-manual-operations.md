@@ -197,8 +197,11 @@ Invalid numbers are rejected with a field error. There is **no silent
 country-code inference** — an ambiguous number fails validation rather than
 being guessed.
 
-**Guest limits.** Total guests 1–30; overnight guests 0–8, defaulting to 0.
-Overnight guests may not exceed total guests.
+**Guest limits.** Total guests 1–40; overnight guests 0–10, defaulting to 0.
+Overnight guests may not exceed total guests. The separate 20-person indoor
+capacity remains operational guidance rather than the total booking limit.
+Events above 40 require prior written approval and stay outside the standard
+manual-booking flow.
 
 **Manual providers.** `manual_upi` and `payment_link` only.
 

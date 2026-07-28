@@ -15,7 +15,7 @@
 
 ## Capacity-Implementation Status
 
-The public operational contract above is authoritative. The current booking-engine implementation still contains legacy hard limits of 30 total guests and 8 overnight guests in the database seed, public booking RPCs, administrator manual-booking flow and application schemas. GitHub issue #15 tracks the required forward migration and coordinated application/test update. The website must not claim that the standard booking engine supports the verified 40-person standard daytime, 20-person indoor and 10-person overnight capacities until that implementation issue is complete.
+The repository’s public hold and administrator manual-booking code enforces up to 40 total guests and up to 10 overnight guests. The 20-person indoor capacity remains a distinct operational-use limit rather than a separate booking-engine field. Hosted enforcement requires the forward migration to be deployed separately; this implementation PR does not mutate the hosted Supabase project or deploy production. Values above the standard booking limits are rejected by the source implementation, and events above 40 remain subject to prior written approval outside self-service booking.
 
 ## Base Pricing (Launch Scope)
 

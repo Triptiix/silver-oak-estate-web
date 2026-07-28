@@ -17,10 +17,6 @@ To build a luxury web application serving as a direct booking platform. The dire
 - **Strict Booking Model:** 11:00 AM check-in, 10:00 AM checkout the following day, forming a standard 23-hour slot.
 - **Commercial:** INR 15,000 (Mon-Fri) / INR 20,000 (Sat-Sun), with INR 5,000 advance.
 
-## Current Capacity-Implementation Gap
-
-The public-information contract is authoritative for operational and marketing copy. The current database seed, public booking RPCs, administrator manual-booking flow and application validators still enforce legacy limits of 30 total guests and 8 overnight guests. GitHub issue #15 tracks the required forward migration and coordinated validation update. Until that work is merged, do not present the legacy technical limits as the business truth and do not claim that the standard booking engine supports the verified 40-person standard daytime, 20-person indoor and 10-person overnight capacities.
-
 ## Repository Rules
 
 This repository strictly contains the Next.js/Supabase source code for the public website and internal admin dashboard. OTA integrations (beyond basic iCal feeds) are deferred to post-launch stages.
@@ -43,6 +39,7 @@ This repository strictly contains the Next.js/Supabase source code for the publi
 - Bounded request bodies
 - Capability-scoped environment validation
 - Vercel-attested client-address handling
+- Repository database and application code aligned to 40 standard daytime and 10 overnight; hosted enforcement requires a separate migration deployment
 
 ## Completed Phase 5B UI
 
@@ -57,10 +54,12 @@ This repository strictly contains the Next.js/Supabase source code for the publi
 - Exact INR-to-paise parsing
 - Persistent results across `router.refresh()`
 - Accessible results and validation
+- Repository UI and validation sources aligned to 40-person standard daytime and 10-person overnight limits
 
 ## Current limitations
 
 - Hosted Phase 5A and Phase 5B migrations have not been deployed
+- The capacity-alignment migration has not been applied to hosted Supabase
 - Hosted Supabase has no administrator account
 - No demo username or password exists
 - Production deployment has not occurred
@@ -68,7 +67,6 @@ This repository strictly contains the Next.js/Supabase source code for the publi
 - Refund execution is not implemented
 - Automatic reconciliation is not implemented
 - Notification delivery is not implemented
-- Booking-engine alignment to 40 standard daytime, 20 indoor and 10 overnight is pending in issue #15
 - Recovery remains diagnosis-only
 
 The authoritative Phase 5B reference is [`docs/admin/phase-5b-manual-operations.md`](docs/admin/phase-5b-manual-operations.md).

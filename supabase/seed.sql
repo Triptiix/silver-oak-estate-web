@@ -17,8 +17,8 @@ values (
   '11:00'::time,
   '10:00'::time,
   60,
-  30,
-  8,
+  40,
+  10,
   true
 )
 on conflict (slug) do update set
@@ -89,8 +89,8 @@ values
   ('booking_hold_minutes', '10'::jsonb, 'Temporary online booking hold duration.', false),
   ('manual_payment_hold_minutes', '30'::jsonb, 'Manual payment fallback hold duration.', false),
   ('currency', '"INR"'::jsonb, 'Launch settlement currency.', false),
-  ('max_event_guests', '30'::jsonb, 'Maximum event capacity.', false),
-  ('max_overnight_guests', '8'::jsonb, 'Maximum overnight capacity.', false)
+  ('max_event_guests', '40'::jsonb, 'Maximum standard daytime event capacity.', false),
+  ('max_overnight_guests', '10'::jsonb, 'Maximum overnight stay capacity.', false)
 on conflict (setting_key) do update set
   setting_value = excluded.setting_value,
   description = excluded.description,

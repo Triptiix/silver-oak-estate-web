@@ -4,6 +4,10 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createManualBookingAction } from "@/app/admin/(protected)/actions/manual-bookings";
 import { Button } from "@/components/ui/button";
+import {
+  OVERNIGHT_GUEST_CAPACITY,
+  STANDARD_DAY_EVENT_CAPACITY,
+} from "@/config/public-information";
 import { normalizePhone } from "@/lib/phone";
 import {
   AdminOperationResult,
@@ -58,11 +62,11 @@ export function ManualBookingForm() {
     } catch {
       errors.customerPhone = ["Enter a valid phone number, including country code when applicable."];
     }
-    if (!Number.isInteger(guestCount) || guestCount < 1 || guestCount > 30) {
-      errors.guestCount = ["Total guests must be between 1 and 30."];
+    if (!Number.isInteger(guestCount) || guestCount < 1 || guestCount > STANDARD_DAY_EVENT_CAPACITY) {
+      errors.guestCount = [`Total guests must be between 1 and ${STANDARD_DAY_EVENT_CAPACITY}.`];
     }
-    if (!Number.isInteger(overnightGuestCount) || overnightGuestCount < 0 || overnightGuestCount > 8) {
-      errors.overnightGuestCount = ["Overnight guests must be between 0 and 8."];
+    if (!Number.isInteger(overnightGuestCount) || overnightGuestCount < 0 || overnightGuestCount > OVERNIGHT_GUEST_CAPACITY) {
+      errors.overnightGuestCount = [`Overnight guests must be between 0 and ${OVERNIGHT_GUEST_CAPACITY}.`];
     } else if (overnightGuestCount > guestCount) {
       errors.overnightGuestCount = ["Overnight guests cannot exceed total guests."];
     }
@@ -225,7 +229,7 @@ export function ManualBookingForm() {
                 name="guestCount"
                 type="number"
                 min={1}
-                max={30}
+                max={STANDARD_DAY_EVENT_CAPACITY}
                 defaultValue={1}
                 aria-invalid={Boolean(firstFieldError(fieldErrors, "guestCount"))}
                 aria-describedby="manualGuestCount-error"
@@ -241,7 +245,7 @@ export function ManualBookingForm() {
                 name="overnightGuestCount"
                 type="number"
                 min={0}
-                max={8}
+                max={OVERNIGHT_GUEST_CAPACITY}
                 defaultValue={0}
                 aria-invalid={Boolean(firstFieldError(fieldErrors, "overnightGuestCount"))}
                 aria-describedby="manualOvernightGuestCount-help manualOvernightGuestCount-error"

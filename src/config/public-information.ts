@@ -3,6 +3,10 @@ const wholeRupeeFormatter = new Intl.NumberFormat("en-IN", {
   maximumFractionDigits: 0,
 });
 
+export const STANDARD_DAY_EVENT_CAPACITY = 40;
+export const INDOOR_GATHERING_CAPACITY = 20;
+export const OVERNIGHT_GUEST_CAPACITY = 10;
+
 /**
  * Formats an integer paise amount as whole Indian rupees for public display.
  */
@@ -98,13 +102,13 @@ export const publicInformation = {
   },
 
   capacity: {
-    overnightMax: 10,
+    overnightMax: OVERNIGHT_GUEST_CAPACITY,
     overnightLabel: "Up to 10 guests",
 
-    indoorMax: 20,
+    indoorMax: INDOOR_GATHERING_CAPACITY,
     indoorLabel: "Up to 20 people",
 
-    standardDayEventMax: 40,
+    standardDayEventMax: STANDARD_DAY_EVENT_CAPACITY,
     standardDayEventLabel: "Up to 40 people",
 
     largerEventStatement:

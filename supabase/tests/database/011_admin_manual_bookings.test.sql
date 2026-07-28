@@ -406,7 +406,7 @@ select throws_ok(
 );
 select throws_ok(
   format(
-    $$select public.create_admin_manual_booking(%L::date,'Guest','+919900000009',null,31,0,null,'manual_upi',%L::uuid)$$,
+    $$select public.create_admin_manual_booking(%L::date,'Guest','+919900000009',null,41,0,null,'manual_upi',%L::uuid)$$,
     (select today + 40 from manual_test_context),
     'b0000000-0000-4000-8000-000000000115'
   ),
@@ -415,7 +415,7 @@ select throws_ok(
 );
 select throws_ok(
   format(
-    $$select public.create_admin_manual_booking(%L::date,'Guest','+919900000009',null,8,9,null,'manual_upi',%L::uuid)$$,
+    $$select public.create_admin_manual_booking(%L::date,'Guest','+919900000009',null,11,11,null,'manual_upi',%L::uuid)$$,
     (select today + 40 from manual_test_context),
     'b0000000-0000-4000-8000-000000000116'
   ),

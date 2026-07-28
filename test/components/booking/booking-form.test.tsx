@@ -178,6 +178,26 @@ describe("BookingForm", () => {
     });
   });
 
+  it("clamps overnight guests when total guests decrease", () => {
+    const onGuestCountChange = vi.fn();
+    const onOvernightGuestCountChange = vi.fn();
+    render(
+      <BookingForm
+        checkInDate="2024-12-01"
+        guestCount={5}
+        overnightGuestCount={5}
+        onGuestCountChange={onGuestCountChange}
+        onOvernightGuestCountChange={onOvernightGuestCountChange}
+        onSuccess={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Decrease Total Guests" }));
+
+    expect(onGuestCountChange).toHaveBeenCalledWith(4);
+    expect(onOvernightGuestCountChange).toHaveBeenCalledWith(4);
+  });
+
   it("controlled guest values submitted correctly", async () => {
     render(<BookingForm checkInDate="2024-12-01" guestCount={3} overnightGuestCount={2} onGuestCountChange={vi.fn()} onOvernightGuestCountChange={vi.fn()} onSuccess={vi.fn()} />);
     fillForm();

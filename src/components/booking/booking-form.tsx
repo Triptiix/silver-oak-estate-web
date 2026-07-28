@@ -1,6 +1,10 @@
 "use client";
 
 import { useState, useRef, useEffect, FormEvent } from "react";
+import {
+  OVERNIGHT_GUEST_CAPACITY,
+  STANDARD_DAY_EVENT_CAPACITY,
+} from "@/config/public-information";
 import { TurnstileWidget } from "./turnstile-widget";
 import { GuestCountField } from "./guest-count-field";
 import { BookingError } from "./booking-error";
@@ -48,6 +52,13 @@ export function BookingForm({ checkInDate, guestCount, overnightGuestCount, onGu
   function resetTurnstile() {
     setTurnstileResetVersion((v) => v + 1);
     setTurnstileToken("");
+  }
+
+  function changeGuestCount(count: number) {
+    onGuestCountChange(count);
+    if (overnightGuestCount > count) {
+      onOvernightGuestCountChange(count);
+    }
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -167,18 +178,18 @@ export function BookingForm({ checkInDate, guestCount, overnightGuestCount, onGu
         <GuestCountField
           label="Total Guests"
           name="guestCount"
-          description="Maximum 30 guests allowed for events/day access."
+          description="Maximum 40 guests allowed for standard events/day access."
           min={1}
-          max={30}
+          max={STANDARD_DAY_EVENT_CAPACITY}
           value={guestCount}
-          onChange={onGuestCountChange}
+          onChange={changeGuestCount}
         />
         <GuestCountField
           label="Overnight Guests"
           name="overnightGuestCount"
-          description="Maximum 8 guests can stay overnight. Must not exceed total guests."
+          description="Maximum 10 guests can stay overnight. Must not exceed total guests."
           min={0}
-          max={Math.min(8, guestCount)}
+          max={Math.min(OVERNIGHT_GUEST_CAPACITY, guestCount)}
           value={overnightGuestCount}
           onChange={onOvernightGuestCountChange}
         />
