@@ -39,7 +39,7 @@ This repository strictly contains the Next.js/Supabase source code for the publi
 - Bounded request bodies
 - Capability-scoped environment validation
 - Vercel-attested client-address handling
-- Public and administrator booking capacities aligned to 40 standard daytime and 10 overnight
+- Repository database and application code aligned to 40 standard daytime and 10 overnight; hosted enforcement requires a separate migration deployment
 
 ## Completed Phase 5B UI
 
@@ -54,11 +54,12 @@ This repository strictly contains the Next.js/Supabase source code for the publi
 - Exact INR-to-paise parsing
 - Persistent results across `router.refresh()`
 - Accessible results and validation
-- Shared 40-person standard daytime and 10-person overnight validation limits
+- Repository UI and validation sources aligned to 40-person standard daytime and 10-person overnight limits
 
 ## Current limitations
 
 - Hosted Phase 5A and Phase 5B migrations have not been deployed
+- The capacity-alignment migration has not been applied to hosted Supabase
 - Hosted Supabase has no administrator account
 - No demo username or password exists
 - Production deployment has not occurred
