@@ -31,18 +31,6 @@ set max_event_guests = 40,
     updated_at = now()
 where slug = 'silver-oak-estate';
 
-alter table public.properties
-  validate constraint properties_event_capacity;
-
-alter table public.properties
-  validate constraint properties_overnight_capacity;
-
-alter table public.bookings
-  validate constraint bookings_guest_capacity;
-
-alter table public.bookings
-  validate constraint bookings_overnight_capacity;
-
 insert into public.site_settings (
   setting_key,
   setting_value,
