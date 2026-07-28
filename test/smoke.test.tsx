@@ -9,6 +9,7 @@ import PricingPage from "@/app/(marketing)/pricing/page";
 import LocationPage from "@/app/(marketing)/location/page";
 import ContactPage from "@/app/(marketing)/contact/page";
 import PoliciesPage from "@/app/(marketing)/policies/page";
+import { publicInformation } from "@/config/public-information";
 import MarketingLayout from "@/app/(marketing)/layout";
 import { SiteHeader } from "@/components/layout/site-header";
 import { MobileBookingCTA } from "@/components/layout/mobile-booking-cta";
@@ -657,13 +658,13 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
       if (section) {
         const s = within(section);
         expect(s.getByText("Overnight Stays")).toBeInTheDocument();
-        expect(s.getByText("6–10 Guests")).toBeInTheDocument();
+        expect(s.getByText(publicInformation.capacity.overnightLabel)).toBeInTheDocument();
         expect(s.getByText("Indoor Gatherings")).toBeInTheDocument();
-        expect(s.getByText("Approximately 15–20 Guests")).toBeInTheDocument();
+        expect(s.getByText(publicInformation.capacity.indoorLabel)).toBeInTheDocument();
         expect(s.getByText("Day Events & Gatherings")).toBeInTheDocument();
-        expect(s.getByText("30–40 Guests")).toBeInTheDocument();
+        expect(s.getByText(publicInformation.capacity.standardDayEventLabel)).toBeInTheDocument();
         expect(s.getByText("Parking")).toBeInTheDocument();
-        expect(s.getByText("Approximately 3 Inside · 10+ Outside")).toBeInTheDocument();
+        expect(s.getByText(`${publicInformation.parking.inside.valueLabel} Inside · ${publicInformation.parking.outside.valueLabel} Outside`)).toBeInTheDocument();
       }
     });
 
@@ -674,9 +675,9 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
       expect(screen.getAllByText(/Three attached bathrooms/i).length).toBeGreaterThan(0);
       expect(screen.getAllByText(/one lawn bathroom/i).length).toBeGreaterThan(0);
       expect(screen.getAllByText(/pool changing room/i).length).toBeGreaterThan(0);
-      expect(screen.getAllByText(/6–10 Guests/i).length).toBeGreaterThan(0);
-      expect(screen.getAllByText(/30–40 Guests/i).length).toBeGreaterThan(0);
-      expect(screen.getAllByText(/Approximately 15–20 Guests/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(new RegExp(publicInformation.capacity.overnightLabel, "i")).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(new RegExp(publicInformation.capacity.standardDayEventLabel, "i")).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(new RegExp(publicInformation.capacity.indoorLabel, "i")).length).toBeGreaterThan(0);
       expect(screen.getAllByText(/seating for 5/i).length).toBeGreaterThan(0);
       expect(screen.getAllByText(/Wi-Fi/i).length).toBeGreaterThan(0);
       expect(screen.getAllByText(/RO drinking water/i).length).toBeGreaterThan(0);
@@ -733,6 +734,47 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
     });
   });
 
+  describe("Gate 4B.1: Estate Page Public-Facts Alignment", () => {
+    it("renders canonical maximum capacities from publicInformation config", () => {
+      render(<EstatePage />);
+      const text = document.body.textContent || "";
+      expect(text).toContain(publicInformation.capacity.overnightLabel);
+      expect(text).toContain(publicInformation.capacity.indoorLabel);
+      expect(text).toContain(publicInformation.capacity.standardDayEventLabel);
+    });
+
+    it("renders the larger-event written-approval statement", () => {
+      render(<EstatePage />);
+      const text = document.body.textContent || "";
+      expect(text).toContain(publicInformation.capacity.largerEventStatement);
+    });
+
+    it("contains no 24-hour booking wording", () => {
+      render(<EstatePage />);
+      const text = document.body.textContent || "";
+      expect(text).not.toContain("24-hour");
+      expect(text).not.toContain("24 hours");
+    });
+
+    it("contains no old approximate capacity ranges", () => {
+      render(<EstatePage />);
+      const text = document.body.textContent || "";
+      expect(text).not.toContain("6\u201310 Guests");
+      expect(text).not.toContain("30\u201340 Guests");
+      expect(text).not.toContain("~15\u201320 Guests");
+      expect(text).not.toContain("Approximately 15\u201320");
+      expect(text).not.toContain("Approximately 3 Inside");
+    });
+
+    it("remains structurally valid with single H1 and navigation links", () => {
+      render(<EstatePage />);
+      const h1s = screen.getAllByRole("heading", { level: 1 });
+      expect(h1s).toHaveLength(1);
+      const links = screen.getAllByRole("link");
+      expect(links.length).toBeGreaterThan(0);
+    });
+  });
+
   describe("ExperiencesPage Architecture and Content Guardrails", () => {
     it("verifies heading hierarchy has exactly one H1 with correct text", () => {
       render(<ExperiencesPage />);
@@ -745,7 +787,7 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
       const expModule = await import("@/app/(marketing)/experiences/page");
       expect(expModule.metadata.title).toBe("Experiences | Private Stays & Gatherings at Silver Oak Estate");
       expect(expModule.metadata.description).toBe(
-        "Discover private stays, approved gatherings, pool and lawn time at Silver Oak Estate in Sector 135, Noida. Fully furnished 3 BHK farmhouse for 6–10 overnight guests."
+        `Discover private stays, approved gatherings, pool and lawn time at Silver Oak Estate in Sector 135, Noida. The fully furnished 3 BHK farmhouse accommodates ${publicInformation.capacity.overnightLabel.toLowerCase()}.`
       );
     });
 
@@ -786,6 +828,52 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
     });
   });
 
+  describe("Gate 4B.1: Experiences Page Public-Facts Alignment", () => {
+    it("renders canonical maximum capacities from publicInformation config on experiences page", () => {
+      render(<ExperiencesPage />);
+      const text = document.body.textContent || "";
+      expect(text).toContain(publicInformation.capacity.overnightLabel);
+      expect(text).toContain(publicInformation.capacity.indoorLabel);
+      expect(text).toContain(publicInformation.capacity.standardDayEventLabel);
+    });
+
+    it("renders the larger-event written-approval statement on experiences page", () => {
+      render(<ExperiencesPage />);
+      const text = document.body.textContent || "";
+      expect(text).toContain(publicInformation.capacity.largerEventStatement);
+    });
+
+    it("contains no 24-hour booking wording on experiences page", () => {
+      render(<ExperiencesPage />);
+      const text = document.body.textContent || "";
+      expect(text).not.toContain("24-hour");
+      expect(text).not.toContain("24 hours");
+    });
+
+    it("contains no old approximate capacity ranges or unconfirmed claims on experiences page", () => {
+      render(<ExperiencesPage />);
+      const text = document.body.textContent || "";
+      expect(text).not.toContain("6–10");
+      expect(text).not.toContain("6-10");
+      expect(text).not.toContain("30–40");
+      expect(text).not.toContain("30-40");
+      expect(text).not.toContain("15–20");
+      expect(text).not.toContain("15-20");
+      expect(text).not.toContain("approximately 30");
+      expect(text).not.toContain("approximately 15");
+      expect(text).not.toContain("unlimited");
+      expect(text).not.toContain("no restriction");
+    });
+
+    it("remains structurally valid with single H1 and navigation links on experiences page", () => {
+      render(<ExperiencesPage />);
+      const h1s = screen.getAllByRole("heading", { level: 1 });
+      expect(h1s).toHaveLength(1);
+      const links = screen.getAllByRole("link");
+      expect(links.length).toBeGreaterThan(0);
+    });
+  });
+
   describe("PublicInformationPages Smoke Architecture", () => {
     it("renders expected H1 heading and metadata title for Pricing Page", async () => {
       render(<PricingPage />);
@@ -822,6 +910,59 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
       const policiesMod = await import("@/app/(marketing)/policies/page");
       expect(policiesMod.metadata.title).toBe("Booking Information | Silver Oak Estate");
       expect(screen.getByRole("link", { name: "View Pricing" })).toHaveAttribute("href", "/pricing");
+    });
+
+    it("verifies homepage renders fixed booking-slot wording", () => {
+      render(<HomePage />);
+      const text = document.body.textContent || "";
+      expect(text).toContain("standard 23-hour slot");
+      expect(text).not.toContain("24-hour");
+      expect(text).not.toContain("24 hours");
+    });
+
+    it("verifies pricing page renders fixed booking-slot timings and non-GST statement", () => {
+      render(<PricingPage />);
+      const text = document.body.textContent || "";
+      expect(text).toContain("standard 23-hour slot");
+      expect(text).toContain("11:00 AM");
+      expect(text).toContain("10:00 AM the following day");
+      expect(text).toContain("GST is not currently charged");
+      expect(text).not.toContain("24-hour");
+      expect(text).not.toContain("24 hours");
+    });
+
+    it("verifies contact page renders primary and secondary call and WhatsApp actions", () => {
+      render(<ContactPage />);
+      expect(screen.getByRole("link", { name: "Call +91 86794 70955" })).toHaveAttribute("href", "tel:+918679470955");
+      expect(screen.getByRole("link", { name: "Call +91 99102 03212" })).toHaveAttribute("href", "tel:+919910203212");
+
+      const wa1 = screen.getByRole("link", { name: "WhatsApp +91 86794 70955" });
+      expect(wa1).toHaveAttribute("href", "https://wa.me/918679470955");
+      expect(wa1).toHaveAttribute("target", "_blank");
+
+      const wa2 = screen.getByRole("link", { name: "WhatsApp +91 99102 03212" });
+      expect(wa2).toHaveAttribute("href", "https://wa.me/919910203212");
+      expect(wa2).toHaveAttribute("target", "_blank");
+    });
+
+    it("verifies policies page renders canonical capacity maximums and larger-event statement", () => {
+      render(<PoliciesPage />);
+      const text = document.body.textContent || "";
+      expect(text).toContain("Up to 10 guests");
+      expect(text).toContain("Up to 20 people");
+      expect(text).toContain("Up to 40 people");
+      expect(text).toContain("Events above 40 people require prior written approval");
+      expect(text).not.toContain("unlimited");
+    });
+
+    it("verifies absence of 24-hour wording across affected public route components", () => {
+      [HomePage, PricingPage, ContactPage, PoliciesPage].forEach((Component) => {
+        const { container } = render(<Component />);
+        const text = (container.textContent || "").toLowerCase();
+        expect(text).not.toContain("24-hour");
+        expect(text).not.toContain("24 hours");
+        expect(text).not.toContain("for 24 hours");
+      });
     });
   });
 });

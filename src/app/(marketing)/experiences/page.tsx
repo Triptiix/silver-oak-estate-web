@@ -5,16 +5,19 @@ import { EstateHeading } from "@/components/estate-ui/estate-heading";
 import { EstateMediaFrame } from "@/components/estate-ui/estate-media-frame";
 import { EstateSection } from "@/components/estate-ui/estate-section";
 import { EstateText } from "@/components/estate-ui/estate-text";
+import { publicInformation } from "@/config/public-information";
 import type { Metadata } from "next";
 import Image from "next/image";
 
 export const metadata: Metadata = {
   title: "Experiences | Private Stays & Gatherings at Silver Oak Estate",
   description:
-    "Discover private stays, approved gatherings, pool and lawn time at Silver Oak Estate in Sector 135, Noida. Fully furnished 3 BHK farmhouse for 6–10 overnight guests.",
+    `Discover private stays, approved gatherings, pool and lawn time at Silver Oak Estate in Sector 135, Noida. The fully furnished 3 BHK farmhouse accommodates ${publicInformation.capacity.overnightLabel.toLowerCase()}.`,
 };
 
 export default function ExperiencesPage() {
+  const { capacity } = publicInformation;
+
   return (
     <div className="min-h-screen bg-[var(--soe-surface-bg-base)] text-[var(--soe-surface-text-primary)]">
       {/* A. EDITORIAL HERO */}
@@ -92,7 +95,7 @@ export default function ExperiencesPage() {
                     Stay & Unwind
                   </EstateHeading>
                   <EstateText variant="sm" tone="muted">
-                    Comfortable overnight accommodation for 6–10 guests across three themed king-bed bedrooms with attached bathrooms, air conditioning, Wi-Fi, and diesel generator power backup.
+                    Comfortable overnight accommodation for {capacity.overnightLabel} across three themed king-bed bedrooms with attached bathrooms, air conditioning, Wi-Fi, and diesel generator power backup.
                   </EstateText>
                 </div>
               </div>
@@ -118,7 +121,7 @@ export default function ExperiencesPage() {
                     Gather & Celebrate
                   </EstateHeading>
                   <EstateText variant="sm" tone="muted">
-                    Approved private day gatherings for approximately 30–40 guests, utilizing the spacious open-air lawn, pool deck, and indoor seating for approximately 15–20 guests.
+                    Approved private day gatherings for {capacity.standardDayEventLabel}, utilizing the spacious open-air lawn, pool deck, and indoor seating for {capacity.indoorLabel}.
                   </EstateText>
                 </div>
               </div>
@@ -209,7 +212,7 @@ export default function ExperiencesPage() {
                 Restful Private Residence
               </EstateHeading>
               <EstateText variant="base" tone="muted" className="space-y-4">
-                The fully furnished 3 BHK residence accommodates 6–10 overnight guests with three themed king-bed bedrooms and three attached bathrooms.
+                The fully furnished 3 BHK residence accommodates {capacity.overnightLabel} with three themed king-bed bedrooms and three attached bathrooms.
               </EstateText>
               <EstateText variant="base" tone="muted">
                 Essential infrastructure includes Wi-Fi, air conditioning, filtered RO drinking water, diesel generator power backup, solar support, emergency lighting, CCTV security, and an on-site caretaker.
@@ -234,7 +237,7 @@ export default function ExperiencesPage() {
                 Thoughtfully Hosted Private Events
               </EstateHeading>
               <EstateText variant="base" tone="muted" className="space-y-4">
-                Silver Oak Estate hosts approved private day gatherings for approximately 30–40 guests, with indoor gathering seating for approximately 15–20 guests in the hall and dining areas.
+                Silver Oak Estate hosts approved private day gatherings for {capacity.standardDayEventLabel}, with indoor gathering seating for {capacity.indoorLabel} in the hall and dining areas. {capacity.largerEventStatement}
               </EstateText>
               <EstateText variant="base" tone="muted">
                 Optional services such as catering, DJ, photography or shoots, and custom event arrangements are available on request, subject to availability and written confirmation on a case-by-case basis.
