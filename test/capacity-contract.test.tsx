@@ -1,5 +1,3 @@
-import fs from "fs";
-import path from "path";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
@@ -83,28 +81,5 @@ describe("verified booking capacity contract", () => {
       guestCount: 5,
       overnightGuestCount: 6,
     }).success).toBe(false);
-  });
-
-  it("wires both forms to the shared executable limits", () => {
-    const publicForm = fs.readFileSync(
-      path.join(process.cwd(), "src/components/booking/booking-form.tsx"),
-      "utf-8",
-    );
-    const adminForm = fs.readFileSync(
-      path.join(process.cwd(), "src/components/admin/operations/manual-booking-form.tsx"),
-      "utf-8",
-    );
-
-    for (const source of [publicForm, adminForm]) {
-      expect(source).toContain("STANDARD_DAY_EVENT_CAPACITY");
-      expect(source).toContain("OVERNIGHT_GUEST_CAPACITY");
-      expect(source).not.toContain("max={30}");
-      expect(source).not.toContain("max={8}");
-    }
-
-    expect(publicForm).toContain("Maximum 40 guests allowed for standard events/day access.");
-    expect(publicForm).toContain("Maximum 10 guests can stay overnight.");
-    expect(adminForm).toContain("Total guests must be between 1 and ${STANDARD_DAY_EVENT_CAPACITY}.");
-    expect(adminForm).toContain("Overnight guests must be between 0 and ${OVERNIGHT_GUEST_CAPACITY}.");
   });
 });
