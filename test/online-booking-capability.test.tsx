@@ -42,11 +42,11 @@ afterEach(() => {
 });
 
 describe("availability capability", () => {
-  it("is ready with only the read-only Supabase requirements", () => {
+  it("is ready with only the public Supabase URL and anon key", () => {
     expect(
       evaluateAvailabilityCapability({
         NEXT_PUBLIC_SUPABASE_URL: "https://project.supabase.co",
-        SUPABASE_SERVICE_ROLE_KEY: "service-role-key",
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: "anon-key",
       }),
     ).toEqual({
       available: true,
@@ -55,16 +55,25 @@ describe("availability capability", () => {
     });
   });
 
-  it("fails closed and reports only missing availability field names", () => {
+  it("does not require the service-role key for the public calendar", () => {
     expect(
       evaluateAvailabilityCapability({
-        NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
+        NEXT_PUBLIC_SUPABASE_URL: "https://project.supabase.co",
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: "anon-key",
         SUPABASE_SERVICE_ROLE_KEY: undefined,
+      }).available,
+    ).toBe(true);
+  });
+
+  it("fails closed and reports only missing public availability fields", () => {
+    expect(
+      evaluateAvailabilityCapability({
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: undefined,
       }),
     ).toEqual({
       available: false,
       state: "incomplete",
-      missingFields: ["NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+      missingFields: ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY"],
     });
   });
 });
@@ -118,10 +127,13 @@ describe("assisted booking fallback", () => {
     expect(screen.getByText(/No online payment is being collected/)).toBeInTheDocument();
   });
 
-  it("shows the calendar while booking is disabled and keeps the booking route assisted", () => {
+  it("shows the calendar without a service-role key while booking stays disabled", () => {
     process.env = {
       ...originalEnvironment,
-      ...completeBookingEnvironment({ ONLINE_BOOKING_ENABLED: "false" }),
+      ...completeBookingEnvironment({
+        ONLINE_BOOKING_ENABLED: "false",
+        SUPABASE_SERVICE_ROLE_KEY: undefined,
+      }),
     };
 
     const { unmount } = render(<AvailabilityPage />);
@@ -134,12 +146,12 @@ describe("assisted booking fallback", () => {
     expect(screen.queryByText("Enter Your Details")).not.toBeInTheDocument();
   });
 
-  it("keeps the availability fallback when its Supabase capability is incomplete", () => {
+  it("keeps the availability fallback when its public Supabase capability is incomplete", () => {
     process.env = {
       ...originalEnvironment,
       ...completeBookingEnvironment({
         ONLINE_BOOKING_ENABLED: "false",
-        SUPABASE_SERVICE_ROLE_KEY: undefined,
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: undefined,
       }),
     };
 

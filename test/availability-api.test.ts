@@ -15,7 +15,8 @@ describe("availability API", () => {
       ...originalEnvironment,
       ONLINE_BOOKING_ENABLED: "false",
       NEXT_PUBLIC_SUPABASE_URL: "https://project.supabase.co",
-      SUPABASE_SERVICE_ROLE_KEY: "service-role-key",
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: "anon-key",
+      SUPABASE_SERVICE_ROLE_KEY: undefined,
     };
     getAvailability.mockReset();
   });
@@ -24,7 +25,7 @@ describe("availability API", () => {
     process.env = { ...originalEnvironment };
   });
 
-  it("returns availability while online booking remains disabled", async () => {
+  it("returns availability with the anon configuration while online booking remains disabled", async () => {
     getAvailability.mockResolvedValue(safe);
     const response = await GET(new NextRequest("http://localhost/api/availability?month=2026-07"));
     expect(response.status).toBe(200);
@@ -32,8 +33,8 @@ describe("availability API", () => {
     expect(await response.json()).toEqual(safe);
   });
 
-  it("fails closed before database work when availability configuration is incomplete", async () => {
-    delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+  it("fails closed before database work when the public anon key is missing", async () => {
+    delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     const response = await GET(new NextRequest("http://localhost/api/availability?month=2026-07"));
     expect(response.status).toBe(503);
     expect(await response.json()).toEqual({

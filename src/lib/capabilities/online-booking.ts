@@ -2,7 +2,7 @@ import "server-only";
 
 export const AVAILABILITY_REQUIRED_FIELDS = [
   "NEXT_PUBLIC_SUPABASE_URL",
-  "SUPABASE_SERVICE_ROLE_KEY",
+  "NEXT_PUBLIC_SUPABASE_ANON_KEY",
 ] as const;
 
 export const ONLINE_BOOKING_REQUIRED_FIELDS = [
