@@ -2,11 +2,21 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 
 vi.mock("server-only", () => ({}));
+vi.mock("@/components/booking/availability-flow", () => ({
+  AvailabilityFlow: ({ onlineBookingAvailable }: { onlineBookingAvailable: boolean }) => (
+    <div data-testid="availability-flow">
+      {onlineBookingAvailable ? "Online booking enabled" : "Assisted booking only"}
+    </div>
+  ),
+}));
 
 import AvailabilityPage from "@/app/(marketing)/availability/page";
 import BookPage from "@/app/(marketing)/book/page";
 import { BookingUnavailable } from "@/components/booking/booking-unavailable";
-import { evaluateOnlineBookingCapability } from "@/lib/capabilities/online-booking";
+import {
+  evaluateAvailabilityCapability,
+  evaluateOnlineBookingCapability,
+} from "@/lib/capabilities/online-booking";
 
 const originalEnvironment = { ...process.env };
 
@@ -29,6 +39,34 @@ function completeBookingEnvironment(overrides: Record<string, string | undefined
 afterEach(() => {
   process.env = { ...originalEnvironment };
   vi.restoreAllMocks();
+});
+
+describe("availability capability", () => {
+  it("is ready with only the read-only Supabase requirements", () => {
+    expect(
+      evaluateAvailabilityCapability({
+        NEXT_PUBLIC_SUPABASE_URL: "https://project.supabase.co",
+        SUPABASE_SERVICE_ROLE_KEY: "service-role-key",
+      }),
+    ).toEqual({
+      available: true,
+      state: "ready",
+      missingFields: [],
+    });
+  });
+
+  it("fails closed and reports only missing availability field names", () => {
+    expect(
+      evaluateAvailabilityCapability({
+        NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
+        SUPABASE_SERVICE_ROLE_KEY: undefined,
+      }),
+    ).toEqual({
+      available: false,
+      state: "incomplete",
+      missingFields: ["NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+    });
+  });
 });
 
 describe("online booking capability", () => {
@@ -80,19 +118,33 @@ describe("assisted booking fallback", () => {
     expect(screen.getByText(/No online payment is being collected/)).toBeInTheDocument();
   });
 
-  it("renders the fallback on both public booking routes while disabled", () => {
+  it("shows the calendar while booking is disabled and keeps the booking route assisted", () => {
     process.env = {
       ...originalEnvironment,
       ...completeBookingEnvironment({ ONLINE_BOOKING_ENABLED: "false" }),
     };
 
     const { unmount } = render(<AvailabilityPage />);
-    expect(screen.getByRole("heading", { name: "Online reservations are being prepared" })).toBeInTheDocument();
-    expect(screen.queryByText("Choose a date")).not.toBeInTheDocument();
+    expect(screen.getByTestId("availability-flow")).toHaveTextContent("Assisted booking only");
+    expect(screen.queryByRole("heading", { name: "Online reservations are being prepared" })).not.toBeInTheDocument();
 
     unmount();
     render(<BookPage />);
     expect(screen.getByRole("heading", { name: "Online reservations are being prepared" })).toBeInTheDocument();
     expect(screen.queryByText("Enter Your Details")).not.toBeInTheDocument();
+  });
+
+  it("keeps the availability fallback when its Supabase capability is incomplete", () => {
+    process.env = {
+      ...originalEnvironment,
+      ...completeBookingEnvironment({
+        ONLINE_BOOKING_ENABLED: "false",
+        SUPABASE_SERVICE_ROLE_KEY: undefined,
+      }),
+    };
+
+    render(<AvailabilityPage />);
+    expect(screen.getByRole("heading", { name: "Online reservations are being prepared" })).toBeInTheDocument();
+    expect(screen.queryByTestId("availability-flow")).not.toBeInTheDocument();
   });
 });
