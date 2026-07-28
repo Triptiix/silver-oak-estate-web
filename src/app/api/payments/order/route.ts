@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { bookingError } from "@/lib/booking/api-errors";
 import { HOLD_COOKIE_NAME } from "@/lib/booking/hold-cookie";
 import { verifyHoldToken } from "@/lib/booking/hold-token";
+import { getOnlineBookingCapability } from "@/lib/capabilities/online-booking";
 import { envClient } from "@/lib/env/client";
 import { envServer } from "@/lib/env/server";
 import { assertPaymentConfiguration } from "@/lib/payments/config";
@@ -19,6 +20,13 @@ const noStoreHeaders = { "Cache-Control": "no-store, max-age=0" };
 export async function POST(request: NextRequest) {
   if (!hasTrustedMutationOrigin(request, envClient.NEXT_PUBLIC_SITE_URL)) {
     return bookingError(403, "ORIGIN_REJECTED", "Request origin was rejected.");
+  }
+  if (!getOnlineBookingCapability().available) {
+    return bookingError(
+      503,
+      "BOOKING_UNAVAILABLE",
+      "Online booking is currently unavailable. Contact our team for assistance.",
+    );
   }
 
   const token = request.cookies.get(HOLD_COOKIE_NAME)?.value;

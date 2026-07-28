@@ -10,7 +10,7 @@ To build a luxury web application serving as a direct booking platform. The dire
 
 ## Key Constraints
 
-- **Launch Date:** Target 25 July 2026.
+- **Launch Date:** The previous 25 July 2026 target has passed. A new public launch date must be selected only after Phase 6 readiness gates pass.
 - **Property:** Single full-property rental with 3 bedrooms, pool, lawn and hall.
 - **Verified operational capacities:** Up to 10 overnight guests, up to 20 people indoors, and up to 40 people for standard daytime events.
 - **Larger events:** Events above 40 people require prior written approval after an operational and safety review and are outside the standard self-service booking flow.
@@ -56,13 +56,23 @@ This repository strictly contains the Next.js/Supabase source code for the publi
 - Accessible results and validation
 - Repository UI and validation sources aligned to 40-person standard daytime and 10-person overnight limits
 
+## Phase 6 status
+
+- A Vercel project exists for online testing, but it is not an approved production launch.
+- The custom domain and live payment activation remain outside the current gate.
+- The public marketing site is expected to operate with core Supabase browser configuration only.
+- `ONLINE_BOOKING_ENABLED` defaults to `false` and must remain disabled until the complete hosted booking stack passes staging rehearsal.
+- When online booking is disabled or incomplete, `/availability` and `/book` must show assisted phone, WhatsApp and email contact options instead of a partial booking/payment flow.
+- Readiness checks are separated into core, booking-test, email and production-live profiles.
+
 ## Current limitations
 
 - Hosted Phase 5A and Phase 5B migrations have not been deployed
 - The capacity-alignment migration has not been applied to hosted Supabase
 - Hosted Supabase has no administrator account
 - No demo username or password exists
-- Production deployment has not occurred
+- The Vercel testing project is not production-approved
+- Online booking remains intentionally disabled until hosted migrations and external providers are verified
 - Live Razorpay is not configured
 - Refund execution is not implemented
 - Automatic reconciliation is not implemented
@@ -70,5 +80,6 @@ This repository strictly contains the Next.js/Supabase source code for the publi
 - Recovery remains diagnosis-only
 
 The authoritative Phase 5B reference is [`docs/admin/phase-5b-manual-operations.md`](docs/admin/phase-5b-manual-operations.md).
+The authoritative Phase 6 reference is [`docs/deployment/phase-6-production-readiness.md`](docs/deployment/phase-6-production-readiness.md).
 
 *See the `docs/architecture/` folder for complete technical blueprints.*

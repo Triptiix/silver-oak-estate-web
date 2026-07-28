@@ -1,3 +1,9 @@
+export type ProductionPreflightProfile =
+  | "core"
+  | "booking-test"
+  | "email"
+  | "production-live";
+
 export type ProductionPreflightTarget = "staging" | "production";
 
 export type ProductionPreflightFinding = {
@@ -6,7 +12,7 @@ export type ProductionPreflightFinding = {
 };
 
 export type ProductionPreflightResult = {
-  target: ProductionPreflightTarget;
+  profile: ProductionPreflightProfile;
   ready: boolean;
   blockers: ProductionPreflightFinding[];
   warnings: ProductionPreflightFinding[];
@@ -15,7 +21,10 @@ export type ProductionPreflightResult = {
 
 export function evaluateProductionReadiness(
   environment: Record<string, string | undefined>,
-  options?: { target?: ProductionPreflightTarget },
+  options?: {
+    profile?: ProductionPreflightProfile;
+    target?: ProductionPreflightTarget;
+  },
 ): ProductionPreflightResult;
 
 export function formatProductionReadinessReport(

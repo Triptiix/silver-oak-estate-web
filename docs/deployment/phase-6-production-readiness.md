@@ -2,9 +2,15 @@
 
 ## Purpose
 
-This runbook prepares Silver Oak Estate for a controlled staging rehearsal and a later production launch. It does not authorize or perform a hosted Supabase migration, Vercel deployment, DNS change, Razorpay live-mode activation, administrator provisioning, or real customer transaction.
+This runbook prepares Silver Oak Estate for a controlled staging rehearsal and a later production launch. It does not authorize or perform a hosted Supabase migration, Vercel production promotion, DNS change, Razorpay live-mode activation, administrator provisioning, or real customer transaction.
 
 The previous target launch date of 25 July 2026 has passed. Select a new launch date only after every required gate in issue #18 is complete.
+
+## Current deployment posture
+
+A Vercel project exists for online testing. It is not an approved public launch, the custom domain remains outside the launch gate, and online booking must remain disabled until the complete booking stack and hosted database are verified.
+
+The public marketing website may operate with only the core Supabase browser configuration. `/availability` and `/book` must show an assisted phone/WhatsApp fallback whenever `ONLINE_BOOKING_ENABLED` is not `true` or the complete booking capability is unavailable.
 
 ## Capacity and booking contract
 
@@ -28,14 +34,14 @@ Varun Yadav is the property owner and Arpit Chaudhary manages operations. This r
 
 ### Gate 2: production environment ownership
 
-Every environment variable must have an accountable owner and an approved rotation procedure. Production values belong in the hosting/provider secret stores, never in GitHub, documentation, screenshots, issue comments, test fixtures, or local shell history shared with others.
+Every environment variable must have an accountable owner and an approved rotation procedure. Production values belong in the hosting/provider secret stores, never in GitHub, documentation, screenshots, issue comments, test fixtures, or shared shell history.
 
 Required integration ownership includes:
 
 - Supabase project and service-role access
 - Vercel project and domain configuration
-- Cloudflare Turnstile production keys and domain allowlist
-- Razorpay live account, KYC, API keys and webhook secret
+- Cloudflare Turnstile keys and domain allowlist
+- Razorpay account, KYC, API keys and webhook secret
 - Transactional email provider and verified sender
 - Booking-token, iCal and cron secrets
 - Error monitoring and launch observability
@@ -68,50 +74,69 @@ A production-shaped staging environment must prove:
 - Cron expiry and iCal access
 - Mobile, accessibility, privacy and failure states
 
+Only after this rehearsal passes may `ONLINE_BOOKING_ENABLED=true` be used in the intended environment.
+
 ### Gate 5: production rollout
 
 Production rollout requires a recorded go/no-go decision, exact deployed commit, migration evidence, rollback criteria, administrator verification, payment/webhook verification and post-launch monitoring. Automatic refunds, automatic reconciliation and PMS/channel-manager synchronization remain deferred.
 
-## Automated environment preflight
+## Automated capability preflight
 
 The preflight reads the current process environment, checks names and relationships, and prints only field names and diagnostic messages. It never prints environment values.
 
-### Staging
+### Core website
+
+```bash
+npm run preflight:production -- --profile=core
+```
+
+Confirms the public site URL, Supabase browser configuration, application environment and Asia/Kolkata timezone. Payment and email variables are intentionally excluded.
+
+### Booking test
+
+```bash
+npm run preflight:production -- --profile=booking-test
+```
+
+Requires `APP_ENV=staging`, `PAYMENT_MODE=test`, `ONLINE_BOOKING_ENABLED=true`, a Razorpay test key and the complete Supabase service-role, Turnstile, booking-token and payment/webhook configuration. Transactional email is assessed separately.
+
+The legacy staging command remains an alias:
 
 ```bash
 npm run preflight:production -- --target=staging
 ```
 
-The staging gate requires:
+### Transactional email
 
-- `APP_ENV=staging`
-- `PAYMENT_MODE=test`
-- HTTPS non-local site and Supabase URLs
-- Required variables present without example/placeholder values
-- Valid positive hold durations and notification email addresses
+```bash
+npm run preflight:production -- --profile=email
+```
 
-### Production
+Checks the email API key, provider-verified sender and administrator recipient list without requiring booking or Supabase service-role credentials.
+
+### Production live
+
+```bash
+npm run preflight:production -- --profile=production-live
+```
+
+Requires the canonical production URL, `APP_ENV=production`, `PAYMENT_MODE=live`, a Razorpay live key, enabled online booking, email delivery, operational secrets and an error-monitoring DSN.
+
+The legacy production command remains an alias:
 
 ```bash
 npm run preflight:production -- --target=production
 ```
 
-The production gate additionally requires:
-
-- `APP_ENV=production`
-- `NEXT_PUBLIC_SITE_URL=https://silveroakestate.online`
-- `PAYMENT_MODE=live`
-- A Razorpay key ID beginning with `rzp_live_`
-
-A passing environment preflight is necessary but not sufficient. It cannot verify legal approval, provider ownership, KYC, domain control, hosted migration state, backup quality, live webhook delivery, administrator identity or rollback readiness.
+A passing preflight is necessary but not sufficient. It cannot verify legal approval, provider ownership, KYC, domain control, hosted migration state, backup quality, live webhook delivery, administrator identity or rollback readiness.
 
 ## Expected output
 
-A successful check reports `Status: PASS`. A blocked check reports only the affected variable name and reason. Missing error monitoring or execution outside Vercel is reported as a warning rather than exposing any value.
+A successful check reports `Status: PASS`. A blocked check reports only the affected variable name and reason. No secret value is printed.
 
 ## Rollback boundary
 
-This repository-only phase changes no hosted service. Rollback is limited to reverting the documentation, command and tests before merge. Hosted rollback procedures must be written and approved separately before Gate 3.
+Phase 6A changes source behavior and documentation only. Hosted rollback procedures must be written and approved separately before Gate 3.
 
 ## Evidence required before launch
 
@@ -125,4 +150,4 @@ This repository-only phase changes no hosted service. Rollback is limited to rev
 - Payment and webhook verification evidence
 - Post-launch monitoring record
 
-Track the complete launch sequence in GitHub issue #18.
+Track the complete launch sequence in GitHub issue #18 and Phase 6A implementation in issue #20.

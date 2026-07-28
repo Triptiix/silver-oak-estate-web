@@ -2,10 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAvailability } from "@/lib/booking/database";
 import { monthSchema } from "@/lib/booking/schemas";
 import { bookingError } from "@/lib/booking/api-errors";
+import { getOnlineBookingCapability } from "@/lib/capabilities/online-booking";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
+  if (!getOnlineBookingCapability().available) {
+    return bookingError(
+      503,
+      "BOOKING_UNAVAILABLE",
+      "Online booking is currently unavailable. Contact our team for assistance.",
+    );
+  }
+
   const month = request.nextUrl.searchParams.get("month");
   const propertySlug = request.nextUrl.searchParams.get("property") ?? "silver-oak-estate";
   if (!monthSchema.safeParse(month).success || !/^[a-z0-9-]{1,80}$/.test(propertySlug)) {
