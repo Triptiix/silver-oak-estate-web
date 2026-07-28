@@ -76,7 +76,8 @@ describe("hold API", () => {
   });
   it("returns 200 for an idempotent retry", async () => { createHold.mockResolvedValue({ ...result, created: false }); expect((await POST(request(input))).status).toBe(200); });
   it("rejects malformed dates", async () => expect((await POST(request({ ...input, checkInDate: "2026-02-31" }))).status).toBe(400));
-  it("rejects capacity above 30", async () => expect((await POST(request({ ...input, guestCount: 31 }))).status).toBe(400));
+  it("rejects total capacity above 40", async () => expect((await POST(request({ ...input, guestCount: 41 }))).status).toBe(400));
+  it("rejects overnight capacity above 10", async () => expect((await POST(request({ ...input, guestCount: 11, overnightGuestCount: 11 }))).status).toBe(400));
   it.each(["+91+9999000001", "91+9999000001", "phone"])(
     "rejects malformed phone %s before the booking RPC",
     async (customerPhone) => {
@@ -151,8 +152,8 @@ describe("hold API", () => {
       customerEmail: `${"a".repeat(242)}@example.com`,
       customerPhone: "+123456789012345",
       whatsapp: "+123456789012345",
-      guestCount: 30,
-      overnightGuestCount: 8,
+      guestCount: 40,
+      overnightGuestCount: 10,
       specialRequests: "a".repeat(1000),
       turnstileToken: "a".repeat(4096),
     };
