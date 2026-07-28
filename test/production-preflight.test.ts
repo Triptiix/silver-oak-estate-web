@@ -1,7 +1,5 @@
 import { describe, expect, it } from "vitest";
 
-// The preflight is an ESM Node script so it can run without a build step.
-// @ts-ignore JavaScript module intentionally has no separate declaration file.
 import {
   evaluateProductionReadiness,
   formatProductionReadinessReport,
@@ -26,7 +24,7 @@ function createEnvironment(overrides: Record<string, string> = {}) {
     PAYMENT_WEBHOOK_SECRET: "webhook-secret-with-sufficient-length",
     TURNSTILE_SECRET_KEY: "turnstile-secret-with-sufficient-length",
     BOOKING_TOKEN_SECRET: "booking-token-secret-with-sufficient-length",
-    ICAL_FEED_SECRET: "ical-feed-secret-with-sufficient-length",
+    ICAL_FEED_SECRET: "email-api-key-with-sufficient-length",
     EMAIL_API_KEY: "email-api-key-with-sufficient-length",
     EMAIL_SENDER: "bookings@silveroakestate.online",
     ADMIN_NOTIFICATION_RECIPIENTS: "contact@silveroakestate.online",
@@ -108,7 +106,10 @@ describe("production readiness preflight", () => {
 
   it("rejects unsupported targets", () => {
     expect(() =>
-      evaluateProductionReadiness(createEnvironment(), { target: "preview" }),
+      evaluateProductionReadiness(createEnvironment(), {
+        // @ts-expect-error Runtime validation rejects unsupported CLI targets.
+        target: "preview",
+      }),
     ).toThrow("Unsupported preflight target: preview");
   });
 });
