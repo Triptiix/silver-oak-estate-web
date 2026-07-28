@@ -12,6 +12,19 @@ alter table public.properties
   add constraint properties_overnight_capacity
     check (max_overnight_guests between 1 and 10) not valid;
 
+alter table public.bookings
+  drop constraint if exists bookings_guest_capacity,
+  drop constraint if exists bookings_overnight_capacity;
+
+alter table public.bookings
+  add constraint bookings_guest_capacity
+    check (guest_count between 1 and 40) not valid,
+  add constraint bookings_overnight_capacity
+    check (
+      overnight_guest_count is null
+      or overnight_guest_count between 0 and 10
+    ) not valid;
+
 update public.properties
 set max_event_guests = 40,
     max_overnight_guests = 10,
@@ -23,6 +36,12 @@ alter table public.properties
 
 alter table public.properties
   validate constraint properties_overnight_capacity;
+
+alter table public.bookings
+  validate constraint bookings_guest_capacity;
+
+alter table public.bookings
+  validate constraint bookings_overnight_capacity;
 
 insert into public.site_settings (
   setting_key,
