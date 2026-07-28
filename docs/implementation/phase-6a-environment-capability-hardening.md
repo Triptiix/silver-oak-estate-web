@@ -2,7 +2,7 @@
 
 ## Outcome
 
-The public marketing website can remain available while online booking, payment and email providers are incomplete. Booking routes fail closed and direct guests to assisted booking instead of rendering a partially configured flow.
+The public marketing website can remain available while online booking, payment and email providers are incomplete. Booking pages and new-booking API entry points fail closed and direct guests to assisted booking instead of rendering or accepting a partially configured flow.
 
 ## Capability contract
 
@@ -25,6 +25,18 @@ When the capability is disabled or incomplete:
 - `/book` does not mount the booking form, Turnstile or payment flow.
 - Both routes show the verified primary call, WhatsApp and email options.
 - The fallback states that no online payment is being collected through the page.
+
+## Public API boundary
+
+The same capability gate blocks new booking work with a safe `503 BOOKING_UNAVAILABLE` response:
+
+- `GET /api/availability`
+- `POST /api/bookings/hold`
+- `POST /api/payments/order`
+
+The hold and payment-order routes preserve origin validation before the capability response. Disabled requests are rejected before request-body parsing, Turnstile verification, hold-token processing, database work or provider calls.
+
+Recovery and cleanup endpoints are intentionally not disabled. Hold release, payment verification and payment webhooks must remain able to resolve transactions that started before the switch changed.
 
 ## Kill-switch policy
 
