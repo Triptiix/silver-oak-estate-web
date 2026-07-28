@@ -142,17 +142,17 @@ select
 from test_context;
 
 select throws_ok(
-  $$update public.bookings set guest_count = 31 where booking_reference = 'SOE-TEST-001'$$,
+  $$update public.bookings set guest_count = 41 where booking_reference = 'SOE-TEST-001'$$,
   '23514',
   null,
-  'guest count above 30 is rejected'
+  'guest count above 40 is rejected'
 );
 
 select throws_ok(
-  $$update public.bookings set overnight_guest_count = 9 where booking_reference = 'SOE-TEST-001'$$,
+  $$update public.bookings set overnight_guest_count = 11 where booking_reference = 'SOE-TEST-001'$$,
   '23514',
   null,
-  'overnight guest count above 8 is rejected'
+  'overnight guest count above 10 is rejected'
 );
 
 select throws_ok(
