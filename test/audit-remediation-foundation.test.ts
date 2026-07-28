@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 
 import sitemap from "@/app/sitemap";
-import { proxyConfig } from "@/proxy";
+import { config as proxyConfig } from "@/proxy";
 import { serverEnvSchema } from "@/lib/env/server";
 
 describe("audit remediation foundation", () => {
