@@ -15,7 +15,24 @@ export async function getAvailability(propertySlug: string, month: string): Prom
   return data as unknown as AvailabilityResponse;
 }
 
-export async function createHold(values: Record<string, unknown>): Promise<HoldDatabaseResult> {
+export type CreateHoldArgs = {
+  p_property_slug: string;
+  p_check_in_date: string;
+  p_customer_name: string;
+  p_customer_email: string | null;
+  p_customer_phone: string;
+  p_whatsapp: string | null;
+  p_guest_count: number;
+  p_overnight_guest_count: number;
+  p_special_requests: string | null;
+  p_hold_request_id: string;
+  p_hold_token_nonce: string;
+  p_request_fingerprint_hash: string;
+  p_actor_identity_hash: string;
+  p_fallback_hold_minutes: number;
+};
+
+export async function createHold(values: CreateHoldArgs): Promise<HoldDatabaseResult> {
   const client = createServiceRoleClient();
   let { data, error } = await client.rpc("create_booking_hold", values as never);
   if (error?.message.includes("idempotency_retry")) {

@@ -33,7 +33,23 @@ const request = (body: unknown, origin: string | null = "http://localhost:3000")
   rawRequest(JSON.stringify(body), { origin });
 describe("hold API", () => {
   beforeEach(() => { createHold.mockReset(); verifyTurnstile.mockReset(); verifyTurnstile.mockResolvedValue(true); createHold.mockResolvedValue(result); });
-  it("creates a hold and sets a protected API-scoped cookie", async () => { const response = await POST(request(input)); expect(response.status).toBe(201); const cookie = response.headers.get("set-cookie"); expect(cookie).toMatch(/soe_booking_hold=.*HttpOnly.*SameSite=lax/i); expect(cookie).toContain("Path=/api"); expect(cookie).not.toContain("Path=/api/bookings"); expect(cookie).not.toContain(input.customerName); expect(cookie).not.toContain(input.customerPhone); expect(cookie).not.toContain(input.turnstileToken); expect(holdCookieOptions(false).httpOnly).toBe(true); expect("/api/payments/order".startsWith(HOLD_COOKIE_PATH)).toBe(true); const body = await response.json(); expect(body.bookingId).toBeUndefined(); expect(body.holdTokenNonce).toBeUndefined(); });
+  it("creates a hold and sets a protected API-scoped cookie", async () => {
+    const response = await POST(request(input));
+    expect(response.status).toBe(201);
+    const cookies = response.headers.getSetCookie();
+    const holdCookie = cookies.find((c) => c.startsWith("soe_booking_hold=")) ?? "";
+    expect(holdCookie).toMatch(/soe_booking_hold=.*HttpOnly.*SameSite=lax/i);
+    expect(holdCookie).toContain("Path=/api;");
+    expect(holdCookie).not.toContain("Path=/api/bookings");
+    expect(holdCookie).not.toContain(input.customerName);
+    expect(holdCookie).not.toContain(input.customerPhone);
+    expect(holdCookie).not.toContain(input.turnstileToken);
+    expect(holdCookieOptions(false).httpOnly).toBe(true);
+    expect("/api/payments/order".startsWith(HOLD_COOKIE_PATH)).toBe(true);
+    const body = await response.json();
+    expect(body.bookingId).toBeUndefined();
+    expect(body.holdTokenNonce).toBeUndefined();
+  });
   it("passes canonical phone identities to the booking RPC", async () => {
     const response = await POST(request({
       ...input,

@@ -16,13 +16,15 @@ if (priorIds.length) {
 }
 await client.from("customers").delete().like("phone", "+919880%");
 
-function args(date, phone, fingerprint) {
+function args(date, phone, fingerprint, actorHash = "a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0") {
   return {
     p_property_slug: "silver-oak-estate", p_check_in_date: date,
     p_customer_name: "Concurrency Test", p_customer_email: null, p_customer_phone: phone,
     p_whatsapp: null, p_guest_count: 4, p_overnight_guest_count: 2, p_special_requests: null,
     p_hold_request_id: randomUUID(), p_hold_token_nonce: randomUUID(),
-    p_request_fingerprint_hash: fingerprint, p_fallback_hold_minutes: 10,
+    p_request_fingerprint_hash: fingerprint,
+    p_actor_identity_hash: actorHash,
+    p_fallback_hold_minutes: 10,
   };
 }
 
@@ -32,9 +34,11 @@ for (let round = 0; round < 3; round += 1) {
   const date = `2031-08-${String(10 + round).padStart(2, "0")}`;
   const fingerprints = [`concurrency-a-${round}`, `concurrency-b-${round}`];
   testFingerprints.push(...fingerprints);
+  const actorA = `11111111111111111111111111111111111111111111111111111111111111${round}1`;
+  const actorB = `22222222222222222222222222222222222222222222222222222222222222${round}2`;
   const results = await Promise.all([
-    client.rpc("create_booking_hold", args(date, `+9198800000${round}1`, fingerprints[0])),
-    client.rpc("create_booking_hold", args(date, `+9198800000${round}2`, fingerprints[1])),
+    client.rpc("create_booking_hold", args(date, `+9198800000${round}1`, fingerprints[0], actorA)),
+    client.rpc("create_booking_hold", args(date, `+9198800000${round}2`, fingerprints[1], actorB)),
   ]);
   const winners = results.filter((result) => !result.error);
   const losers = results.filter((result) => result.error?.message.includes("date_unavailable"));
