@@ -59,13 +59,14 @@ Technology:
 
 ### Temporary backend-capacity mismatch
 
-The current database seed, booking RPCs and application validators still enforce
-the legacy technical limits of 30 total guests and 8 overnight guests. This is
-tracked in GitHub issue #15 and is not the authoritative business contract.
-Do not edit previously applied migrations or change only one validation layer.
-The correction must use a forward migration and update database configuration,
-public and administrator validation, forms, tests and implementation documents
-together before those higher limits are treated as supported booking behavior.
+The current database seed, public booking RPCs, administrator manual-booking
+flow and application validators still enforce the legacy technical limits of
+30 total guests and 8 overnight guests. This is tracked in GitHub issue #15 and
+is not the authoritative business contract. Do not edit previously applied
+migrations or change only one validation layer. The correction must use a
+forward migration and update database configuration, public and administrator
+validation, forms, tests and implementation documents together before those
+higher limits are treated as supported booking behavior.
 
 ## Working method
 
