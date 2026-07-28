@@ -39,7 +39,7 @@ export function getOrCreateActorIdentity(
   };
 }
 
-export function verifyActorCookieValue(
+function verifyActorCookieValue(
   cookieValue: string,
   secret: string,
 ): { rawToken: string } | null {
@@ -68,7 +68,7 @@ export function verifyActorCookieValue(
   return { rawToken };
 }
 
-export function deriveActorDatabaseHash(rawToken: string, secret: string): string {
+function deriveActorDatabaseHash(rawToken: string, secret: string): string {
   return createHmac("sha256", secret)
     .update(`soe-actor-database-identity:v1:${rawToken}`)
     .digest("hex");

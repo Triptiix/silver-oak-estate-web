@@ -1,5 +1,5 @@
 begin;
-select plan(18);
+select plan(19);
 
 -- 1. Verify existence of 14-argument public wrapper and private internal functions
 select has_function(
@@ -44,16 +44,7 @@ select is(
   'private 14-arg create_booking_hold_v3_internal has safe search_path'
 );
 
--- 4. Verify execution privileges
-select concat(
-  'public execution privileges: anon=',
-  has_function_privilege('anon', 'public.create_booking_hold(text,date,text,text,text,text,integer,integer,text,uuid,uuid,text,text,integer)', 'EXECUTE'),
-  ' authenticated=',
-  has_function_privilege('authenticated', 'public.create_booking_hold(text,date,text,text,text,text,integer,integer,text,uuid,uuid,text,text,integer)', 'EXECUTE'),
-  ' service_role=',
-  has_function_privilege('service_role', 'public.create_booking_hold(text,date,text,text,text,text,integer,integer,text,uuid,uuid,text,text,integer)', 'EXECUTE')
-) as privilege_summary;
-
+-- 4. Verify execution privileges on public wrapper
 select is(
   has_function_privilege('anon', 'public.create_booking_hold(text,date,text,text,text,text,integer,integer,text,uuid,uuid,text,text,integer)', 'EXECUTE'),
   false,
@@ -72,13 +63,26 @@ select is(
   'service_role can execute public 14-arg create_booking_hold'
 );
 
+-- 5. Verify execution privileges on private internal function
+select is(
+  has_function_privilege('anon', 'private.create_booking_hold_v3_internal(text,date,text,text,text,text,integer,integer,text,uuid,uuid,text,text,integer)', 'EXECUTE'),
+  false,
+  'anon cannot execute private create_booking_hold_v3_internal'
+);
+
+select is(
+  has_function_privilege('authenticated', 'private.create_booking_hold_v3_internal(text,date,text,text,text,text,integer,integer,text,uuid,uuid,text,text,integer)', 'EXECUTE'),
+  false,
+  'authenticated cannot execute private create_booking_hold_v3_internal'
+);
+
 select is(
   has_function_privilege('service_role', 'private.create_booking_hold_v3_internal(text,date,text,text,text,text,integer,integer,text,uuid,uuid,text,text,integer)', 'EXECUTE'),
   false,
   'service_role cannot execute private create_booking_hold_v3_internal directly'
 );
 
--- 5. Test actor_identity_hash input validations
+-- 6. Test actor_identity_hash input validations
 select throws_ok(
   $$ select public.create_booking_hold('silver-oak-estate', '2032-05-10'::date, 'Actor Test', null, '+919999900001', null, 2, 0, null, '11111111-1111-1111-1111-111111111111'::uuid, '22222222-2222-2222-2222-222222222222'::uuid, '3333333333333333333333333333333333333333333333333333333333333333', null, 10) $$,
   '22023',
@@ -107,7 +111,7 @@ select throws_ok(
   'short actor identity hash is rejected'
 );
 
--- 6. Test successful creation and idempotency logic
+-- 7. Test successful creation and idempotency logic
 select is(
   (public.create_booking_hold(
     'silver-oak-estate', '2032-05-12'::date, 'Actor Test', null, '+919999900002', null, 2, 0, null,

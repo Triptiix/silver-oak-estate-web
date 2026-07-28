@@ -1,12 +1,7 @@
 // @vitest-environment node
 import { describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
-import {
-  ACTOR_COOKIE_NAME,
-  deriveActorDatabaseHash,
-  getOrCreateActorIdentity,
-  verifyActorCookieValue,
-} from "@/lib/booking/actor-cookie";
+import { ACTOR_COOKIE_NAME, getOrCreateActorIdentity } from "@/lib/booking/actor-cookie";
 import { evaluateOnlineBookingCapability } from "@/lib/capabilities/online-booking";
 
 const TEST_SECRET = "test-booking-secret-key-32-chars-long!";
@@ -39,22 +34,40 @@ describe("SOE-AUDIT-001 — Anonymous Active-Hold Identity Hardening", () => {
       ];
 
       for (const forged of forgedValues) {
-        const verified = verifyActorCookieValue(forged, TEST_SECRET);
-        expect(verified).toBeNull();
-
         const fresh = getOrCreateActorIdentity(forged, TEST_SECRET);
         expect(fresh.isNew).toBe(true);
         expect(fresh.cookieValue).not.toBe(forged);
+        expect(fresh.cookieValue).toMatch(/^[A-Za-z0-9_-]{43}\.[A-Za-z0-9_-]{43}$/);
       }
     });
 
     it("derives distinct hashes for cookie signature and database identity (domain separation)", () => {
-      const rawToken = "dGVzdC1yYXctdG9rZW4tMzItYnl0ZXMtc3RyaW5nIQ"; // 43 chars base64url
-      const dbHash = deriveActorDatabaseHash(rawToken, TEST_SECRET);
+      const identity = getOrCreateActorIdentity(undefined, TEST_SECRET);
+      const [rawToken, signature] = identity.cookieValue.split(".");
 
-      expect(dbHash).toMatch(/^[a-f0-9]{64}$/);
-      // DB hash must not match raw token or cookie signature
-      expect(dbHash).not.toContain(rawToken);
+      expect(identity.actorIdentityHash).toMatch(/^[a-f0-9]{64}$/);
+      // The database hash must never leak the raw token held by the browser.
+      expect(identity.actorIdentityHash).not.toContain(rawToken);
+      // Separate HMAC domains: were both derivations to share one domain string,
+      // the database hash would be the hex encoding of the cookie signature.
+      expect(identity.actorIdentityHash).not.toBe(Buffer.from(signature, "base64url").toString("hex"));
+    });
+
+    it("derives a different database identity for every minted actor cookie", () => {
+      const first = getOrCreateActorIdentity(undefined, TEST_SECRET);
+      const second = getOrCreateActorIdentity(undefined, TEST_SECRET);
+
+      expect(first.cookieValue).not.toBe(second.cookieValue);
+      expect(first.actorIdentityHash).not.toBe(second.actorIdentityHash);
+    });
+
+    it("does not reuse a database identity across differing signing secrets", () => {
+      const identity = getOrCreateActorIdentity(undefined, TEST_SECRET);
+      const underOtherSecret = getOrCreateActorIdentity(identity.cookieValue, `${TEST_SECRET}-rotated`);
+
+      // A cookie signed under the previous secret must fail verification.
+      expect(underOtherSecret.isNew).toBe(true);
+      expect(underOtherSecret.actorIdentityHash).not.toBe(identity.actorIdentityHash);
     });
   });
 

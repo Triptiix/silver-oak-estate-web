@@ -186,6 +186,8 @@ exception
       raise exception using errcode = 'P0001', message = 'idempotency_retry';
     end if;
     raise;
+  when exclusion_violation then
+    raise exception using errcode = 'P0001', message = 'date_unavailable';
 end;
 $$;
 
