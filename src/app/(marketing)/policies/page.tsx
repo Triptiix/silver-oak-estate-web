@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 };
 
 export default function PoliciesPage() {
-  const { booking, parking, optionalArrangements, contact } = publicInformation;
+  const { booking, capacity, parking, optionalArrangements, contact, tax } = publicInformation;
   const weekdayRate = formatInrFromPaise(booking.weekday.ratePaise);
   const weekendRate = formatInrFromPaise(booking.weekend.ratePaise);
   const advanceAmount = formatInrFromPaise(booking.advancePaise);
@@ -55,6 +55,30 @@ export default function PoliciesPage() {
               </EstateText>
             </div>
 
+            {/* Standard Booking Slot Summary */}
+            <div className="bg-[var(--soe-surface-bg-surface)] border border-[var(--soe-surface-control-border)]/20 rounded-[var(--soe-radius-card)] p-8 space-y-4">
+              <p className="font-soe-ui text-[length:var(--soe-text-xs)] font-semibold uppercase text-[var(--soe-color-brand)]">
+                STANDARD BOOKING SLOT
+              </p>
+              <EstateHeading as="h2" variant="h2">
+                Slot Timings & Occupancy Period
+              </EstateHeading>
+              <ul className="space-y-3 font-soe-ui text-[length:var(--soe-text-base)] text-[var(--soe-surface-text-secondary)]">
+                <li className="flex items-start gap-3">
+                  <span className="inline-block w-2 h-2 mt-2 rounded-full bg-[var(--soe-color-brand)] shrink-0" />
+                  <span><strong>Check-in Time:</strong> {booking.checkIn.timeLabel}</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="inline-block w-2 h-2 mt-2 rounded-full bg-[var(--soe-color-brand)] shrink-0" />
+                  <span><strong>Checkout Time:</strong> {booking.checkOut.timeLabel}</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="inline-block w-2 h-2 mt-2 rounded-full bg-[var(--soe-color-brand)] shrink-0" />
+                  <span><strong>Slot Duration:</strong> {booking.durationLabel} ({booking.durationHours} hours total occupancy period).</span>
+                </li>
+              </ul>
+            </div>
+
             {/* Verified Capacities & Property Use */}
             <div className="space-y-6">
               <EstateHeading as="h2" variant="h2">
@@ -66,7 +90,7 @@ export default function PoliciesPage() {
                     OVERNIGHT STAYS
                   </p>
                   <p className="font-soe-display text-[length:var(--soe-text-2xl)] font-bold text-[var(--soe-surface-text-primary)]">
-                    6–10 Guests
+                    {capacity.overnightLabel}
                   </p>
                   <EstateText variant="sm" tone="muted">
                     Full access to the 3 BHK residence across 3 king-bed bedrooms.
@@ -78,7 +102,7 @@ export default function PoliciesPage() {
                     INDOOR GATHERINGS
                   </p>
                   <p className="font-soe-display text-[length:var(--soe-text-2xl)] font-bold text-[var(--soe-surface-text-primary)]">
-                    ~15–20 Guests
+                    {capacity.indoorLabel}
                   </p>
                   <EstateText variant="sm" tone="muted">
                     Seating capacity across the main hall and dedicated dining area.
@@ -90,13 +114,16 @@ export default function PoliciesPage() {
                     DAYTIME EVENTS
                   </p>
                   <p className="font-soe-display text-[length:var(--soe-text-2xl)] font-bold text-[var(--soe-surface-text-primary)]">
-                    ~30–40 Guests
+                    {capacity.standardDayEventLabel}
                   </p>
                   <EstateText variant="sm" tone="muted">
-                    Capacity information for approved daytime gatherings at the property.
+                    Capacity information for standard daytime gatherings at the property.
                   </EstateText>
                 </div>
               </div>
+              <EstateText variant="sm" tone="muted">
+                {capacity.largerEventStatement}
+              </EstateText>
               <EstateText variant="sm" tone="muted">
                 {parking.summary}
               </EstateText>
@@ -110,11 +137,11 @@ export default function PoliciesPage() {
               <ul className="space-y-3 font-soe-ui text-[length:var(--soe-text-base)] text-[var(--soe-surface-text-secondary)]">
                 <li className="flex items-start gap-3">
                   <span className="inline-block w-2 h-2 mt-2 rounded-full bg-[var(--soe-color-brand)] shrink-0" />
-                  <span><strong>{booking.weekday.label} Booking Rate:</strong> {weekdayRate} for {booking.durationLabel}.</span>
+                  <span><strong>{booking.weekday.label} Booking Rate:</strong> {weekdayRate} for the {booking.durationLabel}.</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="inline-block w-2 h-2 mt-2 rounded-full bg-[var(--soe-color-brand)] shrink-0" />
-                  <span><strong>{booking.weekend.label} Booking Rate:</strong> {weekendRate} for {booking.durationLabel}.</span>
+                  <span><strong>{booking.weekend.label} Booking Rate:</strong> {weekendRate} for the {booking.durationLabel}.</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="inline-block w-2 h-2 mt-2 rounded-full bg-[var(--soe-color-brand)] shrink-0" />
@@ -123,6 +150,10 @@ export default function PoliciesPage() {
                 <li className="flex items-start gap-3">
                   <span className="inline-block w-2 h-2 mt-2 rounded-full bg-[var(--soe-color-brand)] shrink-0" />
                   <span><strong>Balance Payment:</strong> {booking.balanceText}</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="inline-block w-2 h-2 mt-2 rounded-full bg-[var(--soe-color-brand)] shrink-0" />
+                  <span><strong>Taxes & GST:</strong> {tax.currentStatement}</span>
                 </li>
               </ul>
               <div className="pt-4 border-t border-[var(--soe-surface-control-border)]/20">

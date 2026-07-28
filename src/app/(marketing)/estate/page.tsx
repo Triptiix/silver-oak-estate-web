@@ -8,6 +8,7 @@ import { EstateMediaFrame } from "@/components/estate-ui/estate-media-frame";
 import { EstateActionLink } from "@/components/estate-ui/estate-action-link";
 import { EstateEyebrow } from "@/components/estate-ui/estate-eyebrow";
 import { EstateStatCard } from "@/components/estate-ui/estate-stat-card";
+import { publicInformation } from "@/config/public-information";
 
 export const metadata: Metadata = {
   title: "The Estate | Silver Oak Estate Private Farmhouse in Noida",
@@ -87,18 +88,18 @@ export default function EstatePage() {
             />
             <EstateStatCard
               label="Overnight Stays"
-              value="6–10 Guests"
+              value={publicInformation.capacity.overnightLabel}
               description="Comfortable sleeping capacity for families and small groups"
             />
             <EstateStatCard
               label="Day Events & Gatherings"
-              value="30–40 Guests"
+              value={publicInformation.capacity.standardDayEventLabel}
               description="Lawn, pool deck, and outdoor space for approved celebrations"
             />
             <EstateStatCard
               label="Indoor Capacity"
-              value="~15–20 Guests"
-              description="Hall seating for 15 and dedicated dining seating for 5"
+              value={publicInformation.capacity.indoorLabel}
+              description="Hall seating for up to 15 and dedicated dining seating for 5"
             />
             <EstateStatCard
               label="Grounds & Pool"
@@ -237,7 +238,7 @@ export default function EstatePage() {
                 Open-Air Time, from Lawn to Poolside
               </EstateHeading>
               <EstateText variant="base" tone="muted" className="space-y-4">
-                Enjoy expansive open-air space on the private lawn and around the adult-size party pool. Pool access is available throughout your 24-hour booking, supported by a pool changing room and separate lawn bathroom.
+                Enjoy expansive open-air space on the private lawn and around the adult-size party pool. Pool access is available during the {publicInformation.booking.durationLabel}, subject to operational availability, maintenance and caretaker instructions. A pool changing room and separate lawn bathroom are provided.
               </EstateText>
               <EstateText variant="base" tone="muted">
                 Outdoor entertainment amenities include an outdoor projector screen, speaker, board games, and BBQ equipment for evening gatherings.
@@ -371,30 +372,30 @@ export default function EstatePage() {
               <EstateStatCard
                 variant="capacity"
                 label="Overnight Stays"
-                value="6–10 Guests"
+                value={publicInformation.capacity.overnightLabel}
                 description="Full 3 BHK house accommodation"
               />
               <EstateStatCard
                 variant="capacity"
                 label="Indoor Gatherings"
-                value="Approximately 15–20 Guests"
-                description="Hall seating for approximately 15 and dining seating for 5"
+                value={publicInformation.capacity.indoorLabel}
+                description="Hall seating for up to 15 and dining seating for 5"
               />
               <EstateStatCard
                 variant="capacity"
                 label="Day Events & Gatherings"
-                value="30–40 Guests"
+                value={publicInformation.capacity.standardDayEventLabel}
                 description="Lawn and pool-deck open-air capacity"
               />
               <EstateStatCard
                 variant="capacity"
                 label="Parking"
-                value="Approximately 3 Inside · 10+ Outside"
+                value={`${publicInformation.parking.inside.valueLabel} Inside · ${publicInformation.parking.outside.valueLabel} Outside`}
                 description="Final parking arrangements must be confirmed with the estate team"
               />
             </div>
             <p className="text-[length:var(--soe-text-xs)] text-[var(--soe-surface-text-secondary)] pt-4 border-t border-[var(--soe-surface-control-border)]/15">
-              Final guest count, event requirements and permitted arrangements must be confirmed with the estate team before booking.
+              {publicInformation.capacity.largerEventStatement} Final guest count, event requirements and permitted arrangements must be confirmed with the estate team before booking.
             </p>
           </div>
         </EstateContainer>

@@ -1,6 +1,9 @@
 import ExperiencesPage, { metadata } from "@/app/(marketing)/experiences/page";
 import MarketingLayout from "@/app/(marketing)/layout";
+import { publicInformation } from "@/config/public-information";
 import { render, screen } from "@testing-library/react";
+import * as fs from "fs";
+import * as path from "path";
 import { describe, expect, it, vi } from "vitest";
 
 // Mock next/navigation for layout component
@@ -9,10 +12,10 @@ vi.mock("next/navigation", () => ({
 }));
 
 describe("ExperiencesPage Component", () => {
-  it("exports exact metadata title and description", () => {
+  it("exports exact metadata title and canonical description", () => {
     expect(metadata.title).toBe("Experiences | Private Stays & Gatherings at Silver Oak Estate");
     expect(metadata.description).toBe(
-      "Discover private stays, approved gatherings, pool and lawn time at Silver Oak Estate in Sector 135, Noida. Fully furnished 3 BHK farmhouse for 6–10 overnight guests."
+      `Discover private stays, approved gatherings, pool and lawn time at Silver Oak Estate in Sector 135, Noida. The fully furnished 3 BHK farmhouse accommodates ${publicInformation.capacity.overnightLabel.toLowerCase()}.`
     );
   });
 
@@ -119,11 +122,35 @@ describe("ExperiencesPage Component", () => {
     expect(emailLink).toHaveAttribute("href", "mailto:contact@silveroakestate.online");
   });
 
-  it("verifies capacity wording contains approximately 30–40 guests and does not contain up to 30–40 guests", () => {
+  it("renders canonical maximum capacity labels and larger-event approval statement", () => {
     render(<ExperiencesPage />);
     const text = document.body.textContent || "";
-    expect(text).toContain("approximately 30–40 guests");
-    expect(text).not.toContain("up to 30–40 guests");
+    expect(text).toContain(publicInformation.capacity.overnightLabel);
+    expect(text).toContain(publicInformation.capacity.indoorLabel);
+    expect(text).toContain(publicInformation.capacity.standardDayEventLabel);
+    expect(text).toContain(publicInformation.capacity.largerEventStatement);
+  });
+
+  it("contains no obsolete approximate capacity ranges or unconfirmed claims", () => {
+    render(<ExperiencesPage />);
+    const text = document.body.textContent || "";
+
+    const prohibitedRanges = [
+      "6–10",
+      "6-10",
+      "30–40",
+      "30-40",
+      "15–20",
+      "15-20",
+      "approximately 30",
+      "approximately 15",
+      "unlimited",
+      "no restriction",
+    ];
+
+    prohibitedRanges.forEach((range) => {
+      expect(text).not.toContain(range);
+    });
   });
 
   it("verifies optional-service coverage terms together in approved gatherings section", () => {
@@ -148,11 +175,9 @@ describe("ExperiencesPage Component", () => {
     expect(text).toContain("case-by-case basis");
   });
 
-  it("verifies confirmed guest capacities and factual property attributes", () => {
+  it("verifies confirmed location and structure attributes", () => {
     render(<ExperiencesPage />);
     const text = document.body.textContent || "";
-    expect(text).toContain("6–10");
-    expect(text).toContain("15–20");
     expect(text).toContain("Sector 135, Noida");
   });
 
@@ -191,6 +216,26 @@ describe("ExperiencesPage Component", () => {
     prohibitedTerms.forEach((term) => {
       const regex = new RegExp(`\\b${term.replace("'", "['’]")}\\b`, "i");
       expect(regex.test(text)).toBe(false);
+    });
+  });
+
+  it("verifies experiences page source imports publicInformation and uses Estate UI primitives", () => {
+    const code = fs.readFileSync(path.join(process.cwd(), "src/app/(marketing)/experiences/page.tsx"), "utf-8");
+    expect(code).toContain("@/config/public-information");
+    expect(code).toContain("@/components/estate-ui/estate-section");
+    expect(code).toContain("@/components/estate-ui/estate-container");
+    expect(code).not.toContain("<main");
+
+    const forbiddenHardcoded = [
+      '"6–10 guests"',
+      '"30–40 guests"',
+      '"15–20 guests"',
+      '"6-10 guests"',
+      '"30-40 guests"',
+      '"15-20 guests"',
+    ];
+    forbiddenHardcoded.forEach((term) => {
+      expect(code).not.toContain(term);
     });
   });
 });

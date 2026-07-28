@@ -24,6 +24,20 @@ export const publicInformation = {
   contact: {
     email: "contact@silveroakestate.online",
     mailtoHref: "mailto:contact@silveroakestate.online",
+
+    primaryPhone: {
+      display: "+91 86794 70955",
+      e164: "+918679470955",
+      telHref: "tel:+918679470955",
+      whatsappHref: "https://wa.me/918679470955",
+    },
+
+    secondaryPhone: {
+      display: "+91 99102 03212",
+      e164: "+919910203212",
+      telHref: "tel:+919910203212",
+      whatsappHref: "https://wa.me/919910203212",
+    },
   },
 
   location: {
@@ -50,7 +64,19 @@ export const publicInformation = {
   },
 
   booking: {
-    durationLabel: "24 hours",
+    durationHours: 23,
+    durationLabel: "standard 23-hour slot",
+
+    checkIn: {
+      timeLabel: "11:00 AM",
+    },
+
+    checkOut: {
+      timeLabel: "10:00 AM the following day",
+    },
+
+    slotStatement:
+      "Check-in is at 11:00 AM and checkout is at 10:00 AM the following day.",
 
     weekday: {
       label: "Weekday",
@@ -64,10 +90,31 @@ export const publicInformation = {
 
     advancePaise: 500_000,
 
-    balanceText: "Remaining balance payable at check-in.",
+    balanceText:
+      "Remaining balance payable at check-in before property access.",
 
     confirmationNotice:
       "Final pricing and applicable charges will be confirmed in writing before payment and booking confirmation.",
+  },
+
+  capacity: {
+    overnightMax: 10,
+    overnightLabel: "Up to 10 guests",
+
+    indoorMax: 20,
+    indoorLabel: "Up to 20 people",
+
+    standardDayEventMax: 40,
+    standardDayEventLabel: "Up to 40 people",
+
+    largerEventStatement:
+      "Events above 40 people require prior written approval after an operational and safety review.",
+  },
+
+  tax: {
+    gstRegistered: false,
+    currentStatement:
+      "GST is not currently charged. Applicable GST may be added only after registration and will be disclosed before payment and booking confirmation.",
   },
 
   optionalArrangements: {

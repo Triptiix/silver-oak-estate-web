@@ -6,6 +6,7 @@ import { EstateHeading } from "@/components/estate-ui/estate-heading";
 import { EstateText } from "@/components/estate-ui/estate-text";
 import { EstateMediaFrame } from "@/components/estate-ui/estate-media-frame";
 import { EstateActionLink } from "@/components/estate-ui/estate-action-link";
+import { formatInrFromPaise, publicInformation } from "@/config/public-information";
 
 export const metadata: Metadata = {
   title: "Silver Oak Estate | Private Farmhouse Stay & Event Venue in Noida",
@@ -14,6 +15,11 @@ export const metadata: Metadata = {
 };
 
 export default function HomePage() {
+  const { booking, capacity } = publicInformation;
+  const weekdayRate = formatInrFromPaise(booking.weekday.ratePaise);
+  const weekendRate = formatInrFromPaise(booking.weekend.ratePaise);
+  const advanceAmount = formatInrFromPaise(booking.advancePaise);
+
   return (
     <div className="flex flex-col">
       {/* A. HERO */}
@@ -76,7 +82,7 @@ export default function HomePage() {
                 Set across sprawling grounds in Sector 135, Noida, Silver Oak Estate offers an exclusive property booking experience. Featuring a fully furnished 3 BHK residence with three themed king-bed bedrooms, an adult-size party pool, a lush private lawn, an indoor gathering space, a modular kitchen, and a dedicated dining area.
               </EstateText>
               <EstateText variant="base" tone="muted">
-                Designed for complete privacy, comfort, and peaceful surroundings, the estate accommodates 6 to 10 overnight guests or 30 to 40 guests for daytime events and gatherings.
+                Designed for complete privacy, comfort, and peaceful surroundings, the estate accommodates {capacity.overnightLabel.toLowerCase()} or {capacity.standardDayEventLabel.toLowerCase()} for daytime events and gatherings.
               </EstateText>
               <div className="pt-2">
                 <EstateActionLink variant="editorial" href="/estate">
@@ -214,7 +220,7 @@ export default function HomePage() {
       {/* E. PRICING PREVIEW */}
       <EstateSection surface="light" spacing="md">
         <EstateContainer variant="content">
-          <div className="p-8 md:p-12 rounded-[var(--soe-radius-card)] bg-[var(--soe-surface-bg-surface)] border border-[var(--soe-surface-control-border)]/20">
+          <div className="p-8 md:p-12 rounded-[var(--soe-radius-card)] bg-[var(--soe-surface-bg-surface)] border border-[var(--soe-surface-control-border)]">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
               <div className="lg:col-span-5 space-y-4">
                 <p className="font-soe-ui text-[length:var(--soe-text-xs)] font-semibold tracking-[var(--soe-tracking-eyebrow)] uppercase text-[var(--soe-color-brand)]">
@@ -224,7 +230,7 @@ export default function HomePage() {
                   Published Rates
                 </EstateHeading>
                 <EstateText variant="base" tone="muted">
-                  Current weekday and weekend rates for 24-hour bookings.
+                  Current weekday and weekend rates for the {booking.durationLabel}.
                 </EstateText>
                 <div>
                   <EstateActionLink variant="editorial" href="/pricing">
@@ -232,35 +238,35 @@ export default function HomePage() {
                   </EstateActionLink>
                 </div>
               </div>
-              <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-6">
-                <div className="p-6 rounded-[var(--soe-radius-control)] bg-[var(--soe-surface-bg-primary)] border border-[var(--soe-surface-control-border)]/15">
+              <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+                <div className="isolate p-4 sm:p-6 rounded-[var(--soe-radius-control)] bg-[var(--soe-surface-bg-surface)] border border-[var(--soe-surface-control-border)]">
                   <p className="font-soe-ui text-[length:var(--soe-text-xs)] font-medium text-[var(--soe-surface-text-secondary)] uppercase">
                     Weekday
                   </p>
-                  <p className="font-soe-display text-[length:var(--soe-text-2xl)] font-bold text-[var(--soe-surface-text-primary)] mt-1">
-                    ₹15,000
+                  <p className="font-soe-display text-[length:var(--soe-text-lg)] sm:text-[length:var(--soe-text-xl)] font-bold text-[var(--soe-surface-text-primary)] mt-1">
+                    {weekdayRate}
                   </p>
                   <p className="text-[length:var(--soe-text-xs)] text-[var(--soe-surface-text-secondary)] mt-1">
-                    for 24 hours
+                    for {booking.durationLabel}
                   </p>
                 </div>
-                <div className="p-6 rounded-[var(--soe-radius-control)] bg-[var(--soe-surface-bg-primary)] border border-[var(--soe-surface-control-border)]/15">
+                <div className="isolate p-4 sm:p-6 rounded-[var(--soe-radius-control)] bg-[var(--soe-surface-bg-surface)] border border-[var(--soe-surface-control-border)]">
                   <p className="font-soe-ui text-[length:var(--soe-text-xs)] font-medium text-[var(--soe-surface-text-secondary)] uppercase">
                     Weekend
                   </p>
-                  <p className="font-soe-display text-[length:var(--soe-text-2xl)] font-bold text-[var(--soe-surface-text-primary)] mt-1">
-                    ₹20,000
+                  <p className="font-soe-display text-[length:var(--soe-text-lg)] sm:text-[length:var(--soe-text-xl)] font-bold text-[var(--soe-surface-text-primary)] mt-1">
+                    {weekendRate}
                   </p>
                   <p className="text-[length:var(--soe-text-xs)] text-[var(--soe-surface-text-secondary)] mt-1">
-                    for 24 hours
+                    for {booking.durationLabel}
                   </p>
                 </div>
-                <div className="p-6 rounded-[var(--soe-radius-control)] bg-[var(--soe-surface-bg-primary)] border border-[var(--soe-surface-control-border)]/15">
+                <div className="isolate p-4 sm:p-6 rounded-[var(--soe-radius-control)] bg-[var(--soe-surface-bg-surface)] border border-[var(--soe-surface-control-border)]">
                   <p className="font-soe-ui text-[length:var(--soe-text-xs)] font-medium text-[var(--soe-surface-text-secondary)] uppercase">
                     Booking Advance
                   </p>
-                  <p className="font-soe-display text-[length:var(--soe-text-2xl)] font-bold text-[var(--soe-surface-text-primary)] mt-1">
-                    ₹5,000
+                  <p className="font-soe-display text-[length:var(--soe-text-lg)] sm:text-[length:var(--soe-text-xl)] font-bold text-[var(--soe-surface-text-primary)] mt-1">
+                    {advanceAmount}
                   </p>
                   <p className="text-[length:var(--soe-text-xs)] text-[var(--soe-surface-text-secondary)] mt-1">
                     to lock dates

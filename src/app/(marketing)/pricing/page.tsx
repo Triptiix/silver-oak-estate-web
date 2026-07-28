@@ -10,11 +10,11 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Pricing | Silver Oak Estate",
   description:
-    "View confirmed weekday and weekend 24-hour booking rates, advance payment information and enquiry options for Silver Oak Estate in Sector 135, Noida.",
+    "View confirmed weekday and weekend rates for Silver Oak Estate’s fixed booking slot, advance payment information and enquiry options in Sector 135, Noida.",
 };
 
 export default function PricingPage() {
-  const { booking, optionalArrangements, contact } = publicInformation;
+  const { booking, optionalArrangements, contact, tax } = publicInformation;
   const weekdayRate = formatInrFromPaise(booking.weekday.ratePaise);
   const weekendRate = formatInrFromPaise(booking.weekend.ratePaise);
   const advanceAmount = formatInrFromPaise(booking.advancePaise);
@@ -32,7 +32,7 @@ export default function PricingPage() {
               Pricing at Silver Oak Estate
             </EstateHeading>
             <EstateText variant="lg" tone="muted">
-              Simple, transparent 24-hour rates for exclusive access to our complete 3 BHK farmhouse, private lawn, and party pool.
+              Simple, transparent rates for exclusive access to our complete 3 BHK farmhouse, private lawn, and party pool during the {booking.durationLabel}.
             </EstateText>
           </div>
         </EstateContainer>
@@ -45,10 +45,10 @@ export default function PricingPage() {
             <div className="space-y-4">
               <EstateEyebrow>CONFIRMED RATES</EstateEyebrow>
               <EstateHeading as="h2" variant="h2">
-                Standard 24-Hour Booking Rates
+                Standard Booking Rates
               </EstateHeading>
               <EstateText tone="muted">
-                The published weekday and weekend rates apply to the complete 3 BHK property.
+                The published weekday and weekend rates apply to the complete 3 BHK property for the {booking.durationLabel}. Check-in is at {booking.checkIn.timeLabel} and checkout is at {booking.checkOut.timeLabel}.
               </EstateText>
             </div>
 
@@ -64,7 +64,7 @@ export default function PricingPage() {
                       {weekdayRate}
                     </p>
                     <p className="font-soe-ui text-[length:var(--soe-text-sm)] text-[var(--soe-surface-text-secondary)]">
-                      for {booking.durationLabel}
+                      for {booking.durationLabel} ({booking.checkIn.timeLabel} – {booking.checkOut.timeLabel})
                     </p>
                   </div>
                   <EstateText variant="sm" tone="muted">
@@ -84,7 +84,7 @@ export default function PricingPage() {
                       {weekendRate}
                     </p>
                     <p className="font-soe-ui text-[length:var(--soe-text-sm)] text-[var(--soe-surface-text-secondary)]">
-                      for {booking.durationLabel}
+                      for {booking.durationLabel} ({booking.checkIn.timeLabel} – {booking.checkOut.timeLabel})
                     </p>
                   </div>
                   <EstateText variant="sm" tone="muted">
@@ -102,11 +102,15 @@ export default function PricingPage() {
               <ul className="space-y-3 font-soe-ui text-[length:var(--soe-text-base)] text-[var(--soe-surface-text-secondary)]">
                 <li className="flex items-start gap-3">
                   <span className="inline-block w-2 h-2 mt-2 rounded-full bg-[var(--soe-color-brand)] shrink-0" />
-                  <span><strong>Booking Advance:</strong> A flat advance payment of {advanceAmount} is required to confirm your reservation.</span>
+                  <span><strong>Booking Advance:</strong> A flat advance payment of {advanceAmount} is required to lock your dates. Advance confirms reservation only after written confirmation.</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="inline-block w-2 h-2 mt-2 rounded-full bg-[var(--soe-color-brand)] shrink-0" />
                   <span><strong>Balance Payment:</strong> {booking.balanceText}</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="inline-block w-2 h-2 mt-2 rounded-full bg-[var(--soe-color-brand)] shrink-0" />
+                  <span><strong>Taxes & GST:</strong> {tax.currentStatement}</span>
                 </li>
               </ul>
 
