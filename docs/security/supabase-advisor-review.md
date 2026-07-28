@@ -51,7 +51,20 @@ The hosted advisor identified two foreign keys without covering indexes:
 - `public.payments.verified_by_admin_id`
 - `public.site_settings.updated_by`
 
-Create a separate forward migration and validate query plans before applying it to hosted Supabase. Do not remove currently unused booking/inventory indexes based on an empty pre-launch database; usage statistics are not representative until realistic staging traffic exists.
+A forward migration and pgTAP contract have been prepared in
+`20260728170000_add_foreign_key_indexes.sql` for both foreign keys. The
+pending forward migration uses bounded lock and statement timeouts around
+ordinary transaction-managed index creation. Supabase CLI 2.109.1 applies the
+index statements and migration-history insertion as one implicitly
+transactional batch, so a timeout or index failure rolls the migration back.
+Hosted application remains pending and requires the controlled production
+migration process. Do not mark either hosted advisor finding fixed until the
+migration is separately approved, manually applied and the hosted advisor is
+rerun.
+
+Do not remove currently unused booking/inventory indexes based on an empty
+pre-launch database; usage statistics are not representative until realistic
+staging traffic exists.
 
 ## Review cadence
 
