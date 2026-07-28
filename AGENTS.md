@@ -37,8 +37,10 @@ Technology:
 
 - Inventory is one complete property.
 - Never support independent room bookings.
-- Maximum event capacity is 30.
-- Maximum overnight capacity is 8.
+- Standard daytime events support up to 40 people.
+- Indoor gatherings support up to 20 people.
+- Overnight stays support up to 10 guests.
+- Events above 40 people require prior written approval after an operational and safety review and must not enter the standard self-service booking flow.
 - Check-in is 11:00 AM Asia/Kolkata.
 - Checkout is 10:00 AM Asia/Kolkata the following day.
 - Monday–Friday price is 1,500,000 paise.
@@ -54,6 +56,17 @@ Technology:
 - Never expose Supabase service-role credentials.
 - No public administrator registration.
 - Do not invent unresolved policies.
+
+### Temporary backend-capacity mismatch
+
+The current database seed, public booking RPCs, administrator manual-booking
+flow and application validators still enforce the legacy technical limits of
+30 total guests and 8 overnight guests. This is tracked in GitHub issue #15 and
+is not the authoritative business contract. Do not edit previously applied
+migrations or change only one validation layer. The correction must use a
+forward migration and update database configuration, public and administrator
+validation, forms, tests and implementation documents together before those
+higher limits are treated as supported booking behavior.
 
 ## Working method
 
