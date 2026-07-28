@@ -102,47 +102,49 @@ order by
   query_start nulls last;
 ```
 
-Every returned non-system session must be identified. Any active,
-idle-in-transaction, unknown or potentially write-capable session blocks
-deployment. This query is supporting preflight evidence, not the sole
-enforcement mechanism; do not terminate sessions automatically. Stop and
-investigate any unidentified session.
+Every active or idle-in-transaction client session must be identified. Unknown
+or potentially write-capable active sessions block application. Do not
+terminate sessions automatically. This is supporting preflight evidence and
+cannot prove that an idle connection will never submit a future write.
 
-### Database-enforced lock gate
+### Database-enforced bounded failure
 
-The migration begins with:
+The migration does not use top-level `LOCK TABLE` because Supabase CLI 2.109.1
+does not provide the explicit transaction block required by that command.
 
-```sql
-lock table public.payments, public.site_settings
-  in share mode nowait;
-```
+Instead, ordinary `CREATE INDEX` acquires PostgreSQL's required write-blocking
+table lock. The migration sets `lock_timeout` to four seconds, so a conflicting
+writer causes bounded migration failure rather than indefinite waiting.
 
-An existing conflicting writer causes immediate migration failure, before either
-index is created. Once acquired, the transaction-scoped locks prevent new
-writes to both tables until the migration transaction completes; new database
-sessions may connect but cannot modify either locked table. Reads remain
-available. This lock is the fail-closed enforcement control.
+The CLI executes both index statements and the migration-history insert as one
+implicitly transactional batch. If either index fails, the other index and the
+history insertion roll back. The 30-second `statement_timeout` bounds each
+index build; the reset statements prevent successful migration settings from
+leaking into later work on the connection.
 
-Do not bypass a lock-acquisition failure, repair migration history, or retry
-without repeating every approval and preflight gate. If the lock cannot be
-enforced, stop without running `db push` and prepare a separately reviewed
-online index-build procedure.
+New database sessions may still connect. A write conflicting with an active
+index build is blocked by PostgreSQL, while a pre-existing write that prevents
+the required index lock causes the index statement to fail after the lock
+timeout. A timeout or statement failure rolls back the whole migration batch.
+Do not repair migration history after failure. Re-establish the full preflight
+and authorization process before any retry.
 
 ## Application
 
 The named operator may run the following command only after operational
 maintenance preparation, session inspection, backup and named-role gates, and
 the exact-commit dry run have passed; explicit hosted-application authorization
-must also be granted. The migration's `LOCK TABLE ... NOWAIT` statement is the
-final fail-closed control:
+must also be granted. The bounded lock and statement timeouts are the final
+fail-closed controls:
 
 ```bash
 npx --no-install supabase db push --linked
 ```
 
-If lock acquisition fails, `db push` must fail without applying the migration.
-Stop, record the error, re-establish the maintenance window, repeat all
-preflight checks and obtain renewed application authorization before retrying.
+If lock acquisition or an index build exceeds its bound, `db push` must fail
+without applying the migration. Stop, record the error, re-establish the
+maintenance window, repeat all preflight checks and obtain renewed application
+authorization before retrying.
 
 ## Post-application verification
 
