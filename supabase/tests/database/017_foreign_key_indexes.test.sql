@@ -16,7 +16,7 @@ select is(
 
 select is(
   (
-    select index_definition.indrelid
+    select index_definition.indrelid::regclass
     from pg_index as index_definition
     join pg_class as index_class on index_class.oid = index_definition.indexrelid
     join pg_namespace as index_namespace on index_namespace.oid = index_class.relnamespace
@@ -174,7 +174,7 @@ select is(
 
 select is(
   (
-    select index_definition.indrelid
+    select index_definition.indrelid::regclass
     from pg_index as index_definition
     join pg_class as index_class on index_class.oid = index_definition.indexrelid
     join pg_namespace as index_namespace on index_namespace.oid = index_class.relnamespace
