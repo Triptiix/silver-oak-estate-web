@@ -12,22 +12,38 @@ where slug = 'silver-oak-estate';
 grant select on capacity_test_context to authenticated;
 
 select is(
-  (select max_event_guests from public.properties where slug = 'silver-oak-estate'),
+  (
+    select max_event_guests
+    from public.properties
+    where slug = 'silver-oak-estate'
+  ),
   40,
   'property configuration uses the 40-person standard daytime limit'
 );
 select is(
-  (select max_overnight_guests from public.properties where slug = 'silver-oak-estate'),
+  (
+    select max_overnight_guests
+    from public.properties
+    where slug = 'silver-oak-estate'
+  ),
   10,
   'property configuration uses the 10-person overnight limit'
 );
 select is(
-  (select setting_value #>> '{}' from public.site_settings where setting_key = 'max_event_guests'),
+  (
+    select setting_value #>> '{}'
+    from public.site_settings
+    where setting_key = 'max_event_guests'
+  ),
   '40',
   'event-capacity site setting matches the property configuration'
 );
 select is(
-  (select setting_value #>> '{}' from public.site_settings where setting_key = 'max_overnight_guests'),
+  (
+    select setting_value #>> '{}'
+    from public.site_settings
+    where setting_key = 'max_overnight_guests'
+  ),
   '10',
   'overnight-capacity site setting matches the property configuration'
 );
