@@ -5,34 +5,76 @@ Environment fields are validated lazily when the capability that uses them runs;
 missing configuration therefore fails that capability without breaking unrelated
 routes or imports.*
 
-## Public Variables (Exposed to Browser)
-- `NEXT_PUBLIC_SITE_URL` = `https://silveroakestate.online` (Required in production; use the local origin during development)
-- `NEXT_PUBLIC_SUPABASE_URL` = `<YOUR_SUPABASE_URL>` (Required, Test/Live)
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` = `<YOUR_SUPABASE_ANON_KEY>` (Required, Test/Live)
-- `NEXT_PUBLIC_TURNSTILE_SITE_KEY` = `<YOUR_TURNSTILE_SITE_KEY>` (Required, Test/Live)
-- `NEXT_PUBLIC_RAZORPAY_KEY_ID` = `rzp_test_<YOUR_KEY_ID>` (Required, test mode in Phase 4)
+## Core website
 
-## Server-Only Variables (NEVER Exposed)
-- `APP_ENV` = `<development|staging|production>` (Required, Test/Live)
-- `APP_TIMEZONE` = `"Asia/Kolkata"` (Required, Test/Live)
-- `PAYMENT_PROVIDER` = `"razorpay"` (Required, Test/Live)
-- `PAYMENT_MODE` = `"test"` (Phase 4; live mode is not approved)
-- `BOOKING_HOLD_MINUTES` = `"10"` (Required, Test/Live)
-- `MANUAL_PAYMENT_HOLD_MINUTES` = `"30"` (Future/deferred — unused until the manual-payment workflow is approved)
-- `DATABASE_CRON_ENABLED` = `"true"` (Required, Test/Live)
-- `SUPABASE_SERVICE_ROLE_KEY` = `<YOUR_SUPABASE_SERVICE_ROLE_KEY>` (Required, Test/Live, **Sensitive**)
-- `RAZORPAY_KEY_SECRET` = `<RAZORPAY_KEY_SECRET>` (Required, Test/Live, **Sensitive**)
-- `PAYMENT_WEBHOOK_SECRET` = `<YOUR_WEBHOOK_SECRET>` (Required, Test/Live, **Sensitive**)
-- `TURNSTILE_SECRET_KEY` = `<YOUR_TURNSTILE_SECRET_KEY>` (Required, Test/Live, **Sensitive**)
-- `BOOKING_TOKEN_SECRET` = `<YOUR_BOOKING_TOKEN_SECRET>` (Required, Test/Live, **Sensitive**)
-- `ICAL_FEED_SECRET` = `<YOUR_ICAL_FEED_SECRET>` (Required, Test/Live, **Sensitive**)
-- `EMAIL_API_KEY` = `<YOUR_EMAIL_API_KEY>` (Required, Test/Live, **Sensitive**)
-- `EMAIL_SENDER` = `<VERIFIED_TRANSACTIONAL_SENDER>` (Required only when transactional email is invoked; do not assume the contact mailbox is provider-verified)
-- `ADMIN_NOTIFICATION_RECIPIENTS` = `"contact@silveroakestate.online"` (Professional contact mailbox; notification delivery remains deferred)
-- `CRON_SECRET` = `<YOUR_CRON_SECRET>` (Required, Test/Live, **Sensitive**)
-- `ERROR_MONITORING_DSN` = `<YOUR_SENTRY_DSN>` (Optional but Recommended, Test/Live)
-- `WHATSAPP_API_KEY` = `<YOUR_WHATSAPP_API_KEY>` (Optional, Test/Live, **Sensitive**)
-- `PMS_API_KEY` = `<YOUR_PMS_API_KEY>` (Optional, Test/Live, **Sensitive**)
+These values are sufficient for the public marketing website and Supabase-backed
+middleware. They do not enable online booking or payment.
+
+### Public variables
+
+- `NEXT_PUBLIC_SITE_URL` = `https://silveroakestate.online` (Required in production; use the local or Vercel testing origin before launch)
+- `NEXT_PUBLIC_SUPABASE_URL` = `<YOUR_SUPABASE_URL>` (Required)
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` = `<YOUR_SUPABASE_ANON_KEY>` (Required)
+
+### Server configuration
+
+- `APP_ENV` = `<development|staging|production>` (Required)
+- `APP_TIMEZONE` = `"Asia/Kolkata"` (Required)
+- `ONLINE_BOOKING_ENABLED` = `"false"` by default
+
+`ONLINE_BOOKING_ENABLED` is the explicit booking kill switch. Keep it `false`
+until hosted migrations, administrator operations, Turnstile, booking-token
+signing, Razorpay and the staging rehearsal are verified together. Missing
+booking providers must show the assisted phone/WhatsApp fallback instead of a
+partially working form.
+
+## Online booking and payment capability
+
+The following values are required before setting `ONLINE_BOOKING_ENABLED=true`:
+
+### Public variables
+
+- `NEXT_PUBLIC_TURNSTILE_SITE_KEY` = `<YOUR_TURNSTILE_SITE_KEY>`
+- `NEXT_PUBLIC_RAZORPAY_KEY_ID` = `rzp_test_<YOUR_KEY_ID>` for staging rehearsal
+
+### Server-only variables
+
+- `PAYMENT_PROVIDER` = `"razorpay"`
+- `PAYMENT_MODE` = `"test"` for staging rehearsal
+- `BOOKING_HOLD_MINUTES` = `"10"`
+- `SUPABASE_SERVICE_ROLE_KEY` = `<YOUR_SUPABASE_SERVICE_ROLE_KEY>` (**Sensitive**)
+- `RAZORPAY_KEY_SECRET` = `<RAZORPAY_KEY_SECRET>` (**Sensitive**)
+- `PAYMENT_WEBHOOK_SECRET` = `<YOUR_WEBHOOK_SECRET>` (**Sensitive**)
+- `TURNSTILE_SECRET_KEY` = `<YOUR_TURNSTILE_SECRET_KEY>` (**Sensitive**)
+- `BOOKING_TOKEN_SECRET` = `<YOUR_BOOKING_TOKEN_SECRET>` (**Sensitive**)
+
+The capability gate requires the complete set. It reports only missing variable
+names and never reports values.
+
+## Administrator and operational configuration
+
+- `MANUAL_PAYMENT_HOLD_MINUTES` = `"30"`
+- `DATABASE_CRON_ENABLED` = `"true"`
+- `ICAL_FEED_SECRET` = `<YOUR_ICAL_FEED_SECRET>` (**Sensitive**)
+- `CRON_SECRET` = `<YOUR_CRON_SECRET>` (**Sensitive**)
+
+## Transactional email capability
+
+Email is assessed separately and does not block the core website or booking-test
+preflight.
+
+- `EMAIL_API_KEY` = `<YOUR_EMAIL_API_KEY>` (**Sensitive**)
+- `EMAIL_SENDER` = `<VERIFIED_TRANSACTIONAL_SENDER>`
+- `ADMIN_NOTIFICATION_RECIPIENTS` = `"contact@silveroakestate.online"`
+
+`EMAIL_SENDER` must be a provider-verified plain email address. Notification
+delivery remains unavailable until the provider is configured and tested.
+
+## Observability and deferred integrations
+
+- `ERROR_MONITORING_DSN` = `<YOUR_SENTRY_DSN>` (Optional for core and booking-test; required for production-live readiness)
+- `WHATSAPP_API_KEY` = `<YOUR_WHATSAPP_API_KEY>` (Optional, **Sensitive**)
+- `PMS_API_KEY` = `<YOUR_PMS_API_KEY>` (Optional, **Sensitive**)
 
 ## Runtime-provided platform attestation
 
@@ -48,6 +90,20 @@ routes or imports.*
 - Keep Vercel system environment variables enabled for Preview and Production
   deployments.
 
-Deferred email, WhatsApp, PMS and iCalendar settings do not affect unrelated
-application capabilities. If a deferred feature is later invoked, its required
-configuration must be validated at that boundary and fail closed.
+## Readiness commands
+
+```bash
+npm run preflight:production -- --profile=core
+npm run preflight:production -- --profile=booking-test
+npm run preflight:production -- --profile=email
+npm run preflight:production -- --profile=production-live
+```
+
+The earlier commands remain supported as aliases:
+
+```bash
+npm run preflight:production -- --target=staging
+npm run preflight:production -- --target=production
+```
+
+They map to `booking-test` and `production-live` respectively.
