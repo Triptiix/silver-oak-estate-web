@@ -1,4 +1,5 @@
 import "server-only";
+import { createPublicSupabaseClient } from "@/lib/supabase/public";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import type { AvailabilityResponse, HoldResponse } from "@/types/booking";
 
@@ -7,7 +8,7 @@ export type HoldDatabaseResult = HoldResponse & {
 };
 
 export async function getAvailability(propertySlug: string, month: string): Promise<AvailabilityResponse> {
-  const { data, error } = await createServiceRoleClient().rpc("get_monthly_availability", {
+  const { data, error } = await createPublicSupabaseClient().rpc("get_monthly_availability", {
     p_property_slug: propertySlug, p_month: month,
   });
   if (error) throw error;
