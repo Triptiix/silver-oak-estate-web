@@ -51,10 +51,47 @@ npx --no-install supabase db push --linked --dry-run
 Proceed only when the dry run lists exactly
 `20260728170000_add_foreign_key_indexes.sql` and no other pending migration.
 
+## No-write application gate
+
+This migration uses ordinary transaction-managed `CREATE INDEX` statements.
+PostgreSQL permits reads while each index is built but temporarily blocks writes
+to the indexed table.
+
+Before application, the named operator must establish and record a maintenance
+window in which no process can write to:
+
+- `public.payments`
+- `public.site_settings`
+
+For the current pre-launch Silver Oak Estate environment, the gate requires
+read-only confirmation immediately before application that:
+
+1. Online booking remains disabled.
+2. No administrator account is active or being provisioned.
+3. No payment provider, payment webhook, payment-link process or reconciliation
+   worker is enabled.
+4. No administrator or service process is updating `site_settings`.
+5. No cron, background job, deployment or manual operation capable of writing
+   either table is running.
+6. The current row counts and non-null foreign-key counts have been recorded.
+7. All identified writers have either been paused or explicitly confirmed
+   absent.
+
+The operator must apply the migration only after the mutation approver records
+that this no-write gate is satisfied.
+
+If either table cannot be placed in a verified no-write window, stop the
+deployment. Do not run `db push`. Prepare a separately reviewed online
+index-build procedure instead.
+
+After application, keep writers paused until both indexes are confirmed valid
+and ready and the required post-application verification has completed.
+
 ## Application
 
-The named operator may run the following command only after the gates above are
-recorded and explicit hosted-application authorization is granted:
+The named operator may run the following command only after the backup,
+approval, exact-commit dry-run and no-write gates above are recorded as passed,
+and explicit hosted-application authorization has been granted:
 
 ```bash
 npx --no-install supabase db push --linked
@@ -75,6 +112,8 @@ Do not treat application as complete until read-only verification confirms:
    assisted-only, and online booking remains disabled.
 6. The hosted Supabase performance advisor no longer reports these two
    unindexed-foreign-key findings.
+7. The no-write window remained in effect until both indexes were confirmed
+   valid and ready; writers were resumed only after verification completed.
 
 ## Correction policy
 
