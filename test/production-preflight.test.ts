@@ -5,7 +5,7 @@ import {
   formatProductionReadinessReport,
 } from "../scripts/production-preflight.mjs";
 
-function createEnvironment(overrides: Record<string, string> = {}) {
+function createEnvironment(overrides: Record<string, string | undefined> = {}) {
   return {
     NEXT_PUBLIC_SITE_URL: "https://staging.silveroakestate.online",
     NEXT_PUBLIC_SUPABASE_URL: "https://silver-oak-staging.supabase.co",
@@ -14,6 +14,7 @@ function createEnvironment(overrides: Record<string, string> = {}) {
     NEXT_PUBLIC_RAZORPAY_KEY_ID: "rzp_test_validstagingkey",
     APP_ENV: "staging",
     APP_TIMEZONE: "Asia/Kolkata",
+    ONLINE_BOOKING_ENABLED: "true",
     PAYMENT_PROVIDER: "razorpay",
     PAYMENT_MODE: "test",
     BOOKING_HOLD_MINUTES: "10",
@@ -24,7 +25,7 @@ function createEnvironment(overrides: Record<string, string> = {}) {
     PAYMENT_WEBHOOK_SECRET: "webhook-secret-with-sufficient-length",
     TURNSTILE_SECRET_KEY: "turnstile-secret-with-sufficient-length",
     BOOKING_TOKEN_SECRET: "booking-token-secret-with-sufficient-length",
-    ICAL_FEED_SECRET: "email-api-key-with-sufficient-length",
+    ICAL_FEED_SECRET: "ical-feed-secret-with-sufficient-length",
     EMAIL_API_KEY: "email-api-key-with-sufficient-length",
     EMAIL_SENDER: "bookings@silveroakestate.online",
     ADMIN_NOTIFICATION_RECIPIENTS: "contact@silveroakestate.online",
@@ -36,47 +37,95 @@ function createEnvironment(overrides: Record<string, string> = {}) {
 }
 
 describe("production readiness preflight", () => {
-  it("passes a complete staging configuration without exposing values", () => {
-    const environment = createEnvironment();
-    const result = evaluateProductionReadiness(environment, { target: "staging" });
+  it("passes the core website profile without payment or email configuration", () => {
+    const result = evaluateProductionReadiness(
+      createEnvironment({
+        NEXT_PUBLIC_TURNSTILE_SITE_KEY: undefined,
+        NEXT_PUBLIC_RAZORPAY_KEY_ID: undefined,
+        SUPABASE_SERVICE_ROLE_KEY: undefined,
+        RAZORPAY_KEY_SECRET: undefined,
+        PAYMENT_WEBHOOK_SECRET: undefined,
+        TURNSTILE_SECRET_KEY: undefined,
+        BOOKING_TOKEN_SECRET: undefined,
+        EMAIL_API_KEY: undefined,
+        EMAIL_SENDER: undefined,
+        ADMIN_NOTIFICATION_RECIPIENTS: undefined,
+      }),
+      { profile: "core" },
+    );
+
+    expect(result.ready).toBe(true);
+    expect(result.profile).toBe("core");
+    expect(result.blockers).toEqual([]);
+  });
+
+  it("passes booking-test without deferred email configuration", () => {
+    const environment = createEnvironment({
+      EMAIL_API_KEY: undefined,
+      EMAIL_SENDER: undefined,
+      ADMIN_NOTIFICATION_RECIPIENTS: undefined,
+    });
+    const result = evaluateProductionReadiness(environment, { profile: "booking-test" });
     const report = formatProductionReadinessReport(result);
 
     expect(result.ready).toBe(true);
     expect(result.blockers).toEqual([]);
-    expect(report).toContain("Status: PASS");
+    expect(report).toContain("Readiness profile: booking-test");
     expect(report).not.toContain(environment.SUPABASE_SERVICE_ROLE_KEY);
     expect(report).not.toContain(environment.RAZORPAY_KEY_SECRET);
   });
 
-  it("blocks placeholder and malformed configuration", () => {
+  it("blocks booking-test when the kill switch is disabled or configuration is incomplete", () => {
     const result = evaluateProductionReadiness(
       createEnvironment({
+        ONLINE_BOOKING_ENABLED: "false",
         NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
-        SUPABASE_SERVICE_ROLE_KEY: "<YOUR_SUPABASE_SERVICE_ROLE_KEY>",
+        TURNSTILE_SECRET_KEY: undefined,
         BOOKING_HOLD_MINUTES: "zero",
       }),
-      { target: "staging" },
+      { profile: "booking-test" },
     );
 
     expect(result.ready).toBe(false);
     expect(result.blockers).toEqual(
       expect.arrayContaining([
+        expect.objectContaining({ field: "ONLINE_BOOKING_ENABLED" }),
         expect.objectContaining({ field: "NEXT_PUBLIC_SUPABASE_URL" }),
-        expect.objectContaining({ field: "SUPABASE_SERVICE_ROLE_KEY" }),
+        expect.objectContaining({ field: "TURNSTILE_SECRET_KEY" }),
         expect.objectContaining({ field: "BOOKING_HOLD_MINUTES" }),
       ]),
     );
   });
 
-  it("requires the canonical URL and live Razorpay mode for production", () => {
+  it("validates email independently from the booking stack", () => {
+    const result = evaluateProductionReadiness(
+      createEnvironment({
+        NEXT_PUBLIC_SUPABASE_URL: undefined,
+        RAZORPAY_KEY_SECRET: undefined,
+        EMAIL_SENDER: "not-an-email",
+      }),
+      { profile: "email" },
+    );
+
+    expect(result.ready).toBe(false);
+    expect(result.blockers).toEqual([
+      expect.objectContaining({ field: "EMAIL_SENDER" }),
+    ]);
+    expect(result.blockers).not.toEqual(
+      expect.arrayContaining([expect.objectContaining({ field: "NEXT_PUBLIC_SUPABASE_URL" })]),
+    );
+  });
+
+  it("requires canonical live configuration for production-live", () => {
     const result = evaluateProductionReadiness(
       createEnvironment({
         APP_ENV: "production",
         NEXT_PUBLIC_SITE_URL: "https://preview.silveroakestate.online",
         PAYMENT_MODE: "test",
         NEXT_PUBLIC_RAZORPAY_KEY_ID: "rzp_test_notlive",
+        ERROR_MONITORING_DSN: undefined,
       }),
-      { target: "production" },
+      { profile: "production-live" },
     );
 
     expect(result.ready).toBe(false);
@@ -85,11 +134,12 @@ describe("production readiness preflight", () => {
         expect.objectContaining({ field: "NEXT_PUBLIC_SITE_URL" }),
         expect.objectContaining({ field: "PAYMENT_MODE" }),
         expect.objectContaining({ field: "NEXT_PUBLIC_RAZORPAY_KEY_ID" }),
+        expect.objectContaining({ field: "ERROR_MONITORING_DSN" }),
       ]),
     );
   });
 
-  it("passes a production-shaped configuration", () => {
+  it("passes a production-live configuration", () => {
     const result = evaluateProductionReadiness(
       createEnvironment({
         APP_ENV: "production",
@@ -97,19 +147,37 @@ describe("production readiness preflight", () => {
         PAYMENT_MODE: "live",
         NEXT_PUBLIC_RAZORPAY_KEY_ID: "rzp_live_validproductionkey",
       }),
-      { target: "production" },
+      { profile: "production-live" },
     );
 
     expect(result.ready).toBe(true);
     expect(result.blockers).toEqual([]);
   });
 
-  it("rejects unsupported targets", () => {
+  it("keeps staging and production targets as compatibility aliases", () => {
+    expect(
+      evaluateProductionReadiness(createEnvironment(), { target: "staging" }).profile,
+    ).toBe("booking-test");
+
+    expect(
+      evaluateProductionReadiness(
+        createEnvironment({
+          APP_ENV: "production",
+          NEXT_PUBLIC_SITE_URL: "https://silveroakestate.online",
+          PAYMENT_MODE: "live",
+          NEXT_PUBLIC_RAZORPAY_KEY_ID: "rzp_live_validproductionkey",
+        }),
+        { target: "production" },
+      ).profile,
+    ).toBe("production-live");
+  });
+
+  it("rejects unsupported profiles", () => {
     expect(() =>
       evaluateProductionReadiness(createEnvironment(), {
-        // @ts-expect-error Runtime validation rejects unsupported CLI targets.
-        target: "preview",
+        // @ts-expect-error Runtime validation rejects unsupported CLI profiles.
+        profile: "preview",
       }),
-    ).toThrow("Unsupported preflight target: preview");
+    ).toThrow("Unsupported preflight profile: preview");
   });
 });
