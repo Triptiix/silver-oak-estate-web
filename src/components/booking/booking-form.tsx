@@ -208,7 +208,7 @@ export function BookingForm({ checkInDate, guestCount, overnightGuestCount, onGu
 
       <button
         disabled={pending || !turnstileToken}
-        className="w-full mt-6 rounded-md bg-slate-900 px-4 py-3 text-white font-medium hover:bg-slate-800 focus:ring-2 focus:ring-slate-900 focus:outline-none disabled:opacity-50 transition-colors"
+        className="w-full mt-6 rounded-md bg-slate-900 px-4 py-3 text-white font-medium hover:bg-slate-800 focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 focus:outline-none disabled:opacity-50 transition-colors"
       >
         {pending ? "Creating Hold…" : "Hold This Date"}
       </button>
