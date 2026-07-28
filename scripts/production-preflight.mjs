@@ -14,13 +14,13 @@ const PROFILE_FIELDS = {
     "APP_TIMEZONE",
     "ONLINE_BOOKING_ENABLED",
     "NEXT_PUBLIC_TURNSTILE_SITE_KEY",
-    "NEXT_PUBLIC_RAZORPAY_KEY_ID",
+    "RAZORPAY_KEY_ID",
     "PAYMENT_PROVIDER",
-    "PAYMENT_MODE",
+    "PAYMENT_PROVIDER_MODE",
     "BOOKING_HOLD_MINUTES",
     "SUPABASE_SERVICE_ROLE_KEY",
     "RAZORPAY_KEY_SECRET",
-    "PAYMENT_WEBHOOK_SECRET",
+    "RAZORPAY_WEBHOOK_SECRET",
     "TURNSTILE_SECRET_KEY",
     "BOOKING_TOKEN_SECRET",
   ],
@@ -37,15 +37,15 @@ const PROFILE_FIELDS = {
     "APP_TIMEZONE",
     "ONLINE_BOOKING_ENABLED",
     "NEXT_PUBLIC_TURNSTILE_SITE_KEY",
-    "NEXT_PUBLIC_RAZORPAY_KEY_ID",
+    "RAZORPAY_KEY_ID",
     "PAYMENT_PROVIDER",
-    "PAYMENT_MODE",
+    "PAYMENT_PROVIDER_MODE",
     "BOOKING_HOLD_MINUTES",
     "MANUAL_PAYMENT_HOLD_MINUTES",
     "DATABASE_CRON_ENABLED",
     "SUPABASE_SERVICE_ROLE_KEY",
     "RAZORPAY_KEY_SECRET",
-    "PAYMENT_WEBHOOK_SECRET",
+    "RAZORPAY_WEBHOOK_SECRET",
     "TURNSTILE_SECRET_KEY",
     "BOOKING_TOKEN_SECRET",
     "ICAL_FEED_SECRET",
@@ -60,7 +60,7 @@ const PROFILE_FIELDS = {
 const SECRET_FIELDS = new Set([
   "SUPABASE_SERVICE_ROLE_KEY",
   "RAZORPAY_KEY_SECRET",
-  "PAYMENT_WEBHOOK_SECRET",
+  "RAZORPAY_WEBHOOK_SECRET",
   "TURNSTILE_SECRET_KEY",
   "BOOKING_TOKEN_SECRET",
   "ICAL_FEED_SECRET",
@@ -213,14 +213,14 @@ export function evaluateProductionReadiness(environment, options = {}) {
     if (environment.APP_ENV !== "staging") {
       addFinding(blockers, "APP_ENV", "must equal staging for the booking rehearsal");
     }
-    if (environment.PAYMENT_MODE !== "test") {
-      addFinding(blockers, "PAYMENT_MODE", "must equal test for the booking rehearsal");
+    if (environment.PAYMENT_PROVIDER_MODE !== "test") {
+      addFinding(blockers, "PAYMENT_PROVIDER_MODE", "must equal test for the booking rehearsal");
     }
     if (
-      typeof environment.NEXT_PUBLIC_RAZORPAY_KEY_ID === "string" &&
-      !environment.NEXT_PUBLIC_RAZORPAY_KEY_ID.startsWith("rzp_test_")
+      typeof environment.RAZORPAY_KEY_ID === "string" &&
+      !environment.RAZORPAY_KEY_ID.startsWith("rzp_test_")
     ) {
-      addFinding(blockers, "NEXT_PUBLIC_RAZORPAY_KEY_ID", "must use a Razorpay test key ID");
+      addFinding(blockers, "RAZORPAY_KEY_ID", "must use a Razorpay test key ID");
     }
   }
 
@@ -239,15 +239,7 @@ export function evaluateProductionReadiness(environment, options = {}) {
     if (environment.NEXT_PUBLIC_SITE_URL !== "https://silveroakestate.online") {
       addFinding(blockers, "NEXT_PUBLIC_SITE_URL", "must equal the canonical production URL");
     }
-    if (environment.PAYMENT_MODE !== "live") {
-      addFinding(blockers, "PAYMENT_MODE", "must equal live for the production launch gate");
-    }
-    if (
-      typeof environment.NEXT_PUBLIC_RAZORPAY_KEY_ID === "string" &&
-      !environment.NEXT_PUBLIC_RAZORPAY_KEY_ID.startsWith("rzp_live_")
-    ) {
-      addFinding(blockers, "NEXT_PUBLIC_RAZORPAY_KEY_ID", "must use a Razorpay live key ID");
-    }
+    addFinding(blockers, "PAYMENT_PROVIDER_MODE", "live payment activation is outside Phase 6C.1");
     if (!new Set(["true", "false"]).has(environment.DATABASE_CRON_ENABLED)) {
       addFinding(blockers, "DATABASE_CRON_ENABLED", "must equal true or false");
     }

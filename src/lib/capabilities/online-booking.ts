@@ -12,9 +12,9 @@ export const ONLINE_BOOKING_REQUIRED_FIELDS = [
   "NEXT_PUBLIC_TURNSTILE_SITE_KEY",
   "TURNSTILE_SECRET_KEY",
   "BOOKING_TOKEN_SECRET",
-  "NEXT_PUBLIC_RAZORPAY_KEY_ID",
+  "RAZORPAY_KEY_ID",
   "RAZORPAY_KEY_SECRET",
-  "PAYMENT_WEBHOOK_SECRET",
+  "RAZORPAY_WEBHOOK_SECRET",
 ] as const;
 
 type AvailabilityField = (typeof AVAILABILITY_REQUIRED_FIELDS)[number];
@@ -70,7 +70,10 @@ export function evaluateAvailabilityCapability(
 export function evaluateOnlineBookingCapability(
   environment: Record<string, string | undefined>,
 ): OnlineBookingCapability {
-  if (environment.ONLINE_BOOKING_ENABLED !== "true") {
+  if (
+    environment.ONLINE_BOOKING_ENABLED !== "true"
+    || environment.APP_ENV === "production"
+  ) {
     return {
       available: false,
       state: "disabled",

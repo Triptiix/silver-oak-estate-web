@@ -29,9 +29,9 @@ function completeBookingEnvironment(overrides: Record<string, string | undefined
     NEXT_PUBLIC_TURNSTILE_SITE_KEY: "turnstile-site-key",
     TURNSTILE_SECRET_KEY: "turnstile-secret-key",
     BOOKING_TOKEN_SECRET: "booking-token-secret",
-    NEXT_PUBLIC_RAZORPAY_KEY_ID: "rzp_test_key",
+    RAZORPAY_KEY_ID: "rzp_test_key",
     RAZORPAY_KEY_SECRET: "razorpay-secret",
-    PAYMENT_WEBHOOK_SECRET: "webhook-secret",
+    RAZORPAY_WEBHOOK_SECRET: "webhook-secret",
     ...overrides,
   };
 }
@@ -83,6 +83,18 @@ describe("online booking capability", () => {
     expect(
       evaluateOnlineBookingCapability(
         completeBookingEnvironment({ ONLINE_BOOKING_ENABLED: "false" }),
+      ),
+    ).toEqual({
+      available: false,
+      state: "disabled",
+      missingFields: [],
+    });
+  });
+
+  it("remains disabled in production even if its test-mode configuration is complete", () => {
+    expect(
+      evaluateOnlineBookingCapability(
+        completeBookingEnvironment({ APP_ENV: "production" }),
       ),
     ).toEqual({
       available: false,

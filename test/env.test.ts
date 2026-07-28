@@ -51,12 +51,12 @@ describe("lazy server environment", () => {
 
   it("reports variable names without values from other secrets", async () => {
     setEnvironment({
-      PAYMENT_WEBHOOK_SECRET: undefined,
+      RAZORPAY_WEBHOOK_SECRET: undefined,
       RAZORPAY_KEY_SECRET: "do-not-report-this-value",
     });
     const { envServer } = await import("@/lib/env/server");
-    expect(() => envServer.PAYMENT_WEBHOOK_SECRET).toThrow("PAYMENT_WEBHOOK_SECRET");
-    expect(() => envServer.PAYMENT_WEBHOOK_SECRET).not.toThrow("do-not-report-this-value");
+    expect(() => envServer.RAZORPAY_WEBHOOK_SECRET).toThrow("RAZORPAY_WEBHOOK_SECRET");
+    expect(() => envServer.RAZORPAY_WEBHOOK_SECRET).not.toThrow("do-not-report-this-value");
   });
 
   it("preserves all existing server defaults", async () => {
@@ -64,7 +64,7 @@ describe("lazy server environment", () => {
       APP_ENV: undefined,
       APP_TIMEZONE: undefined,
       PAYMENT_PROVIDER: undefined,
-      PAYMENT_MODE: undefined,
+      PAYMENT_PROVIDER_MODE: undefined,
       BOOKING_HOLD_MINUTES: undefined,
       MANUAL_PAYMENT_HOLD_MINUTES: undefined,
       DATABASE_CRON_ENABLED: undefined,
@@ -74,7 +74,7 @@ describe("lazy server environment", () => {
       appEnvironment: envServer.APP_ENV,
       timezone: envServer.APP_TIMEZONE,
       provider: envServer.PAYMENT_PROVIDER,
-      paymentMode: envServer.PAYMENT_MODE,
+      paymentMode: envServer.PAYMENT_PROVIDER_MODE,
       bookingHoldMinutes: envServer.BOOKING_HOLD_MINUTES,
       manualPaymentHoldMinutes: envServer.MANUAL_PAYMENT_HOLD_MINUTES,
       databaseCronEnabled: envServer.DATABASE_CRON_ENABLED,
@@ -146,7 +146,6 @@ describe("client environment", () => {
       NEXT_PUBLIC_SUPABASE_URL: undefined,
       NEXT_PUBLIC_SUPABASE_ANON_KEY: undefined,
       NEXT_PUBLIC_TURNSTILE_SITE_KEY: undefined,
-      NEXT_PUBLIC_RAZORPAY_KEY_ID: undefined,
     });
     const { envClient } = await import("@/lib/env/client");
     expect(envClient.NEXT_PUBLIC_SITE_URL).toBe("https://silveroakestate.online");
@@ -166,7 +165,6 @@ describe("client environment", () => {
       "NEXT_PUBLIC_SUPABASE_URL",
       "NEXT_PUBLIC_SUPABASE_ANON_KEY",
       "NEXT_PUBLIC_TURNSTILE_SITE_KEY",
-      "NEXT_PUBLIC_RAZORPAY_KEY_ID",
     ]) {
       expect(source).toContain(`process.env.${key}`);
     }
@@ -196,11 +194,11 @@ describe("capability isolation", () => {
   it("payment configuration ignores email, cron and deferred integrations", async () => {
     setEnvironment({
       PAYMENT_PROVIDER: "razorpay",
-      PAYMENT_MODE: "test",
+      PAYMENT_PROVIDER_MODE: "test",
       APP_ENV: "development",
-      NEXT_PUBLIC_RAZORPAY_KEY_ID: "rzp_test_public",
+      RAZORPAY_KEY_ID: "rzp_test_public",
       RAZORPAY_KEY_SECRET: "payment-secret",
-      PAYMENT_WEBHOOK_SECRET: undefined,
+      RAZORPAY_WEBHOOK_SECRET: undefined,
       EMAIL_API_KEY: undefined,
       EMAIL_SENDER: undefined,
       CRON_SECRET: undefined,
@@ -215,11 +213,22 @@ describe("capability isolation", () => {
     });
   });
 
+  it("rejects live payment configuration outright", async () => {
+    setEnvironment({
+      PAYMENT_PROVIDER: "razorpay",
+      PAYMENT_PROVIDER_MODE: "live",
+      RAZORPAY_KEY_ID: "rzp_live_not_permitted",
+      RAZORPAY_KEY_SECRET: "payment-secret",
+    });
+    const { assertPaymentConfiguration } = await import("@/lib/payments/config");
+    expect(assertPaymentConfiguration).toThrow("PAYMENT_PROVIDER_MODE");
+  });
+
   it("webhook configuration does not require browser or gateway credentials", async () => {
     setEnvironment({
       PAYMENT_PROVIDER: "razorpay",
-      PAYMENT_WEBHOOK_SECRET: "webhook-secret",
-      NEXT_PUBLIC_RAZORPAY_KEY_ID: undefined,
+      RAZORPAY_WEBHOOK_SECRET: "webhook-secret",
+      RAZORPAY_KEY_ID: undefined,
       RAZORPAY_KEY_SECRET: undefined,
       EMAIL_API_KEY: undefined,
     });
@@ -230,7 +239,7 @@ describe("capability isolation", () => {
   it("missing payment and cron configuration does not break a non-payment module", async () => {
     setEnvironment({
       RAZORPAY_KEY_SECRET: undefined,
-      PAYMENT_WEBHOOK_SECRET: undefined,
+      RAZORPAY_WEBHOOK_SECRET: undefined,
       CRON_SECRET: undefined,
     });
     await expect(import("@/lib/booking/schemas")).resolves.toHaveProperty("holdRequestSchema");
