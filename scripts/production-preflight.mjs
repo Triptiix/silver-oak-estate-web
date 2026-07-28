@@ -144,14 +144,14 @@ function validateEmailAddress(environment, field, blockers) {
 }
 
 function resolveProfile(options) {
-  if (options.profile) {
+  if (options.profile !== undefined) {
     if (!(options.profile in PROFILE_FIELDS)) {
       throw new Error(`Unsupported preflight profile: ${options.profile}`);
     }
     return options.profile;
   }
 
-  if (options.target) {
+  if (options.target !== undefined) {
     const aliasedProfile = PROFILE_ALIASES[options.target];
     if (!aliasedProfile) {
       throw new Error(`Unsupported preflight target: ${options.target}`);
