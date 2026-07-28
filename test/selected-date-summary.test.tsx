@@ -18,7 +18,7 @@ describe("selected date summary", () => {
     const link = screen.getByRole("link", { name: "Request This Date" });
     expect(link).toHaveAttribute("target", "_blank");
     expect(link.getAttribute("href")).toMatch(/^https:\/\/wa\.me\/918679470955\?text=/);
-    expect(decodeURIComponent(link.getAttribute("href") ?? "")).toContain("Sat, 15 Aug 2026");
+    expect(decodeURIComponent(link.getAttribute("href") ?? "")).toContain("Sat, 15 Aug, 2026");
     expect(screen.getByText(/Online checkout is not active yet/)).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Continue to Book" })).not.toBeInTheDocument();
   });
