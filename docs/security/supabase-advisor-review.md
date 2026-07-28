@@ -52,10 +52,12 @@ The hosted advisor identified two foreign keys without covering indexes:
 - `public.site_settings.updated_by`
 
 A forward migration and pgTAP contract have been prepared in
-`20260728170000_add_foreign_key_indexes.sql` for both foreign keys. Hosted
-application remains pending and requires the controlled production migration
-process. Do not mark either hosted advisor finding fixed until the migration is
-separately approved, manually applied and the hosted advisor is rerun.
+`20260728170000_add_foreign_key_indexes.sql` for both foreign keys. The
+unapplied migration acquires transaction-scoped `SHARE MODE NOWAIT` locks before
+creating the same two indexes. Hosted application remains pending and requires
+the controlled production migration process. Do not mark either hosted advisor
+finding fixed until the migration is separately approved, manually applied and
+the hosted advisor is rerun.
 
 Do not remove currently unused booking/inventory indexes based on an empty
 pre-launch database; usage statistics are not representative until realistic

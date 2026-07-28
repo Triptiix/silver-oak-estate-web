@@ -57,63 +57,143 @@ This migration uses ordinary transaction-managed `CREATE INDEX` statements.
 PostgreSQL permits reads while each index is built but temporarily blocks writes
 to the indexed table.
 
-Before application, the named operator must establish and record a maintenance
-window in which no process can write to:
+### Operational maintenance preparation
 
-- `public.payments`
-- `public.site_settings`
-
-For the current pre-launch Silver Oak Estate environment, the gate requires
-read-only confirmation immediately before application that:
+Immediately before application, verify and record:
 
 1. Online booking remains disabled.
-2. No administrator account is active or being provisioned.
-3. No payment provider, payment webhook, payment-link process or reconciliation
-   worker is enabled.
-4. No administrator or service process is updating `site_settings`.
-5. No cron, background job, deployment or manual operation capable of writing
-   either table is running.
-6. The current row counts and non-null foreign-key counts have been recorded.
-7. All identified writers have either been paused or explicitly confirmed
-   absent.
+2. No administrator is being provisioned or operating.
+3. Payment providers, webhooks, payment-link processes and reconciliation
+   workers remain disabled.
+4. No cron, background deployment or manual process is expected to write
+   `payments` or `site_settings`.
+5. All known database consoles, SQL editors and direct maintenance sessions
+   except the named migration operator are closed.
+6. Row counts and non-null foreign-key counts are recorded.
+7. The mutation approver confirms the maintenance window.
 
-The operator must apply the migration only after the mutation approver records
-that this no-write gate is satisfied.
+### Objective read-only session inspection
 
-If either table cannot be placed in a verified no-write window, stop the
-deployment. Do not run `db push`. Prepare a separately reviewed online
-index-build procedure instead.
+The named operator must collect this read-only session evidence immediately
+before application:
 
-After application, keep writers paused until both indexes are confirmed valid
-and ready and the required post-application verification has completed.
+```sql
+select
+  pid,
+  usename,
+  application_name,
+  client_addr,
+  state,
+  wait_event_type,
+  wait_event,
+  xact_start,
+  query_start,
+  left(query, 500) as query
+from pg_stat_activity
+where datname = current_database()
+  and pid <> pg_backend_pid()
+  and backend_type = 'client backend'
+  and (
+    state <> 'idle'
+    or xact_start is not null
+  )
+order by
+  xact_start nulls last,
+  query_start nulls last;
+```
+
+Every returned non-system session must be identified. Any active,
+idle-in-transaction, unknown or potentially write-capable session blocks
+deployment. This query is supporting preflight evidence, not the sole
+enforcement mechanism; do not terminate sessions automatically. Stop and
+investigate any unidentified session.
+
+### Database-enforced lock gate
+
+The migration begins with:
+
+```sql
+lock table public.payments, public.site_settings
+  in share mode nowait;
+```
+
+An existing conflicting writer causes immediate migration failure, before either
+index is created. Once acquired, the transaction-scoped locks prevent new
+writes to both tables until the migration transaction completes; new database
+sessions may connect but cannot modify either locked table. Reads remain
+available. This lock is the fail-closed enforcement control.
+
+Do not bypass a lock-acquisition failure, repair migration history, or retry
+without repeating every approval and preflight gate. If the lock cannot be
+enforced, stop without running `db push` and prepare a separately reviewed
+online index-build procedure.
 
 ## Application
 
-The named operator may run the following command only after the backup,
-approval, exact-commit dry-run and no-write gates above are recorded as passed,
-and explicit hosted-application authorization has been granted:
+The named operator may run the following command only after operational
+maintenance preparation, session inspection, backup and named-role gates, and
+the exact-commit dry run have passed; explicit hosted-application authorization
+must also be granted. The migration's `LOCK TABLE ... NOWAIT` statement is the
+final fail-closed control:
 
 ```bash
 npx --no-install supabase db push --linked
 ```
 
+If lock acquisition fails, `db push` must fail without applying the migration.
+Stop, record the error, re-establish the maintenance window, repeat all
+preflight checks and obtain renewed application authorization before retrying.
+
 ## Post-application verification
 
-Do not treat application as complete until read-only verification confirms:
+### Stage 1 — Blocking integrity verification
 
-1. The migration appears once in hosted migration history.
-2. Both exact indexes exist, are valid and ready, are non-unique B-tree
-   indexes, and each has exactly its approved single key column.
-3. No duplicate equivalent index exists and both foreign-key definitions and
-   delete behavior are unchanged.
-4. Property, pricing, customer, booking, payment, reservation, administrator
-   and notification row counts match the pre-application record.
-5. `/api/availability` still resolves canonical availability, `/book` remains
-   assisted-only, and online booking remains disabled.
-6. The hosted Supabase performance advisor no longer reports these two
-   unindexed-foreign-key findings.
-7. The no-write window remained in effect until both indexes were confirmed
-   valid and ready; writers were resumed only after verification completed.
+Keep the no-write maintenance window active only until all of these pass:
+
+1. `db push` completed successfully.
+2. The migration appears exactly once in hosted migration history.
+3. Both exact indexes exist.
+4. Both indexes are valid and ready.
+5. Both are non-unique B-tree indexes.
+6. Each has exactly its approved single key column.
+7. No equivalent duplicate exists.
+8. Both foreign-key definitions and delete actions remain unchanged.
+9. Pre- and post-application row counts match.
+10. No migration other than the explicitly approved migration was applied.
+
+When all Stage 1 checks pass, record the completion timestamp, release the
+maintenance/no-write window, and resume permitted writers when any are
+eventually enabled. If any Stage 1 check fails, keep writers paused, do not
+alter migration history, escalate to the recovery owner, and use only a
+separately reviewed forward corrective migration.
+
+### Stage 2 — Bounded follow-up verification
+
+These checks must not keep writers paused after Stage 1 passes:
+
+- `/api/availability` resolves the canonical property.
+- `/book` remains assisted-only.
+- Online booking remains disabled.
+- The Supabase performance advisor no longer reports the two missing-index
+  findings.
+
+Runtime endpoint verification must complete immediately after Stage 1, with a
+maximum five-minute verification window. Rerun and record performance-advisor
+verification within 30 minutes after application.
+
+If runtime verification fails or times out, record the failure, block further
+launch-readiness progression, and investigate without applying additional DDL.
+Do not keep the database in an indefinite no-write state solely because the
+endpoint check is delayed.
+
+If the performance advisor is unavailable, stale or still reports either
+warning after 30 minutes, capture its output and timestamp, confirm the index
+catalog state again, and escalate for focused investigation. Do not apply
+another index or change migration history, and do not keep writers paused
+solely for delayed advisor refresh.
+
+Do not declare Phase 6B.3 fully complete until Stage 2 is recorded; this is
+separate from writer resumption.
 
 ## Correction policy
 
