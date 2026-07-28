@@ -6,8 +6,13 @@
 ## Property Scope
 - Brand Name: **Silver Oak Estate**
 - Inventory: One complete 3 BHK property sold as a single booking unit. The property will NOT be subdivided at launch.
-- Overnight guest capacity: 6 to 8 people
-- Maximum gathering/event capacity: 30 people (strict limit on public booking engine)
+- Verified overnight capacity: up to 10 guests.
+- Verified indoor gathering capacity: up to 20 people.
+- Verified standard daytime event capacity: up to 40 people.
+- Events above 40 people require prior written approval after an operational and safety review and are outside the standard self-service booking flow.
+
+## Capacity-Implementation Status
+The public operational contract above is authoritative. The current booking-engine implementation still contains legacy hard limits of 30 total guests and 8 overnight guests in the database seed, RPC validation and application schemas. GitHub issue #15 tracks the required forward migration and coordinated application/test update. The website must not claim that the standard booking engine supports 40 total / 10 overnight until that implementation issue is complete.
 
 ## Base Pricing (Launch Scope)
 - **Monday to Friday:** INR 15,000
@@ -18,6 +23,7 @@
 ## Time & Booking Window
 - **Check-in:** 11:00 AM (Asia/Kolkata)
 - **Checkout:** 10:00 AM (Asia/Kolkata) next day
+- **Standard Booking Duration:** 23 hours
 - **Cleaning Buffer:** 10:00 AM to 11:00 AM
 
 ## Included Features (Launch MVP)
