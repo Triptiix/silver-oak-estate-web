@@ -4,7 +4,11 @@ import { useState } from "react";
 import { AvailabilityCalendar } from "./availability-calendar";
 import { SelectedDateSummary } from "./selected-date-summary";
 
-export function AvailabilityFlow() {
+type AvailabilityFlowProps = {
+  onlineBookingAvailable: boolean;
+};
+
+export function AvailabilityFlow({ onlineBookingAvailable }: AvailabilityFlowProps) {
   const [selectedDate, setSelectedDate] = useState<string | undefined>();
   const [selectedPrice, setSelectedPrice] = useState<number | undefined>();
   const [selectedAdvance, setSelectedAdvance] = useState<number | undefined>();
@@ -30,6 +34,7 @@ export function AvailabilityFlow() {
           advanceAmountPaise={selectedAdvance}
           checkInTime={checkInTime}
           checkOutTime={checkOutTime}
+          onlineBookingAvailable={onlineBookingAvailable}
         />
       )}
     </div>

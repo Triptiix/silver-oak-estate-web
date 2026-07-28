@@ -2,16 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAvailability } from "@/lib/booking/database";
 import { monthSchema } from "@/lib/booking/schemas";
 import { bookingError } from "@/lib/booking/api-errors";
-import { getOnlineBookingCapability } from "@/lib/capabilities/online-booking";
+import { getAvailabilityCapability } from "@/lib/capabilities/online-booking";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
-  if (!getOnlineBookingCapability().available) {
+  if (!getAvailabilityCapability().available) {
     return bookingError(
       503,
       "BOOKING_UNAVAILABLE",
-      "Online booking is currently unavailable. Contact our team for assistance.",
+      "Availability is currently unavailable. Contact our team for assistance.",
     );
   }
 

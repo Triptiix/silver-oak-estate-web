@@ -1,5 +1,10 @@
 import "server-only";
 
+export const AVAILABILITY_REQUIRED_FIELDS = [
+  "NEXT_PUBLIC_SUPABASE_URL",
+  "SUPABASE_SERVICE_ROLE_KEY",
+] as const;
+
 export const ONLINE_BOOKING_REQUIRED_FIELDS = [
   "NEXT_PUBLIC_SUPABASE_URL",
   "NEXT_PUBLIC_SUPABASE_ANON_KEY",
@@ -12,7 +17,14 @@ export const ONLINE_BOOKING_REQUIRED_FIELDS = [
   "PAYMENT_WEBHOOK_SECRET",
 ] as const;
 
+type AvailabilityField = (typeof AVAILABILITY_REQUIRED_FIELDS)[number];
 type OnlineBookingField = (typeof ONLINE_BOOKING_REQUIRED_FIELDS)[number];
+
+export type AvailabilityCapability = {
+  available: boolean;
+  state: "incomplete" | "ready";
+  missingFields: AvailabilityField[];
+};
 
 export type OnlineBookingCapability = {
   available: boolean;
@@ -31,6 +43,28 @@ const PLACEHOLDER_PATTERNS = [
 function hasUsableValue(value: string | undefined): boolean {
   if (!value || value.trim().length === 0) return false;
   return !PLACEHOLDER_PATTERNS.some((pattern) => pattern.test(value.trim()));
+}
+
+export function evaluateAvailabilityCapability(
+  environment: Record<string, string | undefined>,
+): AvailabilityCapability {
+  const missingFields = AVAILABILITY_REQUIRED_FIELDS.filter(
+    (field) => !hasUsableValue(environment[field]),
+  );
+
+  if (missingFields.length > 0) {
+    return {
+      available: false,
+      state: "incomplete",
+      missingFields,
+    };
+  }
+
+  return {
+    available: true,
+    state: "ready",
+    missingFields: [],
+  };
 }
 
 export function evaluateOnlineBookingCapability(
@@ -61,6 +95,10 @@ export function evaluateOnlineBookingCapability(
     state: "ready",
     missingFields: [],
   };
+}
+
+export function getAvailabilityCapability(): AvailabilityCapability {
+  return evaluateAvailabilityCapability(process.env);
 }
 
 export function getOnlineBookingCapability(): OnlineBookingCapability {
