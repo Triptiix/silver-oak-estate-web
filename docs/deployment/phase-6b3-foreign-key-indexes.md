@@ -87,8 +87,7 @@ select
   wait_event_type,
   wait_event,
   xact_start,
-  query_start,
-  left(query, 500) as query
+  query_start
 from pg_stat_activity
 where datname = current_database()
   and pid <> pg_backend_pid()
