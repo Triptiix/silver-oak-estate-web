@@ -68,7 +68,7 @@ This repository contains the Next.js/Supabase source code for the public website
 - The custom domain and live payment activation remain outside the current gate.
 - Hosted Supabase migration history includes the public availability RPC grant and `20260728160000_initialize_canonical_launch_data`.
 - Supabase's GitHub production deployment automatically applied the canonical launch-data migration after PR #29 merged on 28 July 2026. This was a deployment-control discovery, not a database failure: one active `silver-oak-estate` property and its weekday/weekend pricing are present and verified.
-- The live availability API resolves canonical data rather than returning `PROPERTY_NOT_FOUND`.
+- The live availability API resolves canonical data for the active `silver-oak-estate` property rather than returning `PROPERTY_NOT_FOUND`; inactive or unknown properties remain unavailable.
 - Supabase GitHub `Deploy to production` is disabled. Future production migrations require the controlled manual approval and application workflow in the Phase 6B.2 runbook.
 - The public marketing site operates with the core Supabase browser configuration.
 - `ONLINE_BOOKING_ENABLED` defaults to `false` and must remain disabled until the complete hosted booking stack passes staging rehearsal.

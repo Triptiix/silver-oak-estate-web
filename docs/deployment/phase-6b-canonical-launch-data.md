@@ -101,7 +101,12 @@ When automatic production deployment is enabled, merging a migration PR is
 itself production-application authorization. Before merge, complete the exact
 target check, backup or restore-point evidence, named mutation approver,
 migration operator, recovery owner and verification owner, the dry run, and
-explicit application authorization. After merge, only verify hosted migration
+explicit application authorization. Serialize migration merges: update the PR
+onto the current production branch, verify that its final approved tree and
+dry run contain exactly the approved migration set, and do not merge if either
+the production base or migration set changes. If the deployment system cannot
+make that exact production-tree check before applying on merge, keep automatic
+production deployment disabled. After merge, only verify hosted migration
 alignment and post-application state; do not run a manual `db push` for that
 auto-deployment path.
 
