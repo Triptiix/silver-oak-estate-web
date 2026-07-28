@@ -107,8 +107,8 @@ describe("verified booking capacity contract", () => {
       />,
     );
 
-    expect(screen.getByLabelText("Total Guests")).toHaveAttribute("max", "40");
-    expect(screen.getByLabelText("Overnight Guests")).toHaveAttribute("max", "10");
+    expect(screen.getByRole("button", { name: "Increase Total Guests" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Increase Overnight Guests" })).toBeDisabled();
     expect(screen.getByText(/Maximum 40 guests allowed for standard events/i)).toBeInTheDocument();
     expect(screen.getByText(/Maximum 10 guests can stay overnight/i)).toBeInTheDocument();
   });
