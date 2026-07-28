@@ -54,6 +54,13 @@ export function BookingForm({ checkInDate, guestCount, overnightGuestCount, onGu
     setTurnstileToken("");
   }
 
+  function changeGuestCount(count: number) {
+    onGuestCountChange(count);
+    if (overnightGuestCount > count) {
+      onOvernightGuestCountChange(count);
+    }
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!turnstileToken) return;
@@ -175,7 +182,7 @@ export function BookingForm({ checkInDate, guestCount, overnightGuestCount, onGu
           min={1}
           max={STANDARD_DAY_EVENT_CAPACITY}
           value={guestCount}
-          onChange={onGuestCountChange}
+          onChange={changeGuestCount}
         />
         <GuestCountField
           label="Overnight Guests"
