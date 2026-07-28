@@ -15,7 +15,7 @@
 
 ## Capacity-Implementation Status
 
-The public hold flow and administrator manual-booking flow enforce up to 40 total guests and up to 10 overnight guests. The 20-person indoor capacity remains a distinct operational-use limit rather than a separate booking-engine field. Values above the standard booking limits are rejected, and events above 40 remain subject to prior written approval outside self-service booking.
+The repository’s public hold and administrator manual-booking code enforces up to 40 total guests and up to 10 overnight guests. The 20-person indoor capacity remains a distinct operational-use limit rather than a separate booking-engine field. Hosted enforcement requires the forward migration to be deployed separately; this implementation PR does not mutate the hosted Supabase project or deploy production. Values above the standard booking limits are rejected by the source implementation, and events above 40 remain subject to prior written approval outside self-service booking.
 
 ## Base Pricing (Launch Scope)
 
