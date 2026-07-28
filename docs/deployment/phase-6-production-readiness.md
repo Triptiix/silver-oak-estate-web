@@ -8,7 +8,7 @@ The previous target launch date of 25 July 2026 has passed. Select a new launch 
 
 ## Current deployment posture
 
-A Vercel production-target deployment exists for controlled online testing. It is not an approved public launch, and online checkout must remain disabled until the complete booking stack and hosted data are verified.
+A Vercel production-target deployment exists for controlled online testing. It is not an approved public launch, and online checkout, browser payment verification and Razorpay webhook processing reject production during Phase 6C.1. Hosted staging Test Mode configuration remains a separate phase.
 
 The public marketing website operates with the core Supabase browser configuration. `/availability` may display the read-only calendar whenever the public availability capability is configured. While online checkout is disabled, selecting a date leads to an assisted WhatsApp request. `/book`, hold creation and payment-order creation remain unavailable until `ONLINE_BOOKING_ENABLED=true` and the complete booking capability is configured.
 

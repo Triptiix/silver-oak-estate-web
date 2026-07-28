@@ -52,8 +52,12 @@ All values are configured only in the intended staging environment:
 - `BOOKING_TOKEN_SECRET`
 
 The key ID is server-only configuration and is returned only by the safe order
-response. Secrets never reach the browser. A Live Mode value, a live key, or
-production application environment fails closed during this phase.
+response. Secrets never reach the browser. Test Mode is supported only in
+development/staging. Checkout initiation, browser verification and Razorpay
+webhook processing each reject production, Live Mode and unsupported providers
+before provider or database mutation. Hosted staging configuration remains a
+separate phase; Live Mode recovery and webhook behavior require a separately
+approved activation design.
 
 ## Deferred activation gates
 

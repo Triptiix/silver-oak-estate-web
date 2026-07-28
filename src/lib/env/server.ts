@@ -8,7 +8,7 @@ export const serverEnvSchema = z.object({
   ONLINE_BOOKING_ENABLED: z.enum(["true", "false"]).default("false").transform(value => value === "true"),
   PAYMENT_PROVIDER: z.string().default("razorpay"),
   PAYMENT_PROVIDER_MODE: z.literal("test").default("test"),
-  BOOKING_HOLD_MINUTES: z.coerce.number().int().positive().default(10),
+  BOOKING_HOLD_MINUTES: z.coerce.number().int().min(1).max(60).default(10),
   MANUAL_PAYMENT_HOLD_MINUTES: z.coerce.number().int().positive().default(30),
   DATABASE_CRON_ENABLED: z.enum(["true", "false"]).default("true").transform(value => value === "true"),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),

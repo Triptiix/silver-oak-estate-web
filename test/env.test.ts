@@ -100,6 +100,8 @@ describe("lazy server environment", () => {
 
   it.each([
     ["BOOKING_HOLD_MINUTES", "1.5"],
+    ["BOOKING_HOLD_MINUTES", "0"],
+    ["BOOKING_HOLD_MINUTES", "61"],
     ["MANUAL_PAYMENT_HOLD_MINUTES", "not-a-number"],
   ] as const)("rejects invalid numeric field %s on access", async (field, value) => {
     setEnvironment({ [field]: value });
@@ -224,6 +226,17 @@ describe("capability isolation", () => {
     expect(assertPaymentConfiguration).toThrow("PAYMENT_PROVIDER_MODE");
   });
 
+  it.each([
+    ["production", { APP_ENV: "production", PAYMENT_PROVIDER_MODE: "test", PAYMENT_PROVIDER: "razorpay", RAZORPAY_KEY_ID: "rzp_test_key" }, "production"],
+    ["live mode", { APP_ENV: "development", PAYMENT_PROVIDER_MODE: "live", PAYMENT_PROVIDER: "razorpay", RAZORPAY_KEY_ID: "rzp_live_key" }, "PAYMENT_PROVIDER_MODE"],
+    ["unsupported provider", { APP_ENV: "development", PAYMENT_PROVIDER_MODE: "test", PAYMENT_PROVIDER: "stripe", RAZORPAY_KEY_ID: "rzp_test_key" }, "Payment provider"],
+    ["live key", { APP_ENV: "development", PAYMENT_PROVIDER_MODE: "test", PAYMENT_PROVIDER: "razorpay", RAZORPAY_KEY_ID: "rzp_live_key" }, "Razorpay test credentials"],
+  ] as const)("rejects browser/order payment configuration in %s", async (_description, overrides, expectedError) => {
+    setEnvironment({ RAZORPAY_KEY_SECRET: "payment-secret", ...overrides });
+    const { assertPaymentConfiguration } = await import("@/lib/payments/config");
+    expect(assertPaymentConfiguration).toThrow(expectedError);
+  });
+
   it("webhook configuration does not require browser or gateway credentials", async () => {
     setEnvironment({
       PAYMENT_PROVIDER: "razorpay",
@@ -234,6 +247,29 @@ describe("capability isolation", () => {
     });
     const { assertPaymentWebhookConfiguration } = await import("@/lib/payments/config");
     expect(assertPaymentWebhookConfiguration()).toEqual({ webhookSecret: "webhook-secret" });
+  });
+
+  it.each([
+    ["production", { APP_ENV: "production", PAYMENT_PROVIDER_MODE: "test", PAYMENT_PROVIDER: "razorpay" }, "production"],
+    ["live mode", { APP_ENV: "development", PAYMENT_PROVIDER_MODE: "live", PAYMENT_PROVIDER: "razorpay" }, "PAYMENT_PROVIDER_MODE"],
+    ["unsupported provider", { APP_ENV: "development", PAYMENT_PROVIDER_MODE: "test", PAYMENT_PROVIDER: "stripe" }, "Payment provider"],
+  ] as const)("rejects webhook configuration in %s", async (_description, overrides, expectedError) => {
+    setEnvironment({ RAZORPAY_WEBHOOK_SECRET: "webhook-secret", ...overrides });
+    const { assertPaymentWebhookConfiguration } = await import("@/lib/payments/config");
+    expect(assertPaymentWebhookConfiguration).toThrow(expectedError);
+  });
+
+  it("keeps the CI workflow aligned with the current payment environment contract", async () => {
+    const workflow = await readFile(".github/workflows/ci.yml", "utf8");
+    const retiredPublicKey = ["NEXT_PUBLIC_RAZORPAY", "KEY_ID"].join("_");
+    const retiredMode = ["PAYMENT", "MODE"].join("_");
+    const retiredWebhookSecret = ["PAYMENT_WEBHOOK", "SECRET"].join("_");
+    expect(workflow).toMatch(/^\s+RAZORPAY_KEY_ID:/m);
+    expect(workflow).toMatch(/^\s+PAYMENT_PROVIDER_MODE:/m);
+    expect(workflow).toMatch(/^\s+RAZORPAY_WEBHOOK_SECRET:/m);
+    expect(workflow).not.toMatch(new RegExp(`^\\s+${retiredPublicKey}:`, "m"));
+    expect(workflow).not.toMatch(new RegExp(`^\\s+${retiredMode}:`, "m"));
+    expect(workflow).not.toMatch(new RegExp(`^\\s+${retiredWebhookSecret}:`, "m"));
   });
 
   it("missing payment and cron configuration does not break a non-payment module", async () => {

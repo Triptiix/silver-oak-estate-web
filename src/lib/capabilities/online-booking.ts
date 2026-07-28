@@ -6,6 +6,9 @@ export const AVAILABILITY_REQUIRED_FIELDS = [
 ] as const;
 
 export const ONLINE_BOOKING_REQUIRED_FIELDS = [
+  "PAYMENT_PROVIDER",
+  "PAYMENT_PROVIDER_MODE",
+  "BOOKING_HOLD_MINUTES",
   "NEXT_PUBLIC_SUPABASE_URL",
   "NEXT_PUBLIC_SUPABASE_ANON_KEY",
   "SUPABASE_SERVICE_ROLE_KEY",
@@ -45,6 +48,17 @@ function hasUsableValue(value: string | undefined): boolean {
   return !PLACEHOLDER_PATTERNS.some((pattern) => pattern.test(value.trim()));
 }
 
+function isValidOnlineBookingField(field: OnlineBookingField, value: string | undefined): boolean {
+  if (!hasUsableValue(value)) return false;
+  const normalized = value?.trim();
+  if (!normalized) return false;
+  if (field === "PAYMENT_PROVIDER") return normalized === "razorpay";
+  if (field === "PAYMENT_PROVIDER_MODE") return normalized === "test";
+  if (field === "BOOKING_HOLD_MINUTES") return /^(?:[1-9]|[1-5][0-9]|60)$/.test(normalized);
+  if (field === "RAZORPAY_KEY_ID") return normalized.startsWith("rzp_test_");
+  return true;
+}
+
 export function evaluateAvailabilityCapability(
   environment: Record<string, string | undefined>,
 ): AvailabilityCapability {
@@ -82,7 +96,7 @@ export function evaluateOnlineBookingCapability(
   }
 
   const missingFields = ONLINE_BOOKING_REQUIRED_FIELDS.filter(
-    (field) => !hasUsableValue(environment[field]),
+    (field) => !isValidOnlineBookingField(field, environment[field]),
   );
 
   if (missingFields.length > 0) {

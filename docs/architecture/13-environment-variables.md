@@ -24,7 +24,8 @@ middleware. They do not enable online booking or payment.
 
 `ONLINE_BOOKING_ENABLED` is the explicit booking kill switch. Keep it `false`
 until hosted migrations, administrator operations, Turnstile, booking-token
-signing, Razorpay and the staging rehearsal are verified together. Missing
+signing, Razorpay and the staging rehearsal are verified together. Phase 6C.1
+also rejects all payment operations when `APP_ENV=production`; missing or invalid
 booking providers must show the assisted phone/WhatsApp fallback instead of a
 partially working form.
 
