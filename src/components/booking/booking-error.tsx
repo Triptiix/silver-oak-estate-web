@@ -8,6 +8,11 @@ type BookingErrorProps = {
 export function BookingError({ code, onRetry }: BookingErrorProps) {
   const getErrorContent = () => {
     switch (code) {
+      case "BOOKING_UNAVAILABLE":
+        return {
+          title: "Online Booking Unavailable",
+          message: "Online reservations are temporarily unavailable. Please contact the Silver Oak Estate team for assisted booking.",
+        };
       case "DATE_UNAVAILABLE":
         return {
           title: "Date No Longer Available",
