@@ -1,6 +1,6 @@
 begin;
 
-select plan(13);
+select plan(15);
 
 create temporary table capacity_test_context as
 select
@@ -55,7 +55,7 @@ select matches(
       and conname = 'properties_event_capacity'
   ),
   '40',
-  'event-capacity constraint permits values through 40'
+  'property event-capacity constraint permits values through 40'
 );
 select matches(
   (
@@ -65,7 +65,27 @@ select matches(
       and conname = 'properties_overnight_capacity'
   ),
   '10',
-  'overnight-capacity constraint permits values through 10'
+  'property overnight-capacity constraint permits values through 10'
+);
+select matches(
+  (
+    select pg_get_constraintdef(oid)
+    from pg_constraint
+    where conrelid = 'public.bookings'::regclass
+      and conname = 'bookings_guest_capacity'
+  ),
+  '40',
+  'persisted booking guest-capacity constraint permits values through 40'
+);
+select matches(
+  (
+    select pg_get_constraintdef(oid)
+    from pg_constraint
+    where conrelid = 'public.bookings'::regclass
+      and conname = 'bookings_overnight_capacity'
+  ),
+  '10',
+  'persisted booking overnight-capacity constraint permits values through 10'
 );
 
 select lives_ok(
