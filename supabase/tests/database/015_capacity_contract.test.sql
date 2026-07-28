@@ -1,6 +1,6 @@
 begin;
 
-select plan(15);
+select plan(16);
 
 create temporary table capacity_test_context as
 select
@@ -130,6 +130,21 @@ select throws_ok(
   '22023',
   'capacity_exceeded',
   'public booking hold rejects overnight guests above 10'
+);
+select throws_ok(
+  format(
+    $$select public.create_booking_hold(
+      'silver-oak-estate',%L::date,'Public Capacity Guest',null,
+      '+919911000004',null,5,6,null,
+      'c0000000-0000-4000-8000-000000000007'::uuid,
+      'c0000000-0000-4000-8000-000000000008'::uuid,
+      'capacity-public-5-6',10
+    )$$,
+    (select today + 63 from capacity_test_context)
+  ),
+  '22023',
+  'capacity_exceeded',
+  'public booking hold preserves overnight less-than-or-equal-to-total'
 );
 
 insert into auth.users (
