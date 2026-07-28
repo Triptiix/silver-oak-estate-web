@@ -1,6 +1,6 @@
 begin;
 
-select plan(21);
+select plan(22);
 
 select is(
   (
@@ -24,19 +24,31 @@ select is(
 );
 
 select is(
-  (select timezone from public.properties where slug = 'silver-oak-estate'),
+  (
+    select timezone
+    from public.properties
+    where slug = 'silver-oak-estate'
+  ),
   'Asia/Kolkata',
   'canonical property uses Asia/Kolkata'
 );
 
 select is(
-  (select check_in_time from public.properties where slug = 'silver-oak-estate'),
+  (
+    select check_in_time
+    from public.properties
+    where slug = 'silver-oak-estate'
+  ),
   '11:00'::time,
   'canonical check-in is 11:00'
 );
 
 select is(
-  (select check_out_time from public.properties where slug = 'silver-oak-estate'),
+  (
+    select check_out_time
+    from public.properties
+    where slug = 'silver-oak-estate'
+  ),
   '10:00'::time,
   'canonical checkout is 10:00 on the following day'
 );
@@ -56,15 +68,33 @@ select is(
 );
 
 select is(
-  (select max_event_guests from public.properties where slug = 'silver-oak-estate'),
+  (
+    select max_event_guests
+    from public.properties
+    where slug = 'silver-oak-estate'
+  ),
   40,
   'canonical standard daytime capacity is 40'
 );
 
 select is(
-  (select max_overnight_guests from public.properties where slug = 'silver-oak-estate'),
+  (
+    select max_overnight_guests
+    from public.properties
+    where slug = 'silver-oak-estate'
+  ),
   10,
   'canonical overnight capacity is 10'
+);
+
+select is(
+  (
+    select cleaning_buffer_minutes
+    from public.properties
+    where slug = 'silver-oak-estate'
+  ),
+  60,
+  'canonical cleaning buffer is 60 minutes'
 );
 
 select is(
@@ -152,13 +182,38 @@ select is(
 );
 
 select ok(
-  jsonb_array_length(
-    public.get_monthly_availability(
-      'silver-oak-estate',
-      '2040-01'
-    ) -> 'dates'
-  ) > 0,
-  'availability RPC returns priced calendar dates'
+  (
+    jsonb_array_length(
+      public.get_monthly_availability(
+        'silver-oak-estate',
+        '2040-01'
+      ) -> 'dates'
+    ) > 0
+    and not exists (
+      select 1
+      from jsonb_array_elements(
+        public.get_monthly_availability(
+          'silver-oak-estate',
+          '2040-01'
+        ) -> 'dates'
+      ) as availability_date(value)
+      where case
+        when jsonb_typeof(
+          availability_date.value -> 'priceAmountPaise'
+        ) is distinct from 'number' then true
+        when (
+          availability_date.value ->> 'priceAmountPaise'
+        )::bigint not in (1500000, 2000000) then true
+        when jsonb_typeof(
+          availability_date.value -> 'advanceAmountPaise'
+        ) is distinct from 'number' then true
+        else (
+          availability_date.value ->> 'advanceAmountPaise'
+        )::bigint <> 500000
+      end
+    )
+  ),
+  'availability RPC returns dates with canonical prices and advances'
 );
 
 select is((select count(*)::integer from public.customers), 0, 'migration creates no customers');
