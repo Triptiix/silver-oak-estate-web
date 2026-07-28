@@ -9,6 +9,7 @@ import { signHoldToken } from "@/lib/booking/hold-token";
 import { HOLD_COOKIE_NAME, holdCookieOptions } from "@/lib/booking/hold-cookie";
 import { holdRequestSchema, normalizePhone } from "@/lib/booking/schemas";
 import { verifyTurnstile } from "@/lib/booking/turnstile";
+import { getOnlineBookingCapability } from "@/lib/capabilities/online-booking";
 import { readBoundedJson } from "@/lib/security/bounded-json";
 import { hasTrustedMutationOrigin } from "@/lib/security/mutation-origin";
 
@@ -17,6 +18,13 @@ const MAX_BOOKING_HOLD_JSON_BYTES = 16 * 1024;
 export async function POST(request: NextRequest) {
   if (!hasTrustedMutationOrigin(request, envClient.NEXT_PUBLIC_SITE_URL)) {
     return bookingError(403, "ORIGIN_REJECTED", "Request origin was rejected.");
+  }
+  if (!getOnlineBookingCapability().available) {
+    return bookingError(
+      503,
+      "BOOKING_UNAVAILABLE",
+      "Online booking is currently unavailable. Contact our team for assistance.",
+    );
   }
   const body = await readBoundedJson(request, MAX_BOOKING_HOLD_JSON_BYTES);
   if (!body.ok) {
