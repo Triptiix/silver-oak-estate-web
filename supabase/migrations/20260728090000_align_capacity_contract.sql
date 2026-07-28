@@ -8,15 +8,21 @@ alter table public.properties
 
 alter table public.properties
   add constraint properties_event_capacity
-    check (max_event_guests between 1 and 40),
+    check (max_event_guests between 1 and 40) not valid,
   add constraint properties_overnight_capacity
-    check (max_overnight_guests between 1 and 10);
+    check (max_overnight_guests between 1 and 10) not valid;
 
 update public.properties
 set max_event_guests = 40,
     max_overnight_guests = 10,
     updated_at = now()
 where slug = 'silver-oak-estate';
+
+alter table public.properties
+  validate constraint properties_event_capacity;
+
+alter table public.properties
+  validate constraint properties_overnight_capacity;
 
 insert into public.site_settings (
   setting_key,
