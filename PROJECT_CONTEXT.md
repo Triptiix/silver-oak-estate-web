@@ -8,9 +8,14 @@ To build a luxury web application serving as a direct booking platform. The dire
 
 ## Key Constraints
 - **Launch Date:** Target 25 July 2026.
-- **Property:** Single full-property rental (3 bedrooms, pool, lawn, hall). Maximum 30 guests for events, 6-8 overnight.
-- **Strict Booking Model:** 11:00 AM check-in, 10:00 AM checkout.
-- **Commercial:** INR 15,000 (Mon-Fri) / INR 20,000 (Sat-Sun).
+- **Property:** Single full-property rental with 3 bedrooms, pool, lawn and hall.
+- **Verified operational capacities:** Up to 10 overnight guests, up to 20 people indoors, and up to 40 people for standard daytime events.
+- **Larger events:** Events above 40 people require prior written approval after an operational and safety review and are outside the standard self-service booking flow.
+- **Strict Booking Model:** 11:00 AM check-in, 10:00 AM checkout the following day, forming a standard 23-hour slot.
+- **Commercial:** INR 15,000 (Mon-Fri) / INR 20,000 (Sat-Sun), with INR 5,000 advance.
+
+## Current Capacity-Implementation Gap
+The public-information contract is authoritative for operational and marketing copy. The current database seed, booking RPCs, administrator manual-booking flow and application validators still enforce legacy limits of 30 total guests and 8 overnight guests. GitHub issue #15 tracks the required forward migration and coordinated validation update. Until that work is merged, do not present the legacy technical limits as the business truth and do not claim that the standard booking engine supports the higher limits.
 
 ## Repository Rules
 This repository strictly contains the Next.js/Supabase source code for the public website and internal admin dashboard. OTA integrations (beyond basic iCal feeds) are deferred to post-launch stages.
@@ -55,7 +60,7 @@ This repository strictly contains the Next.js/Supabase source code for the publi
 - Refund execution is not implemented
 - Automatic reconciliation is not implemented
 - Notification delivery is not implemented
-- Public premium visual redesign has not started
+- Booking-engine capacity alignment to 40 total / 10 overnight is pending in issue #15
 - Recovery remains diagnosis-only
 
 The authoritative Phase 5B reference is [`docs/admin/phase-5b-manual-operations.md`](docs/admin/phase-5b-manual-operations.md).
