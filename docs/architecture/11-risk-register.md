@@ -1,23 +1,24 @@
 # Risk Register
 
-| Description | Severity | Probability | Owner | Mitigation | Fallback | Blocker? | Decision Deadline |
+This register reflects the current Phase 6 state. Dates from the superseded 25 July 2026 launch plan have been removed; unresolved launch risks are due before a new public launch date is approved.
+
+| Description | Severity | Probability | Owner | Current mitigation | Fallback | Blocker? | Status / deadline |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Payment KYC delay** | High | Medium | Arpit / Priyanshu | Apply early. Monitor portal daily. | UPI / Link manual payment fallback with 30m hold. | No | 20 July |
-| **Merchant entity issues** | Medium | Medium | Arpit | Decide if Indian business entity, proprietor, or individual account is used. | Re-file under alternative name. | Yes | 18 July |
-| **Domain/DNS delay** | High | Low | Priyanshu | Secure domain immediately. | Staging domain. | Yes | 22 July |
-| **Missing media assets** | High | High | Arpit | Schedule shoot ASAP. | Delay launch. *NEVER use stock or placeholder imagery.* | Yes | 23 July |
-| **Unapproved copy/policies** | High | Low | Arpit | Approval sign-off on copy sheet. | Delay launch. | Yes | 24 July |
-| **Unfinalized cancellation policy** | Critical | High | Arpit | Client must draft and approve exact terms. | *Blocker. Live paid bookings cannot commence without an approved policy.* | Yes | 23 July |
-| **Unverified event claims** | High | Medium | Arpit | Verify local laws regarding DJ/parties. | Remove claims from public site. | Yes | 23 July |
-| **Double booking** | Critical | Low | Dev Team | PostgreSQL Exclusion Constraints on `inventory_reservations`. | Manual refund and apology. | Yes | N/A |
-| **Bot hold abuse** | Medium | Low | Dev Team | Turnstile + IP limits. | Manual DB cleanup. | No | N/A |
-| **Cron failure** | Low | Low | Dev Team | The hold-creation transaction first changes stale active temporary holds to expired. Availability queries treat past expires_at values as non-bookable holds only until transactional cleanup occurs. Scheduled cleanup provides secondary housekeeping. Monitoring detects cleanup failures. | Admin manual release. | No | N/A |
-| **Stale availability** | Medium | Medium | Dev Team | Force `no-store` on API. | Refresh client on error. | Yes | N/A |
-| **Duplicate webhook** | Low | Low | Dev Team | `provider_event_id` idempotency. | Audit logs. | Yes | N/A |
-| **DB inconsistency** | Critical | Low | Dev Team | Use atomic transactions for shared finalization. | Admin reconciliation. | Yes | N/A |
-| **Admin mistake** | High | Medium | Dev Team | Restrict destructive actions. Audit logs. | DB point-in-time recovery. | No | N/A |
-| **OTA approval delay** | Low | High | Arpit | Start process post-launch. | Direct bookings only. | No | N/A |
-| **Manual OTA reconciliation failure** | High | Medium | Arpit | Daily operations checklist, assigned single owner, second-person verification. | Corrective entries and apologies. | No | N/A |
-| **Secret leakage** | Critical | Low | Dev Team | Store only in Vercel. Review PRs. | Rotate keys immediately. | Yes | N/A |
-| **Scope expansion** | High | High | Priyanshu | Strict adherence to MVP plan. | Push to Phase 2. | No | N/A |
-| **Poor mobile performance** | Medium | Medium | Dev Team | Next.js Image optimization. | Lighthouse audit fixes. | Yes | N/A |
+| **Canonical hosted launch data missing** | Critical | Certain | Dev Team / Operations | Keep checkout disabled; use repository seed as the reviewed source of non-sensitive launch data. | Assisted availability confirmation. | Yes | Open; explicit hosted-data approval required |
+| **No hosted administrator membership** | High | Certain | Business owner / Dev Team | Keep admin functions inaccessible; provision only a named approved user with the minimum role. | Manual operational records outside the app. | Yes | Open; required before admin rehearsal |
+| **Payment KYC or merchant-entity delay** | High | Medium | Business owner / Arpit | Decide the legal merchant using KYC evidence; do not infer it from property ownership or website accounts. | Approved manual payment process after legal/payment terms are complete. | Yes for live payments | Open; before live Razorpay |
+| **Unapproved legal terms** | Critical | High | Business owner / Legal reviewer | Finalize privacy, terms, cancellation/refund, liability, damage, vendor, tax and jurisdiction language. | Keep paid bookings disabled. | Yes | Open; before public paid booking |
+| **Domain or DNS delay** | Medium | Low | Project owner | Continue controlled testing on the Vercel deployment; verify DNS and TLS only at launch gate. | Vercel staging URL. | Yes for public launch | Open |
+| **Unverified event or optional-service claims** | High | Medium | Arpit / Business owner | Publish only verified operational wording and require written confirmation. | Remove the claim or service. | Yes | Ongoing review |
+| **Double booking** | Critical | Low | Dev Team | PostgreSQL exclusion constraint on active `inventory_reservations`; atomic booking/manual-operation RPCs; concurrency tests. | Reconciliation and customer remediation. | Yes | Mitigated in repository and hosted schema; staging proof pending |
+| **Automated hold abuse** | Medium | Medium | Dev Team | Explicit booking kill switch, Turnstile verification, bounded request bodies, HMAC hold fingerprint and database hold limits. Explicit edge/IP request throttling is not implemented yet. | Disable online booking and clean up holds. | No while kill switch is off | Open before enabling holds |
+| **Availability-read abuse** | Low | Medium | Dev Team | Read-only bounded month/slug inputs and public-safe RPC output. | Disable the availability capability or apply platform throttling. | No | Monitor after launch; rate-limit design pending |
+| **Cron failure** | Low | Low | Dev Team | Hold creation expires stale holds transactionally; scheduled cleanup is secondary housekeeping. | Administrator release and cleanup. | No | Monitoring not configured |
+| **Stale availability** | Medium | Low | Dev Team | `no-store` API responses and database-owned availability calculation. | Refresh and assisted confirmation. | Yes | Code complete; hosted data missing |
+| **Duplicate or replayed webhook** | Low | Low | Dev Team | Signed raw-body verification, provider event IDs, payload hashes and idempotent receipts. | Audit and reconciliation queue. | Yes | Code complete; provider rehearsal pending |
+| **Database inconsistency** | Critical | Low | Dev Team | Atomic transactions, authoritative inventory constraint and shared payment finalization. | Restore/reconcile under controlled procedure. | Yes | Code complete; backup/restore evidence pending |
+| **Administrator mistake** | High | Medium | Operations / Dev Team | Role restrictions, idempotency receipts, confirmation UI and immutable operation events. | Corrective operation or database recovery. | No | Hosted admin rehearsal pending |
+| **Secret leakage** | Critical | Low | Dev Team | Vercel-only secrets, no committed `.env.local`, secret-safe diagnostics and review gates. | Rotate affected credentials immediately. | Yes | Ongoing |
+| **Documentation drift** | High | Medium | Dev Team | Keep `PROJECT_CONTEXT.md`, Phase 6 runbook and agent instructions synchronized with hosted verification. | Stop automation and re-audit source of truth. | Yes for high-risk changes | Under remediation in #25 |
+| **Poor mobile performance** | Medium | Medium | Dev Team | Next Image, responsive layouts and historical browser QA. | Remove or simplify expensive presentation work. | Yes | Fresh production Lighthouse evidence pending |
+| **Missing monitoring or transactional notifications** | High | High | Dev Team / Operations | Keep workflows in assisted mode and rely on direct communication during staging. | Manual confirmation and log inspection. | Yes for unattended launch | Open |
