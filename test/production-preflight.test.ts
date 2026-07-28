@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 // The preflight is an ESM Node script so it can run without a build step.
-// @ts-expect-error JavaScript module intentionally has no separate declaration file.
+// @ts-ignore JavaScript module intentionally has no separate declaration file.
 import {
   evaluateProductionReadiness,
   formatProductionReadinessReport,
