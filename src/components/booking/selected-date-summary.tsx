@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { formatDisplayDate, getCheckoutDate } from "@/lib/booking/date";
 import { formatInrFromPaise, calculateRemainingBalancePaise } from "@/lib/booking/format";
+import { publicInformation } from "@/config/public-information";
 
 type SelectedDateSummaryProps = {
   dateStr: string;
@@ -10,11 +11,23 @@ type SelectedDateSummaryProps = {
   advanceAmountPaise: number;
   checkInTime: string;
   checkOutTime: string;
+  onlineBookingAvailable: boolean;
 };
 
-export function SelectedDateSummary({ dateStr, priceAmountPaise, advanceAmountPaise, checkInTime, checkOutTime }: SelectedDateSummaryProps) {
+export function SelectedDateSummary({
+  dateStr,
+  priceAmountPaise,
+  advanceAmountPaise,
+  checkInTime,
+  checkOutTime,
+  onlineBookingAvailable,
+}: SelectedDateSummaryProps) {
   const checkoutDateStr = getCheckoutDate(dateStr);
   const balanceAmountPaise = calculateRemainingBalancePaise(priceAmountPaise, advanceAmountPaise);
+  const assistedMessage = encodeURIComponent(
+    `Hello, I would like to reserve Silver Oak Estate for ${formatDisplayDate(dateStr)}. Please confirm availability and booking details.`,
+  );
+  const assistedBookingHref = `${publicInformation.contact.primaryPhone.whatsappHref}?text=${assistedMessage}`;
 
   return (
     <div className="mt-8 p-6 bg-slate-50 border border-slate-200 rounded-lg max-w-3xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
@@ -43,16 +56,32 @@ export function SelectedDateSummary({ dateStr, priceAmountPaise, advanceAmountPa
           <p className="text-slate-900 font-medium text-sm pt-1">
             Remaining Balance: {formatInrFromPaise(balanceAmountPaise)}
           </p>
+          {!onlineBookingAvailable && (
+            <p className="pt-2 text-sm text-slate-600">
+              Online checkout is not active yet. Our team will confirm the date and payment details directly.
+            </p>
+          )}
         </div>
       </div>
 
       <div className="w-full md:w-auto">
-        <Link
-          href={`/book?date=${dateStr}`}
-          className="block w-full text-center bg-slate-900 text-white px-8 py-3 rounded-md font-medium hover:bg-slate-800 transition-colors focus:ring-2 focus:ring-slate-900 focus:outline-none focus:ring-offset-2"
-        >
-          Continue to Book
-        </Link>
+        {onlineBookingAvailable ? (
+          <Link
+            href={`/book?date=${dateStr}`}
+            className="block w-full text-center bg-slate-900 text-white px-8 py-3 rounded-md font-medium hover:bg-slate-800 transition-colors focus:ring-2 focus:ring-slate-900 focus:outline-none focus:ring-offset-2"
+          >
+            Continue to Book
+          </Link>
+        ) : (
+          <a
+            href={assistedBookingHref}
+            target="_blank"
+            rel="noreferrer"
+            className="block w-full text-center bg-slate-900 text-white px-8 py-3 rounded-md font-medium hover:bg-slate-800 transition-colors focus:ring-2 focus:ring-slate-900 focus:outline-none focus:ring-offset-2"
+          >
+            Request This Date
+          </a>
+        )}
       </div>
     </div>
   );
