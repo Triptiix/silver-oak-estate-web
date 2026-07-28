@@ -104,7 +104,7 @@ describe("online booking capability", () => {
     expect(result.state).toBe("incomplete");
     expect(result.missingFields).toEqual([
       "TURNSTILE_SECRET_KEY",
-      "RAORPAY_KEY_SECRET".replace("RAO", "RAZ"),
+      "RAZORPAY_KEY_SECRET",
     ]);
     expect(JSON.stringify(result)).not.toContain("YOUR_RAZORPAY_SECRET");
   });
