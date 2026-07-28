@@ -2,15 +2,17 @@
 
 ## Purpose
 
-This runbook prepares Silver Oak Estate for a controlled staging rehearsal and a later production launch. It does not authorize or perform a hosted Supabase migration, Vercel production promotion, DNS change, Razorpay live-mode activation, administrator provisioning, or real customer transaction.
+This runbook prepares Silver Oak Estate for a controlled staging rehearsal and a later production launch. It does not itself authorize a hosted Supabase data initialization, new migration, Vercel environment change, DNS change, Razorpay activation, administrator provisioning or real customer transaction.
 
 The previous target launch date of 25 July 2026 has passed. Select a new launch date only after every required gate in issue #18 is complete.
 
 ## Current deployment posture
 
-A Vercel project exists for online testing. It is not an approved public launch, the custom domain remains outside the launch gate, and online booking must remain disabled until the complete booking stack and hosted database are verified.
+A Vercel production-target deployment exists for controlled online testing. It is not an approved public launch, and online checkout must remain disabled until the complete booking stack and hosted data are verified.
 
-The public marketing website may operate with only the core Supabase browser configuration. `/availability` and `/book` must show an assisted phone/WhatsApp fallback whenever `ONLINE_BOOKING_ENABLED` is not `true` or the complete booking capability is unavailable.
+The public marketing website operates with the core Supabase browser configuration. `/availability` may display the read-only calendar whenever the public availability capability is configured. While online checkout is disabled, selecting a date leads to an assisted WhatsApp request. `/book`, hold creation and payment-order creation remain unavailable until `ONLINE_BOOKING_ENABLED=true` and the complete booking capability is configured.
+
+The hosted Supabase schema migrations are present through the public monthly-availability RPC grant. The hosted project does not yet contain the canonical property or pricing launch rows and has no administrator membership. The live availability API therefore returns `PROPERTY_NOT_FOUND` until separately approved non-sensitive launch data is initialized.
 
 ## Capacity and booking contract
 
@@ -30,11 +32,11 @@ The public marketing website may operate with only the core Supabase browser con
 
 Do not launch payment acceptance until the final legal pack identifies the contracting party, invoicing authority, cancellation/refund rules, damage/security-deposit rules, house rules, privacy/cookie terms, liability terms, dispute resolution, jurisdiction, tax/GST wording, and the person authorized to approve those terms.
 
-Varun Yadav is the property owner and Arpit Chaudhary manages operations. This repository must not infer legal contracting or invoicing authority from those operational facts.
+Varun Yadav is the property owner and Arpit Chaudhary manages operations. This repository must not infer legal contracting, invoicing, tax or merchant authority from those operational facts.
 
 ### Gate 2: production environment ownership
 
-Every environment variable must have an accountable owner and an approved rotation procedure. Production values belong in the hosting/provider secret stores, never in GitHub, documentation, screenshots, issue comments, test fixtures, or shared shell history.
+Every environment variable must have an accountable owner and an approved rotation procedure. Production values belong in the hosting/provider secret stores, never in GitHub, documentation, screenshots, issue comments, test fixtures or shared shell history.
 
 Required integration ownership includes:
 
@@ -46,19 +48,24 @@ Required integration ownership includes:
 - Booking-token, iCal and cron secrets
 - Error monitoring and launch observability
 
-### Gate 3: hosted database migration
+### Gate 3: hosted database and launch-data verification
 
-Before any hosted mutation:
+Current verified state:
 
-1. Record the hosted Supabase project identifier, region and current migration state without publishing credentials.
+- Hosted migration history includes the Phase 5A/5B, capacity-alignment and public availability RPC changes.
+- The public availability function grants only `anon` and `service_role` execution; `authenticated` remains denied.
+- `public.properties` and `public.pricing_rules` contain no launch rows.
+- No administrator membership exists.
+
+Before any further hosted mutation:
+
+1. Record the exact target project and current migration/data state without publishing credentials.
 2. Capture backup/restore evidence appropriate to the project plan.
-3. Compare hosted migrations with `supabase/migrations/`.
-4. Review the exact forward-only deployment sequence.
-5. Apply migrations only after a separate explicit approval.
-6. Verify constraints, RLS, grants, functions, capacity settings and inventory behavior.
-7. Provision the first administrator through an authorized process; never seed credentials.
-
-The repository currently proves migrations only against the isolated local Supabase stack in CI.
+3. Review the exact forward-only migration or repeatable non-sensitive data statement.
+4. Apply only the explicitly approved migration or data initialization.
+5. Verify constraints, RLS, grants, functions, capacity settings, pricing and inventory behavior.
+6. Provision the first administrator through a named authorized process; never seed credentials.
+7. Run Supabase security and performance advisors and document intentional findings and follow-ups.
 
 ### Gate 4: staging rehearsal
 
@@ -67,18 +74,19 @@ A production-shaped staging environment must prove:
 - Availability, hold creation, hold release and expiry
 - Razorpay test order, verification and webhook finalization
 - Exact 40/10 acceptance and deterministic above-limit rejection
-- Overnight guest clamping and overnight less-than-or-equal-to-total enforcement
+- Overnight less-than-or-equal-to-total enforcement
 - Administrator login and role-gated operations
 - Manual bookings, owner/maintenance blocks and manual-payment verification
 - Email/notification audit behavior
-- Cron expiry and iCal access
+- Cron expiry and any implemented iCal access
 - Mobile, accessibility, privacy and failure states
+- Rate/abuse behavior appropriate to the enabled public endpoints
 
 Only after this rehearsal passes may `ONLINE_BOOKING_ENABLED=true` be used in the intended environment.
 
 ### Gate 5: production rollout
 
-Production rollout requires a recorded go/no-go decision, exact deployed commit, migration evidence, rollback criteria, administrator verification, payment/webhook verification and post-launch monitoring. Automatic refunds, automatic reconciliation and PMS/channel-manager synchronization remain deferred.
+Production rollout requires a recorded go/no-go decision, exact deployed commit, migration and launch-data evidence, rollback criteria, administrator verification, payment/webhook verification and post-launch monitoring. Automatic refunds, automatic reconciliation and PMS/channel-manager synchronization remain deferred.
 
 ## Automated capability preflight
 
@@ -128,7 +136,7 @@ The legacy production command remains an alias:
 npm run preflight:production -- --target=production
 ```
 
-A passing preflight is necessary but not sufficient. It cannot verify legal approval, provider ownership, KYC, domain control, hosted migration state, backup quality, live webhook delivery, administrator identity or rollback readiness.
+A passing preflight is necessary but not sufficient. It cannot verify legal approval, provider ownership, KYC, domain control, hosted data, backup quality, live webhook delivery, administrator identity or rollback readiness.
 
 ## Expected output
 
@@ -136,13 +144,13 @@ A successful check reports `Status: PASS`. A blocked check reports only the affe
 
 ## Rollback boundary
 
-Phase 6A changes source behavior and documentation only. Hosted rollback procedures must be written and approved separately before Gate 3.
+Repository remediation is reversible through Git. Every hosted migration, launch-data initialization, administrator provision, provider activation and domain change requires a separately documented rollback or recovery boundary before execution.
 
 ## Evidence required before launch
 
 - Approved legal pack and approver record
 - Redacted production environment matrix
-- Hosted migration and backup evidence
+- Hosted migration, launch-data and backup evidence
 - First-administrator provisioning evidence
 - Staging rehearsal report
 - Required CI and review results for the deployed commit
@@ -150,4 +158,4 @@ Phase 6A changes source behavior and documentation only. Hosted rollback procedu
 - Payment and webhook verification evidence
 - Post-launch monitoring record
 
-Track the complete launch sequence in GitHub issue #18 and Phase 6A implementation in issue #20.
+Track the complete launch sequence in GitHub issue #18, environment capability work in issue #20, calendar remediation in issue #22 and audit remediation in issue #25.
