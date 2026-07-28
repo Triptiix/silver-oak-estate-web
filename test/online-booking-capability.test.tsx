@@ -68,7 +68,6 @@ describe("availability capability", () => {
   it("fails closed and reports only missing public availability fields", () => {
     expect(
       evaluateAvailabilityCapability({
-        NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
         NEXT_PUBLIC_SUPABASE_ANON_KEY: undefined,
       }),
     ).toEqual({
