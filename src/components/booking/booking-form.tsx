@@ -1,6 +1,10 @@
 "use client";
 
 import { useState, useRef, useEffect, FormEvent } from "react";
+import {
+  OVERNIGHT_GUEST_CAPACITY,
+  STANDARD_DAY_EVENT_CAPACITY,
+} from "@/config/public-information";
 import { TurnstileWidget } from "./turnstile-widget";
 import { GuestCountField } from "./guest-count-field";
 import { BookingError } from "./booking-error";
@@ -167,18 +171,18 @@ export function BookingForm({ checkInDate, guestCount, overnightGuestCount, onGu
         <GuestCountField
           label="Total Guests"
           name="guestCount"
-          description="Maximum 30 guests allowed for events/day access."
+          description="Maximum 40 guests allowed for standard events/day access."
           min={1}
-          max={30}
+          max={STANDARD_DAY_EVENT_CAPACITY}
           value={guestCount}
           onChange={onGuestCountChange}
         />
         <GuestCountField
           label="Overnight Guests"
           name="overnightGuestCount"
-          description="Maximum 8 guests can stay overnight. Must not exceed total guests."
+          description="Maximum 10 guests can stay overnight. Must not exceed total guests."
           min={0}
-          max={Math.min(8, guestCount)}
+          max={Math.min(OVERNIGHT_GUEST_CAPACITY, guestCount)}
           value={overnightGuestCount}
           onChange={onOvernightGuestCountChange}
         />
@@ -204,7 +208,7 @@ export function BookingForm({ checkInDate, guestCount, overnightGuestCount, onGu
 
       <button
         disabled={pending || !turnstileToken}
-        className="w-full mt-6 rounded-md bg-slate-900 px-4 py-3 text-white font-medium hover:bg-slate-800 focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 focus:outline-none disabled:opacity-50 transition-colors"
+        className="w-full mt-6 rounded-md bg-slate-900 px-4 py-3 text-white font-medium hover:bg-slate-800 focus:ring-2 focus:ring-slate-900 focus:outline-none disabled:opacity-50 transition-colors"
       >
         {pending ? "Creating Hold…" : "Hold This Date"}
       </button>
