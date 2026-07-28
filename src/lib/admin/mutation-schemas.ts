@@ -1,6 +1,10 @@
 import "server-only";
 
 import { z } from "zod";
+import {
+  OVERNIGHT_GUEST_CAPACITY,
+  STANDARD_DAY_EVENT_CAPACITY,
+} from "@/config/public-information";
 import { normalizePhone } from "@/lib/phone";
 import type { Database } from "@/types/database.types";
 
@@ -125,8 +129,8 @@ export const createManualBookingSchema = z
       .optional()
       .transform((value) => value ?? null)
       .refine((value) => value === null || z.email().safeParse(value).success, "Enter a valid email."),
-    guestCount: z.number().int().min(1).max(30),
-    overnightGuestCount: z.number().int().min(0).max(8).optional().default(0),
+    guestCount: z.number().int().min(1).max(STANDARD_DAY_EVENT_CAPACITY),
+    overnightGuestCount: z.number().int().min(0).max(OVERNIGHT_GUEST_CAPACITY).optional().default(0),
     specialRequests: nullableTrimmed(1000),
     manualProvider: z.enum(["manual_upi", "payment_link"]),
     requestId: uuid,
