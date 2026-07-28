@@ -33,7 +33,8 @@ credentials to them.
 | `20260721090400_functions_constraints_indexes.sql` | Updated-at trigger, admin helpers, exclusion constraint, and indexes |
 | `20260721090500_row_level_security.sql` | Explicit grants, RLS enablement, and policies |
 | `20260721160000_harden_site_settings_authorization.sql` | Sensitivity-aware settings access, controlled mutations, and actor-bound attribution |
-| `20260728090000_align_capacity_contract.sql` | Forward correction of property and site-setting capacities to 40 standard daytime and 10 overnight guests |
+| `20260728090000_align_capacity_contract.sql` | Installs NOT VALID property and booking capacity constraints and corrects configured values to 40 standard daytime and 10 overnight guests |
+| `20260728090100_validate_capacity_contract.sql` | Validates the corrected capacity constraints in a separate migration transaction |
 
 Dependency order is properties/customers/admins, then bookings, then inventory
 and pricing, then payments/events/settings. Migrations are forward-only and
