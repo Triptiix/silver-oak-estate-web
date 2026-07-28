@@ -1,29 +1,63 @@
-const REQUIRED_FIELDS = [
-  "NEXT_PUBLIC_SITE_URL",
-  "NEXT_PUBLIC_SUPABASE_URL",
-  "NEXT_PUBLIC_SUPABASE_ANON_KEY",
-  "NEXT_PUBLIC_TURNSTILE_SITE_KEY",
-  "NEXT_PUBLIC_RAZORPAY_KEY_ID",
-  "APP_ENV",
-  "APP_TIMEZONE",
-  "PAYMENT_PROVIDER",
-  "PAYMENT_MODE",
-  "BOOKING_HOLD_MINUTES",
-  "MANUAL_PAYMENT_HOLD_MINUTES",
-  "DATABASE_CRON_ENABLED",
-  "SUPABASE_SERVICE_ROLE_KEY",
-  "RAZORPAY_KEY_SECRET",
-  "PAYMENT_WEBHOOK_SECRET",
-  "TURNSTILE_SECRET_KEY",
-  "BOOKING_TOKEN_SECRET",
-  "ICAL_FEED_SECRET",
-  "EMAIL_API_KEY",
-  "EMAIL_SENDER",
-  "ADMIN_NOTIFICATION_RECIPIENTS",
-  "CRON_SECRET",
-];
+const PROFILE_FIELDS = {
+  core: [
+    "NEXT_PUBLIC_SITE_URL",
+    "NEXT_PUBLIC_SUPABASE_URL",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+    "APP_ENV",
+    "APP_TIMEZONE",
+  ],
+  "booking-test": [
+    "NEXT_PUBLIC_SITE_URL",
+    "NEXT_PUBLIC_SUPABASE_URL",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+    "APP_ENV",
+    "APP_TIMEZONE",
+    "ONLINE_BOOKING_ENABLED",
+    "NEXT_PUBLIC_TURNSTILE_SITE_KEY",
+    "NEXT_PUBLIC_RAZORPAY_KEY_ID",
+    "PAYMENT_PROVIDER",
+    "PAYMENT_MODE",
+    "BOOKING_HOLD_MINUTES",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "RAZORPAY_KEY_SECRET",
+    "PAYMENT_WEBHOOK_SECRET",
+    "TURNSTILE_SECRET_KEY",
+    "BOOKING_TOKEN_SECRET",
+  ],
+  email: [
+    "EMAIL_API_KEY",
+    "EMAIL_SENDER",
+    "ADMIN_NOTIFICATION_RECIPIENTS",
+  ],
+  "production-live": [
+    "NEXT_PUBLIC_SITE_URL",
+    "NEXT_PUBLIC_SUPABASE_URL",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+    "APP_ENV",
+    "APP_TIMEZONE",
+    "ONLINE_BOOKING_ENABLED",
+    "NEXT_PUBLIC_TURNSTILE_SITE_KEY",
+    "NEXT_PUBLIC_RAZORPAY_KEY_ID",
+    "PAYMENT_PROVIDER",
+    "PAYMENT_MODE",
+    "BOOKING_HOLD_MINUTES",
+    "MANUAL_PAYMENT_HOLD_MINUTES",
+    "DATABASE_CRON_ENABLED",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "RAZORPAY_KEY_SECRET",
+    "PAYMENT_WEBHOOK_SECRET",
+    "TURNSTILE_SECRET_KEY",
+    "BOOKING_TOKEN_SECRET",
+    "ICAL_FEED_SECRET",
+    "EMAIL_API_KEY",
+    "EMAIL_SENDER",
+    "ADMIN_NOTIFICATION_RECIPIENTS",
+    "CRON_SECRET",
+    "ERROR_MONITORING_DSN",
+  ],
+};
 
-const SECRET_FIELDS = [
+const SECRET_FIELDS = new Set([
   "SUPABASE_SERVICE_ROLE_KEY",
   "RAZORPAY_KEY_SECRET",
   "PAYMENT_WEBHOOK_SECRET",
@@ -32,7 +66,7 @@ const SECRET_FIELDS = [
   "ICAL_FEED_SECRET",
   "EMAIL_API_KEY",
   "CRON_SECRET",
-];
+]);
 
 const PLACEHOLDER_PATTERNS = [
   /^<.*>$/,
@@ -43,6 +77,11 @@ const PLACEHOLDER_PATTERNS = [
   /^ci-/i,
   /rzp_(?:test|live)_<.*>/i,
 ];
+
+const PROFILE_ALIASES = {
+  staging: "booking-test",
+  production: "production-live",
+};
 
 function isBlank(value) {
   return typeof value !== "string" || value.trim().length === 0;
@@ -94,16 +133,42 @@ function validateEmailList(environment, field, blockers) {
   }
 }
 
-export function evaluateProductionReadiness(environment, options = {}) {
-  const target = options.target ?? "staging";
-  if (!new Set(["staging", "production"]).has(target)) {
-    throw new Error(`Unsupported preflight target: ${target}`);
+function validateEmailAddress(environment, field, blockers) {
+  const value = environment[field];
+  if (isBlank(value)) return;
+
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailPattern.test(value)) {
+    addFinding(blockers, field, "must be a valid provider-verified email address");
+  }
+}
+
+function resolveProfile(options) {
+  if (options.profile) {
+    if (!(options.profile in PROFILE_FIELDS)) {
+      throw new Error(`Unsupported preflight profile: ${options.profile}`);
+    }
+    return options.profile;
   }
 
+  if (options.target) {
+    const aliasedProfile = PROFILE_ALIASES[options.target];
+    if (!aliasedProfile) {
+      throw new Error(`Unsupported preflight target: ${options.target}`);
+    }
+    return aliasedProfile;
+  }
+
+  return "core";
+}
+
+export function evaluateProductionReadiness(environment, options = {}) {
+  const profile = resolveProfile(options);
+  const requiredFields = PROFILE_FIELDS[profile];
   const blockers = [];
   const warnings = [];
 
-  for (const field of REQUIRED_FIELDS) {
+  for (const field of requiredFields) {
     const value = environment[field];
     if (isBlank(value)) {
       addFinding(blockers, field, "is required");
@@ -114,74 +179,103 @@ export function evaluateProductionReadiness(environment, options = {}) {
     }
   }
 
-  for (const field of SECRET_FIELDS) {
+  for (const field of requiredFields) {
     const value = environment[field];
-    if (!isBlank(value) && value.trim().length < 16) {
-      addFinding(blockers, field, "is too short for a production secret");
+    if (SECRET_FIELDS.has(field) && !isBlank(value) && value.trim().length < 16) {
+      addFinding(blockers, field, "is too short for a deployment secret");
     }
   }
 
-  validateHttpsUrl(environment, "NEXT_PUBLIC_SITE_URL", blockers, { forbidLocalhost: true });
-  validateHttpsUrl(environment, "NEXT_PUBLIC_SUPABASE_URL", blockers, { forbidLocalhost: true });
-  validatePositiveInteger(environment, "BOOKING_HOLD_MINUTES", blockers);
-  validatePositiveInteger(environment, "MANUAL_PAYMENT_HOLD_MINUTES", blockers);
-  validateEmailList(environment, "ADMIN_NOTIFICATION_RECIPIENTS", blockers);
+  if (profile === "core" || profile === "booking-test" || profile === "production-live") {
+    validateHttpsUrl(environment, "NEXT_PUBLIC_SITE_URL", blockers, { forbidLocalhost: true });
+    validateHttpsUrl(environment, "NEXT_PUBLIC_SUPABASE_URL", blockers, { forbidLocalhost: true });
 
-  if (environment.APP_ENV !== target) {
-    addFinding(blockers, "APP_ENV", `must equal ${target}`);
-  }
-  if (environment.APP_TIMEZONE !== "Asia/Kolkata") {
-    addFinding(blockers, "APP_TIMEZONE", "must equal Asia/Kolkata");
-  }
-  if (environment.PAYMENT_PROVIDER !== "razorpay") {
-    addFinding(blockers, "PAYMENT_PROVIDER", "must equal razorpay");
-  }
-  if (!new Set(["true", "false"]).has(environment.DATABASE_CRON_ENABLED)) {
-    addFinding(blockers, "DATABASE_CRON_ENABLED", "must equal true or false");
+    if (!new Set(["development", "staging", "production"]).has(environment.APP_ENV)) {
+      addFinding(blockers, "APP_ENV", "must equal development, staging or production");
+    }
+    if (environment.APP_TIMEZONE !== "Asia/Kolkata") {
+      addFinding(blockers, "APP_TIMEZONE", "must equal Asia/Kolkata");
+    }
   }
 
-  if (target === "staging" && environment.PAYMENT_MODE !== "test") {
-    addFinding(blockers, "PAYMENT_MODE", "must remain test for staging rehearsal");
+  if (profile === "booking-test" || profile === "production-live") {
+    validatePositiveInteger(environment, "BOOKING_HOLD_MINUTES", blockers);
+
+    if (environment.ONLINE_BOOKING_ENABLED !== "true") {
+      addFinding(blockers, "ONLINE_BOOKING_ENABLED", "must equal true for an enabled booking flow");
+    }
+    if (environment.PAYMENT_PROVIDER !== "razorpay") {
+      addFinding(blockers, "PAYMENT_PROVIDER", "must equal razorpay");
+    }
   }
 
-  if (target === "production") {
+  if (profile === "booking-test") {
+    if (environment.APP_ENV !== "staging") {
+      addFinding(blockers, "APP_ENV", "must equal staging for the booking rehearsal");
+    }
+    if (environment.PAYMENT_MODE !== "test") {
+      addFinding(blockers, "PAYMENT_MODE", "must equal test for the booking rehearsal");
+    }
+    if (
+      typeof environment.NEXT_PUBLIC_RAZORPAY_KEY_ID === "string" &&
+      !environment.NEXT_PUBLIC_RAZORPAY_KEY_ID.startsWith("rzp_test_")
+    ) {
+      addFinding(blockers, "NEXT_PUBLIC_RAZORPAY_KEY_ID", "must use a Razorpay test key ID");
+    }
+  }
+
+  if (profile === "email" || profile === "production-live") {
+    validateEmailAddress(environment, "EMAIL_SENDER", blockers);
+    validateEmailList(environment, "ADMIN_NOTIFICATION_RECIPIENTS", blockers);
+  }
+
+  if (profile === "production-live") {
+    validatePositiveInteger(environment, "MANUAL_PAYMENT_HOLD_MINUTES", blockers);
+    validateHttpsUrl(environment, "ERROR_MONITORING_DSN", blockers);
+
+    if (environment.APP_ENV !== "production") {
+      addFinding(blockers, "APP_ENV", "must equal production");
+    }
     if (environment.NEXT_PUBLIC_SITE_URL !== "https://silveroakestate.online") {
       addFinding(blockers, "NEXT_PUBLIC_SITE_URL", "must equal the canonical production URL");
     }
     if (environment.PAYMENT_MODE !== "live") {
       addFinding(blockers, "PAYMENT_MODE", "must equal live for the production launch gate");
     }
-    if (typeof environment.NEXT_PUBLIC_RAZORPAY_KEY_ID === "string" && !environment.NEXT_PUBLIC_RAZORPAY_KEY_ID.startsWith("rzp_live_")) {
+    if (
+      typeof environment.NEXT_PUBLIC_RAZORPAY_KEY_ID === "string" &&
+      !environment.NEXT_PUBLIC_RAZORPAY_KEY_ID.startsWith("rzp_live_")
+    ) {
       addFinding(blockers, "NEXT_PUBLIC_RAZORPAY_KEY_ID", "must use a Razorpay live key ID");
     }
-  }
-
-  if (typeof environment.EMAIL_SENDER === "string") {
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailPattern.test(environment.EMAIL_SENDER)) {
-      addFinding(blockers, "EMAIL_SENDER", "must be a valid provider-verified email address");
+    if (!new Set(["true", "false"]).has(environment.DATABASE_CRON_ENABLED)) {
+      addFinding(blockers, "DATABASE_CRON_ENABLED", "must equal true or false");
     }
   }
 
-  if (isBlank(environment.ERROR_MONITORING_DSN)) {
-    addFinding(warnings, "ERROR_MONITORING_DSN", "is not configured; launch observability will be limited");
+  if (
+    (profile === "core" || profile === "booking-test") &&
+    isBlank(environment.ERROR_MONITORING_DSN)
+  ) {
+    addFinding(warnings, "ERROR_MONITORING_DSN", "is not configured; deployment observability will be limited");
   }
-  if (environment.VERCEL !== "1") {
+
+  if (profile !== "email" && environment.VERCEL !== "1") {
     addFinding(warnings, "VERCEL", "is not present; run the final check inside the intended Vercel environment");
   }
 
   return {
-    target,
+    profile,
     ready: blockers.length === 0,
     blockers,
     warnings,
-    checkedFields: REQUIRED_FIELDS.length,
+    checkedFields: requiredFields.length,
   };
 }
 
 export function formatProductionReadinessReport(result) {
   const lines = [
-    `Production readiness target: ${result.target}`,
+    `Readiness profile: ${result.profile}`,
     `Status: ${result.ready ? "PASS" : "BLOCKED"}`,
     `Required fields checked: ${result.checkedFields}`,
   ];
@@ -204,16 +298,22 @@ export function formatProductionReadinessReport(result) {
   return lines.join("\n");
 }
 
-function parseTarget(argumentsList) {
-  const argument = argumentsList.find((item) => item.startsWith("--target="));
-  return argument ? argument.slice("--target=".length) : "staging";
+function parseOptions(argumentsList) {
+  const profileArgument = argumentsList.find((item) => item.startsWith("--profile="));
+  const targetArgument = argumentsList.find((item) => item.startsWith("--target="));
+
+  return {
+    profile: profileArgument?.slice("--profile=".length),
+    target: targetArgument?.slice("--target=".length),
+  };
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   try {
-    const result = evaluateProductionReadiness(process.env, {
-      target: parseTarget(process.argv.slice(2)),
-    });
+    const result = evaluateProductionReadiness(
+      process.env,
+      parseOptions(process.argv.slice(2)),
+    );
     console.log(formatProductionReadinessReport(result));
     process.exitCode = result.ready ? 0 : 1;
   } catch (error) {
