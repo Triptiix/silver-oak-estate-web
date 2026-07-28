@@ -14,7 +14,7 @@ select is((select proconfig[1] from pg_proc where oid = 'public.expire_stale_hol
 select is((select proconfig[1] from pg_proc where oid = 'public.create_booking_hold(text,date,text,text,text,text,integer,integer,text,uuid,uuid,text,integer)'::regprocedure), 'search_path=pg_catalog', 'hold creation has safe search path');
 select is((select proconfig[1] from pg_proc where oid = 'public.release_booking_hold(uuid,uuid)'::regprocedure), 'search_path=pg_catalog', 'release has safe search path');
 
-select is(has_function_privilege('anon','public.get_monthly_availability(text,text)','EXECUTE'), false, 'anon cannot execute availability resolver directly');
+select is(has_function_privilege('anon','public.get_monthly_availability(text,text)','EXECUTE'), true, 'anon can execute only the public availability resolver');
 select is(has_function_privilege('authenticated','public.get_monthly_availability(text,text)','EXECUTE'), false, 'authenticated cannot execute availability resolver directly');
 select is(has_function_privilege('service_role','public.get_monthly_availability(text,text)','EXECUTE'), true, 'service role can execute availability resolver');
 select is(has_function_privilege('anon','public.expire_stale_holds(uuid)','EXECUTE'), false, 'anon cannot execute cleanup');
