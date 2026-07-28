@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
@@ -60,6 +60,10 @@ function paymentRequest() {
 beforeEach(() => {
   process.env.ONLINE_BOOKING_ENABLED = "false";
   vi.clearAllMocks();
+});
+
+afterEach(() => {
+  process.env.ONLINE_BOOKING_ENABLED = "true";
 });
 
 describe("public booking API capability gate", () => {
