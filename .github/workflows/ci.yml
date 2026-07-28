@@ -103,7 +103,19 @@ jobs:
         run: npm run db:lint
 
       - name: Test local database
-        run: npm run db:test
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run db:test 2>&1 | tee /tmp/db-test.log
+
+      - name: Upload database test log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: database-test-log
+          path: /tmp/db-test.log
+          if-no-files-found: error
+          retention-days: 1
 
       - name: Generate database types
         run: npm run db:types
