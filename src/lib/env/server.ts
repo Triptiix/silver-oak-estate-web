@@ -5,6 +5,7 @@ import { parseEnvironment, parseEnvironmentField } from "./validation";
 export const serverEnvSchema = z.object({
   APP_ENV: z.enum(["development", "staging", "production"]).default("development"),
   APP_TIMEZONE: z.string().default("Asia/Kolkata"),
+  ONLINE_BOOKING_ENABLED: z.enum(["true", "false"]).default("false").transform(value => value === "true"),
   PAYMENT_PROVIDER: z.string().default("razorpay"),
   PAYMENT_MODE: z.enum(["test", "live"]).default("test"),
   BOOKING_HOLD_MINUTES: z.coerce.number().int().default(10),
@@ -42,6 +43,7 @@ function readServerField<K extends keyof ServerEnvironment>(key: K): ServerEnvir
 export const envServer: ServerEnvironment = {
   get APP_ENV() { return readServerField("APP_ENV"); },
   get APP_TIMEZONE() { return readServerField("APP_TIMEZONE"); },
+  get ONLINE_BOOKING_ENABLED() { return readServerField("ONLINE_BOOKING_ENABLED"); },
   get PAYMENT_PROVIDER() { return readServerField("PAYMENT_PROVIDER"); },
   get PAYMENT_MODE() { return readServerField("PAYMENT_MODE"); },
   get BOOKING_HOLD_MINUTES() { return readServerField("BOOKING_HOLD_MINUTES"); },
