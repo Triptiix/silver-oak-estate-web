@@ -8,8 +8,42 @@ and weekend pricing rules. It does not create customers, bookings, payments,
 reservations, notifications or administrators. It does not change RLS, grants,
 environment variables, provider configuration or online-booking capability.
 
-This runbook does not authorize a hosted change. A named mutation approver must
-separately approve the exact target, commit and migration application.
+This runbook originally required a separately approved hosted application. The
+Supabase GitHub production deployment automatically applied this migration at
+`2026-07-28T12:34:27Z`, 37 seconds after PR #29 merged. No manual non-dry-run
+`supabase db push` was executed. The application is correct and isolated: it
+created the canonical property and two pricing rules, while customers,
+bookings, payments, reservations, administrators and notifications remain at
+zero.
+
+This was a deployment-control discovery, not a database failure. Supabase
+GitHub `Deploy to production` automatically applies pending
+`supabase/migrations` files when the production Git branch changes. The setting
+was disabled after this event. Future migration applications require the
+controlled workflow below.
+
+## Verified hosted application record
+
+- Migration history includes `20260728095325_grant_public_availability_rpc`
+  and `20260728160000_initialize_canonical_launch_data`; no repository
+  migration is pending at this baseline.
+- One active `silver-oak-estate` property exists with `Asia/Kolkata`, 11:00
+  check-in, 10:00 checkout, a 60-minute cleaning buffer, 40 daytime guests and
+  10 overnight guests.
+- One active weekday rule is 1,500,000 paise and one active weekend rule is
+  2,000,000 paise; each has a 500,000-paise advance and priority 0.
+- Counts are: properties 1, pricing rules 2, customers 0, bookings 0,
+  payments 0, inventory reservations 0, administrators 0 and notification
+  events 0.
+- `/api/availability?month=2040-01` returned HTTP 200 with 31 canonical-priced
+  dates; `/availability` returned HTTP 200; `/book` remains assisted-only with
+  no online payment collection; and `/admin/dashboard` resolves to protected
+  Admin Login.
+
+Production auto-deployment setting: **Disabled** (independently confirmed in
+the Supabase dashboard on 28 July 2026). The project is on the Free plan, so
+the dashboard reports no managed scheduled backups; future mutations require
+separately recorded backup or restore-point evidence.
 
 ## Preconditions
 
@@ -32,11 +66,12 @@ Record all of the following in the authorized change record:
    `20260728160000_initialize_canonical_launch_data.sql` is the only pending
    migration. Stop if any other migration is pending.
 
-## Application
+## Historical application procedure and required future workflow
 
-From the approved clean checkout, authenticate the Supabase CLI through the
-operator's normal secure process and link only the approved target. Do not put
-credentials in shell arguments, documentation or logs.
+Use this procedure for future migrations only. From the approved clean
+checkout, authenticate the Supabase CLI through the operator's normal secure
+process and link only the approved target. Do not put credentials in shell
+arguments, documentation or logs.
 
 First inspect the pending plan:
 
@@ -57,8 +92,13 @@ output, apply the pending migration:
 npx supabase db push --linked
 ```
 
-This command is intentionally documented but must not be executed as part of
-the repository implementation task.
+When automatic production deployment is enabled, merging a migration PR is
+itself production-application authorization. Complete all backup, target,
+role, dry-run and approval gates before that merge. The preferred controlled
+workflow is: merge the reviewed repository migration; verify hosted alignment;
+record backup evidence and named owners; run the dry run; obtain explicit
+application authorization; run the manual push; then complete post-application
+verification.
 
 ## Non-destructive verification
 

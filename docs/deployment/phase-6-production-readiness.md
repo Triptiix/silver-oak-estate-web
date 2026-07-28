@@ -12,7 +12,9 @@ A Vercel production-target deployment exists for controlled online testing. It i
 
 The public marketing website operates with the core Supabase browser configuration. `/availability` may display the read-only calendar whenever the public availability capability is configured. While online checkout is disabled, selecting a date leads to an assisted WhatsApp request. `/book`, hold creation and payment-order creation remain unavailable until `ONLINE_BOOKING_ENABLED=true` and the complete booking capability is configured.
 
-The hosted Supabase schema migrations are present through the public monthly-availability RPC grant. The hosted project does not yet contain the canonical property or pricing launch rows and has no administrator membership. The live availability API therefore returns `PROPERTY_NOT_FOUND` until separately approved non-sensitive launch data is initialized.
+Hosted Supabase migration history includes the public monthly-availability RPC grant and `20260728160000_initialize_canonical_launch_data`. Supabase's GitHub production deployment automatically applied the canonical launch-data migration after PR #29 merged on 28 July 2026. The resulting active `silver-oak-estate` property, weekday/weekend pricing and public availability API behavior were verified successfully; `/api/availability` no longer returns `PROPERTY_NOT_FOUND`. No administrator membership exists.
+
+This was a process-control discovery, not a database failure. Supabase GitHub `Deploy to production` automatically applies pending `supabase/migrations` files when the production Git branch changes. The setting was disabled after this application. Future migration PRs must follow the controlled workflow in the Phase 6B.2 runbook; merging a migration PR is production-application authorization only while that setting is enabled.
 
 ## Capacity and booking contract
 
@@ -52,20 +54,21 @@ Required integration ownership includes:
 
 Current verified state:
 
-- Hosted migration history includes the Phase 5A/5B, capacity-alignment and public availability RPC changes.
+- Hosted migration history includes the Phase 5A/5B, capacity-alignment, public availability RPC and canonical launch-data changes.
 - The public availability function grants only `anon` and `service_role` execution; `authenticated` remains denied.
-- `public.properties` and `public.pricing_rules` contain no launch rows.
+- `public.properties` contains one active `silver-oak-estate` row; `public.pricing_rules` contains one active weekday and one active weekend general rule with the canonical 1,500,000/2,000,000-paise prices and 500,000-paise advance.
 - No administrator membership exists.
 
 Before any further hosted mutation:
 
 1. Record the exact target project and current migration/data state without publishing credentials.
-2. Capture backup/restore evidence appropriate to the project plan.
+2. Capture backup/restore evidence appropriate to the project plan. The current Free-plan project has no managed scheduled backups; do not treat the dashboard as backup evidence until suitable coverage is recorded.
 3. Review the exact forward-only migration or repeatable non-sensitive data statement.
-4. Apply only the explicitly approved migration or data initialization.
-5. Verify constraints, RLS, grants, functions, capacity settings, pricing and inventory behavior.
-6. Provision the first administrator through a named authorized process; never seed credentials.
-7. Run Supabase security and performance advisors and document intentional findings and follow-ups.
+4. Assign the mutation approver, migration operator, recovery owner and verification owner.
+5. Run `npx supabase db push --linked --dry-run` and obtain explicit application authorization before `npx supabase db push --linked`.
+6. Verify constraints, RLS, grants, functions, capacity settings, pricing and inventory behavior.
+7. Provision the first administrator through a named authorized process; never seed credentials.
+8. Run Supabase security and performance advisors and document intentional findings and follow-ups.
 
 ### Gate 4: staging rehearsal
 

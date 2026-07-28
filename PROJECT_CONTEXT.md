@@ -66,9 +66,10 @@ This repository contains the Next.js/Supabase source code for the public website
 
 - A Vercel production-target deployment exists for controlled online testing, but it is not an approved public launch.
 - The custom domain and live payment activation remain outside the current gate.
-- Hosted Supabase schema migrations through the public availability RPC grant are present.
-- Hosted Supabase does not yet contain the canonical property or pricing launch data, so the live availability API returns `PROPERTY_NOT_FOUND` until that separately approved initialization is applied.
-- A forward-only repository migration now defines the canonical property and pricing initialization, but it has not been applied to hosted Supabase.
+- Hosted Supabase migration history includes the public availability RPC grant and `20260728160000_initialize_canonical_launch_data`.
+- Supabase's GitHub production deployment automatically applied the canonical launch-data migration after PR #29 merged on 28 July 2026. This was a deployment-control discovery, not a database failure: one active `silver-oak-estate` property and its weekday/weekend pricing are present and verified.
+- The live availability API resolves canonical data rather than returning `PROPERTY_NOT_FOUND`.
+- Supabase GitHub `Deploy to production` is disabled. Future production migrations require the controlled manual approval and application workflow in the Phase 6B.2 runbook.
 - The public marketing site operates with the core Supabase browser configuration.
 - `ONLINE_BOOKING_ENABLED` defaults to `false` and must remain disabled until the complete hosted booking stack passes staging rehearsal.
 - `/availability` displays the read-only calendar whenever the public Supabase capability is configured. With checkout disabled, a selected date leads to an assisted WhatsApp request rather than a payment flow.
@@ -77,7 +78,6 @@ This repository contains the Next.js/Supabase source code for the public website
 
 ## Current limitations
 
-- Canonical property, weekday/weekend pricing and complete non-sensitive launch settings have not been initialized in hosted Supabase
 - Hosted Supabase has no administrator membership
 - No demo username or password exists
 - The Vercel deployment is not production-approved for public launch

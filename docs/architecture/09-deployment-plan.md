@@ -1,7 +1,16 @@
 # Deployment Plan
 
 ## Deployment Safety
-We will not silently apply production database migrations during every automated main deployment.
+
+Supabase GitHub `Deploy to production` automatically applies pending
+`supabase/migrations` files when the production Git branch changes. That
+setting caused the verified canonical launch-data application after PR #29
+merged on 28 July 2026; it is now disabled for Silver Oak Estate.
+
+When the setting is enabled, merging a migration PR is the production
+application authorization and all target, backup, role, dry-run and approval
+gates must be complete before merge. The preferred controlled workflow keeps
+the setting disabled and requires explicit manual application after merge.
 
 **Strict Deployment Procedure:**
 1. **CI Pipeline:** Run typecheck, linting, and automated tests on PRs.
