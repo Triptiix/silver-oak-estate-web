@@ -75,6 +75,35 @@ describe("production readiness preflight", () => {
     expect(report).not.toContain(environment.RAZORPAY_KEY_SECRET);
   });
 
+  it("accepts the maximum 60-minute booking hold", () => {
+    const result = evaluateProductionReadiness(
+      createEnvironment({ BOOKING_HOLD_MINUTES: "60" }),
+      { profile: "booking-test" },
+    );
+
+    expect(result.ready).toBe(true);
+    expect(result.blockers).not.toEqual(
+      expect.arrayContaining([expect.objectContaining({ field: "BOOKING_HOLD_MINUTES" })]),
+    );
+  });
+
+  it("rejects a booking hold longer than 60 minutes", () => {
+    const result = evaluateProductionReadiness(
+      createEnvironment({ BOOKING_HOLD_MINUTES: "61" }),
+      { profile: "booking-test" },
+    );
+
+    expect(result.ready).toBe(false);
+    expect(result.blockers).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          field: "BOOKING_HOLD_MINUTES",
+          message: "must be between 1 and 60",
+        }),
+      ]),
+    );
+  });
+
   it("blocks booking-test when the kill switch is disabled or configuration is incomplete", () => {
     const result = evaluateProductionReadiness(
       createEnvironment({

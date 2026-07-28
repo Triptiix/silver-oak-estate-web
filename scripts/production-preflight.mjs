@@ -112,13 +112,17 @@ function validateHttpsUrl(environment, field, blockers, options = {}) {
   }
 }
 
-function validatePositiveInteger(environment, field, blockers) {
+function validatePositiveInteger(environment, field, blockers, options = {}) {
   const value = environment[field];
   if (isBlank(value)) return;
 
   const parsed = Number(value);
   if (!Number.isInteger(parsed) || parsed <= 0) {
     addFinding(blockers, field, "must be a positive integer");
+    return;
+  }
+  if (options.max !== undefined && parsed > options.max) {
+    addFinding(blockers, field, `must be between 1 and ${options.max}`);
   }
 }
 
@@ -199,7 +203,7 @@ export function evaluateProductionReadiness(environment, options = {}) {
   }
 
   if (profile === "booking-test" || profile === "production-live") {
-    validatePositiveInteger(environment, "BOOKING_HOLD_MINUTES", blockers);
+    validatePositiveInteger(environment, "BOOKING_HOLD_MINUTES", blockers, { max: 60 });
 
     if (environment.ONLINE_BOOKING_ENABLED !== "true") {
       addFinding(blockers, "ONLINE_BOOKING_ENABLED", "must equal true for an enabled booking flow");
