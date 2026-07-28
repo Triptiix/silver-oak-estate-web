@@ -26,17 +26,17 @@ jobs:
       NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-anon-key-placeholder
       NEXT_PUBLIC_TURNSTILE_SITE_KEY: ci-turnstile-site-key-placeholder
-      NEXT_PUBLIC_RAZORPAY_KEY_ID: rzp_test_ci_placeholder
+      RAZORPAY_KEY_ID: rzp_test_ci_placeholder
       APP_ENV: development
       APP_TIMEZONE: Asia/Kolkata
       PAYMENT_PROVIDER: razorpay
-      PAYMENT_MODE: test
+      PAYMENT_PROVIDER_MODE: test
       BOOKING_HOLD_MINUTES: "10"
       MANUAL_PAYMENT_HOLD_MINUTES: "30"
       DATABASE_CRON_ENABLED: "true"
       SUPABASE_SERVICE_ROLE_KEY: ci-service-role-placeholder
       RAZORPAY_KEY_SECRET: ci-razorpay-secret-placeholder
-      PAYMENT_WEBHOOK_SECRET: ci-non-secret-webhook-8f3a1c7e5d9b2a6046c8e1f7
+      RAZORPAY_WEBHOOK_SECRET: ci-non-secret-webhook-8f3a1c7e5d9b2a6046c8e1f7
       TURNSTILE_SECRET_KEY: ci-turnstile-secret-placeholder
       BOOKING_TOKEN_SECRET: ci-non-secret-booking-token-6e2b9d4f8a1c7e3055f0b3d9
       ICAL_FEED_SECRET: ci-non-secret-ical-token-4c8e1a7f3d9b6052e6f0a2c8

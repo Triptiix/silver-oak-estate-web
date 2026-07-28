@@ -24,7 +24,8 @@ middleware. They do not enable online booking or payment.
 
 `ONLINE_BOOKING_ENABLED` is the explicit booking kill switch. Keep it `false`
 until hosted migrations, administrator operations, Turnstile, booking-token
-signing, Razorpay and the staging rehearsal are verified together. Missing
+signing, Razorpay and the staging rehearsal are verified together. Phase 6C.1
+also rejects all payment operations when `APP_ENV=production`; missing or invalid
 booking providers must show the assisted phone/WhatsApp fallback instead of a
 partially working form.
 
@@ -35,16 +36,16 @@ The following values are required before setting `ONLINE_BOOKING_ENABLED=true`:
 ### Public variables
 
 - `NEXT_PUBLIC_TURNSTILE_SITE_KEY` = `<YOUR_TURNSTILE_SITE_KEY>`
-- `NEXT_PUBLIC_RAZORPAY_KEY_ID` = `rzp_test_<YOUR_KEY_ID>` for staging rehearsal
 
 ### Server-only variables
 
 - `PAYMENT_PROVIDER` = `"razorpay"`
-- `PAYMENT_MODE` = `"test"` for staging rehearsal
+- `PAYMENT_PROVIDER_MODE` = `"test"` for staging rehearsal
 - `BOOKING_HOLD_MINUTES` = `"10"`
 - `SUPABASE_SERVICE_ROLE_KEY` = `<YOUR_SUPABASE_SERVICE_ROLE_KEY>` (**Sensitive**)
+- `RAZORPAY_KEY_ID` = `rzp_test_<YOUR_KEY_ID>` (server-only; returned only by the order endpoint)
 - `RAZORPAY_KEY_SECRET` = `<RAZORPAY_KEY_SECRET>` (**Sensitive**)
-- `PAYMENT_WEBHOOK_SECRET` = `<YOUR_WEBHOOK_SECRET>` (**Sensitive**)
+- `RAZORPAY_WEBHOOK_SECRET` = `<YOUR_WEBHOOK_SECRET>` (**Sensitive**)
 - `TURNSTILE_SECRET_KEY` = `<YOUR_TURNSTILE_SECRET_KEY>` (**Sensitive**)
 - `BOOKING_TOKEN_SECRET` = `<YOUR_BOOKING_TOKEN_SECRET>` (**Sensitive**)
 

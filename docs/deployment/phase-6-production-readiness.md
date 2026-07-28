@@ -8,7 +8,7 @@ The previous target launch date of 25 July 2026 has passed. Select a new launch 
 
 ## Current deployment posture
 
-A Vercel production-target deployment exists for controlled online testing. It is not an approved public launch, and online checkout must remain disabled until the complete booking stack and hosted data are verified.
+A Vercel production-target deployment exists for controlled online testing. It is not an approved public launch, and online checkout, browser payment verification and Razorpay webhook processing reject production during Phase 6C.1. Hosted staging Test Mode configuration remains a separate phase.
 
 The public marketing website operates with the core Supabase browser configuration. `/availability` may display the read-only calendar whenever the public availability capability is configured. While online checkout is disabled, selecting a date leads to an assisted WhatsApp request. `/book`, hold creation and payment-order creation remain unavailable until `ONLINE_BOOKING_ENABLED=true` and the complete booking capability is configured.
 
@@ -109,7 +109,7 @@ Confirms the public site URL, Supabase browser configuration, application enviro
 npm run preflight:production -- --profile=booking-test
 ```
 
-Requires `APP_ENV=staging`, `PAYMENT_MODE=test`, `ONLINE_BOOKING_ENABLED=true`, a Razorpay test key and the complete Supabase service-role, Turnstile, booking-token and payment/webhook configuration. Transactional email is assessed separately.
+Requires `APP_ENV=staging`, `PAYMENT_PROVIDER_MODE=test`, `ONLINE_BOOKING_ENABLED=true`, a server-only Razorpay test key and the complete Supabase service-role, Turnstile, booking-token and payment/webhook configuration. Transactional email is assessed separately.
 
 The legacy staging command remains an alias:
 
@@ -131,7 +131,7 @@ Checks the email API key, provider-verified sender and administrator recipient l
 npm run preflight:production -- --profile=production-live
 ```
 
-Requires the canonical production URL, `APP_ENV=production`, `PAYMENT_MODE=live`, a Razorpay live key, enabled online booking, email delivery, operational secrets and an error-monitoring DSN.
+This profile remains intentionally blocked during Phase 6C.1. Live keys, live mode and production online booking require a separately approved activation phase.
 
 The legacy production command remains an alias:
 

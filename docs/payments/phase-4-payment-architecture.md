@@ -181,14 +181,14 @@ the old booking.
 
 ## Environment variables
 
-- `NEXT_PUBLIC_RAZORPAY_KEY_ID`: public test key ID (`rzp_test_...`);
+- `RAZORPAY_KEY_ID`: server-only test key ID (`rzp_test_...`), returned only by the order endpoint;
 - `RAZORPAY_KEY_SECRET`: server-only key secret;
-- `PAYMENT_WEBHOOK_SECRET`: server-only webhook HMAC secret;
+- `RAZORPAY_WEBHOOK_SECRET`: server-only webhook HMAC secret;
 - `PAYMENT_PROVIDER=razorpay`;
-- `PAYMENT_MODE=test`.
+- `PAYMENT_PROVIDER_MODE=test`. Live mode is rejected during Phase 6C.1.
 
-The server rejects a non-test key in test mode and rejects live mode outside a
-production application environment. Only placeholders are committed.
+The server rejects a non-test key and any live mode during Phase 6C.1. Only
+placeholders are committed.
 
 ## Local and test-mode testing
 

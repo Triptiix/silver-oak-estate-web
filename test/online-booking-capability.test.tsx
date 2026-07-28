@@ -23,15 +23,18 @@ const originalEnvironment = { ...process.env };
 function completeBookingEnvironment(overrides: Record<string, string | undefined> = {}) {
   return {
     ONLINE_BOOKING_ENABLED: "true",
+    PAYMENT_PROVIDER: "razorpay",
+    PAYMENT_PROVIDER_MODE: "test",
+    BOOKING_HOLD_MINUTES: "10",
     NEXT_PUBLIC_SUPABASE_URL: "https://project.supabase.co",
     NEXT_PUBLIC_SUPABASE_ANON_KEY: "anon-key",
     SUPABASE_SERVICE_ROLE_KEY: "service-role-key",
     NEXT_PUBLIC_TURNSTILE_SITE_KEY: "turnstile-site-key",
     TURNSTILE_SECRET_KEY: "turnstile-secret-key",
     BOOKING_TOKEN_SECRET: "booking-token-secret",
-    NEXT_PUBLIC_RAZORPAY_KEY_ID: "rzp_test_key",
+    RAZORPAY_KEY_ID: "rzp_test_key",
     RAZORPAY_KEY_SECRET: "razorpay-secret",
-    PAYMENT_WEBHOOK_SECRET: "webhook-secret",
+    RAZORPAY_WEBHOOK_SECRET: "webhook-secret",
     ...overrides,
   };
 }
@@ -91,6 +94,18 @@ describe("online booking capability", () => {
     });
   });
 
+  it("remains disabled in production even if its test-mode configuration is complete", () => {
+    expect(
+      evaluateOnlineBookingCapability(
+        completeBookingEnvironment({ APP_ENV: "production" }),
+      ),
+    ).toEqual({
+      available: false,
+      state: "disabled",
+      missingFields: [],
+    });
+  });
+
   it("fails closed and reports only missing field names", () => {
     const environment = completeBookingEnvironment({
       TURNSTILE_SECRET_KEY: undefined,
@@ -106,6 +121,26 @@ describe("online booking capability", () => {
       "RAZORPAY_KEY_SECRET",
     ]);
     expect(JSON.stringify(result)).not.toContain("YOUR_RAZORPAY_SECRET");
+  });
+
+  it.each([
+    ["missing provider", { PAYMENT_PROVIDER: undefined }, ["PAYMENT_PROVIDER"]],
+    ["unsupported provider", { PAYMENT_PROVIDER: "stripe" }, ["PAYMENT_PROVIDER"]],
+    ["missing provider mode", { PAYMENT_PROVIDER_MODE: undefined }, ["PAYMENT_PROVIDER_MODE"]],
+    ["live provider mode", { PAYMENT_PROVIDER_MODE: "live" }, ["PAYMENT_PROVIDER_MODE"]],
+    ["missing hold duration", { BOOKING_HOLD_MINUTES: undefined }, ["BOOKING_HOLD_MINUTES"]],
+    ["zero hold duration", { BOOKING_HOLD_MINUTES: "0" }, ["BOOKING_HOLD_MINUTES"]],
+    ["overlong hold duration", { BOOKING_HOLD_MINUTES: "61" }, ["BOOKING_HOLD_MINUTES"]],
+    ["decimal hold duration", { BOOKING_HOLD_MINUTES: "10.5" }, ["BOOKING_HOLD_MINUTES"]],
+    ["non-numeric hold duration", { BOOKING_HOLD_MINUTES: "abc" }, ["BOOKING_HOLD_MINUTES"]],
+    ["live Razorpay key", { RAZORPAY_KEY_ID: "rzp_live_key" }, ["RAZORPAY_KEY_ID"]],
+    ["malformed Razorpay key", { RAZORPAY_KEY_ID: "not-a-razorpay-key" }, ["RAZORPAY_KEY_ID"]],
+  ] as const)("is incomplete for %s", (_description, overrides, expectedMissingFields) => {
+    expect(evaluateOnlineBookingCapability(completeBookingEnvironment(overrides))).toEqual({
+      available: false,
+      state: "incomplete",
+      missingFields: expectedMissingFields,
+    });
   });
 
   it("becomes ready only with the complete booking stack", () => {
