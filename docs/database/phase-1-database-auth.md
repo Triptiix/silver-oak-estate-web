@@ -33,6 +33,7 @@ credentials to them.
 | `20260721090400_functions_constraints_indexes.sql` | Updated-at trigger, admin helpers, exclusion constraint, and indexes |
 | `20260721090500_row_level_security.sql` | Explicit grants, RLS enablement, and policies |
 | `20260721160000_harden_site_settings_authorization.sql` | Sensitivity-aware settings access, controlled mutations, and actor-bound attribution |
+| `20260728090000_align_capacity_contract.sql` | Forward correction of property and site-setting capacities to 40 standard daytime and 10 overnight guests |
 
 Dependency order is properties/customers/admins, then bookings, then inventory
 and pricing, then payments/events/settings. Migrations are forward-only and
@@ -42,7 +43,7 @@ replay from an empty local database.
 
 | Table | Purpose | Important enforcement |
 | --- | --- | --- |
-| `properties` | Complete-property configuration | Active flag, maximum 30 event and 8 overnight guests |
+| `properties` | Complete-property configuration | Active flag, maximum 40 standard daytime and 10 overnight guests |
 | `customers` | Private CRM record | Nonblank name and phone; indexed lookup without assuming one global format |
 | `admins` | Auth user to application-role mapping | Unique Auth UUID, active flag, `admin_role` enum |
 | `bookings` | Booking intent and customer snapshots | Capacity, time ordering, integer-paise arithmetic, distinct reference/token |
@@ -148,10 +149,13 @@ route or link exists. Logout calls Supabase `signOut()` on the server.
 `supabase/seed.sql` is repeatable and includes only:
 
 - Silver Oak Estate, Asia/Kolkata, 11:00 check-in and 10:00 checkout
-- 60-minute cleaning buffer, 30 event guests, 8 overnight guests
+- 60-minute cleaning buffer, 40 standard daytime guests, 10 overnight guests
 - Weekday price 1,500,000 paise and weekend price 2,000,000 paise
 - Advance 500,000 paise
 - Hold settings 10 and 30 minutes, INR, and confirmed capacities
+
+The separate 20-person indoor capacity remains operational guidance rather than
+the total booking-capacity field.
 
 It does not contain an administrator, password, customer, booking, payment,
 fake availability, public-holiday price, or unresolved policy.
@@ -181,13 +185,13 @@ npm run build
 npm run check
 ```
 
-The 88 pgTAP assertions cover overlap concurrency enforcement, half-open
-boundaries, released/stale holds, booking and pricing checks, RLS roles,
-administrator helpers, settings sensitivity, old/new-row mutation protection,
-actor attribution, privilege boundaries, and safe function configuration.
-Application tests cover the login UI, lack of registration, Proxy redirect,
-membership and role decisions, logout, public smoke routes, and server-only
-import boundaries.
+Database assertions cover overlap concurrency enforcement, half-open
+boundaries, released and stale holds, booking and pricing checks, capacity
+boundaries, RLS roles, administrator helpers, settings sensitivity, old/new-row
+mutation protection, actor attribution, privilege boundaries, and safe function
+configuration. Application tests cover the login UI, lack of registration,
+Proxy redirect, membership and role decisions, logout, public smoke routes,
+capacity validation, and server-only import boundaries.
 
 ## Architecture Clarifications
 
