@@ -62,9 +62,10 @@ Record all of the following in the authorized change record:
    `notification_events`.
 8. Confirmation that no real customer, booking, payment or reservation row
    will be changed by this migration.
-9. A dry run showing that
-   `20260728160000_initialize_canonical_launch_data.sql` is the only pending
-   migration. Stop if any other migration is pending.
+9. For this historical application, a dry run showed that
+   `20260728160000_initialize_canonical_launch_data.sql` was the only pending
+   migration. For every future change record, identify the exact approved
+   migration and stop if the dry run shows any other pending migration.
 
 ## Historical application procedure and required future workflow
 
@@ -73,32 +74,36 @@ checkout, authenticate the Supabase CLI through the operator's normal secure
 process and link only the approved target. Do not put credentials in shell
 arguments, documentation or logs.
 
-First inspect the pending plan:
+When Supabase GitHub `Deploy to production` is disabled, merge the reviewed
+repository migration, verify hosted migration alignment, record backup or
+restore-point evidence and the named owners, then obtain explicit application
+authorization. Before that authorization, inspect the pending plan with the
+repository-pinned CLI (`npx --no-install supabase`, currently 2.109.1):
 
 ```bash
-npx supabase db push --linked --dry-run
+npx --no-install supabase db push --linked --dry-run
 ```
 
-Proceed only when the output identifies exactly one pending migration:
+Proceed only when the output identifies exactly the migration named in the
+approved change record and no other pending migration:
 
 ```text
-20260728160000_initialize_canonical_launch_data.sql
+<approved-migration-version_and_name>.sql
 ```
 
-After the named approver confirms the target, backup evidence and dry-run
-output, apply the pending migration:
+Only after those gates may the named operator apply the pending migration:
 
 ```bash
-npx supabase db push --linked
+npx --no-install supabase db push --linked
 ```
 
 When automatic production deployment is enabled, merging a migration PR is
-itself production-application authorization. Complete all backup, target,
-role, dry-run and approval gates before that merge. The preferred controlled
-workflow is: merge the reviewed repository migration; verify hosted alignment;
-record backup evidence and named owners; run the dry run; obtain explicit
-application authorization; run the manual push; then complete post-application
-verification.
+itself production-application authorization. Before merge, complete the exact
+target check, backup or restore-point evidence, named mutation approver,
+migration operator, recovery owner and verification owner, the dry run, and
+explicit application authorization. After merge, only verify hosted migration
+alignment and post-application state; do not run a manual `db push` for that
+auto-deployment path.
 
 ## Non-destructive verification
 

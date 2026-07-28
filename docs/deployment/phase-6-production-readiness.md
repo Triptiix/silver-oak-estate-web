@@ -65,9 +65,9 @@ Before any further hosted mutation:
 2. Capture backup/restore evidence appropriate to the project plan. The current Free-plan project has no managed scheduled backups; do not treat the dashboard as backup evidence until suitable coverage is recorded.
 3. Review the exact forward-only migration or repeatable non-sensitive data statement.
 4. Assign the mutation approver, migration operator, recovery owner and verification owner.
-5. Run `npx supabase db push --linked --dry-run` and obtain explicit application authorization before `npx supabase db push --linked`.
+5. Use the repository-pinned CLI, `npx --no-install supabase` (currently 2.109.1), to run `npx --no-install supabase db push --linked --dry-run`; obtain explicit application authorization before `npx --no-install supabase db push --linked`.
 6. Verify constraints, RLS, grants, functions, capacity settings, pricing and inventory behavior.
-7. Provision the first administrator through a named authorized process; never seed credentials.
+7. Provision the first administrator only after explicit approval for the exact hosted project and environment, through the named authorized process; never seed credentials.
 8. Run Supabase security and performance advisors and document intentional findings and follow-ups.
 
 ### Gate 4: staging rehearsal
