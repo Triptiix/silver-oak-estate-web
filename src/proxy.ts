@@ -28,33 +28,21 @@ export async function proxy(request: NextRequest) {
     }
   );
 
-  // Refresh session if expired and retrieve verified claims
+  // Refresh administrator sessions and retrieve verified claims. Public
+  // marketing and API routes do not enter this proxy boundary.
   const { data: claims } = await supabase.auth.getClaims();
 
   // Proxy validates session presence. Protected Server Components perform the
   // deeper database-backed active administrator role check.
-  if (request.nextUrl.pathname.startsWith("/admin") && !request.nextUrl.pathname.startsWith("/admin/login")) {
-    if (!claims) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/admin/login";
-      return NextResponse.redirect(url);
-    }
+  if (!request.nextUrl.pathname.startsWith("/admin/login") && !claims) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/admin/login";
+    return NextResponse.redirect(url);
   }
 
   return supabaseResponse;
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api/health (health check)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - robots.txt, sitemap.xml
-     * Feel free to modify this pattern to include more paths.
-     */
-    "/((?!api/health|_next/static|_next/image|favicon.ico|robots\\.txt|sitemap\\.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-  ],
+  matcher: ["/admin/:path*"],
 };

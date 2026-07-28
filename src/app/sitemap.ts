@@ -1,35 +1,22 @@
-import type { MetadataRoute } from 'next'
-import { siteConfig } from '@/config/site'
+import type { MetadataRoute } from "next";
+import { siteConfig } from "@/config/site";
+
+const PUBLIC_SITEMAP_PATHS = [
+  "",
+  "/estate",
+  "/experiences",
+  "/gallery",
+  "/pricing",
+  "/location",
+  "/policies",
+  "/privacy",
+  "/terms",
+  "/contact",
+  "/availability",
+] as const;
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  return [
-    {
-      url: siteConfig.url,
-      lastModified: new Date(),
-    },
-    {
-      url: `${siteConfig.url}/estate`,
-      lastModified: new Date(),
-    },
-    {
-      url: `${siteConfig.url}/experiences`,
-      lastModified: new Date(),
-    },
-    {
-      url: `${siteConfig.url}/gallery`,
-      lastModified: new Date(),
-    },
-    {
-      url: `${siteConfig.url}/policies`,
-      lastModified: new Date(),
-    },
-    {
-      url: `${siteConfig.url}/book`,
-      lastModified: new Date(),
-    },
-    {
-      url: `${siteConfig.url}/contact`,
-      lastModified: new Date(),
-    },
-  ]
+  return PUBLIC_SITEMAP_PATHS.map((path) => ({
+    url: `${siteConfig.url}${path}`,
+  }));
 }

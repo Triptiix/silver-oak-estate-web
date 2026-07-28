@@ -6,7 +6,13 @@ Silver Oak Estate is a premium, private farmhouse-based hospitality and event pr
 
 ## The Objective
 
-To build a luxury web application serving as a direct booking platform. The direct website booking flow replaces manual availability checks for direct online customers. OTA, phone, and WhatsApp bookings remain manually reconciled until the PMS/channel manager is active.
+Build a luxury web application serving as a direct booking platform. The website can display live availability independently of online checkout. OTA, phone, WhatsApp and assisted date requests remain manually reconciled until the full hosted booking stack and a future PMS/channel manager are active.
+
+## Verified ownership and operations
+
+- Varun Yadav owns the property.
+- Arpit Chaudhary manages operations, maintenance and on-ground organization.
+- The legal contracting party, invoicing authority and payment-gateway merchant entity remain unresolved and must not be inferred from ownership or operational responsibility.
 
 ## Key Constraints
 
@@ -19,7 +25,7 @@ To build a luxury web application serving as a direct booking platform. The dire
 
 ## Repository Rules
 
-This repository strictly contains the Next.js/Supabase source code for the public website and internal admin dashboard. OTA integrations (beyond basic iCal feeds) are deferred to post-launch stages.
+This repository contains the Next.js/Supabase source code for the public website and internal admin dashboard. OTA integrations beyond the planned private iCal boundary are deferred to post-launch stages.
 
 ## Completed Phase 5B backend
 
@@ -39,7 +45,7 @@ This repository strictly contains the Next.js/Supabase source code for the publi
 - Bounded request bodies
 - Capability-scoped environment validation
 - Vercel-attested client-address handling
-- Repository database and application code aligned to 40 standard daytime and 10 overnight; hosted enforcement requires a separate migration deployment
+- Repository and hosted schema migrations aligned to 40 standard daytime and 10 overnight guests
 
 ## Completed Phase 5B UI
 
@@ -54,26 +60,31 @@ This repository strictly contains the Next.js/Supabase source code for the publi
 - Exact INR-to-paise parsing
 - Persistent results across `router.refresh()`
 - Accessible results and validation
-- Repository UI and validation sources aligned to 40-person standard daytime and 10-person overnight limits
+- UI and validation sources aligned to 40-person standard daytime and 10-person overnight limits
 
 ## Phase 6 status
 
-- A Vercel project exists for online testing, but it is not an approved production launch.
+- A Vercel production-target deployment exists for controlled online testing, but it is not an approved public launch.
 - The custom domain and live payment activation remain outside the current gate.
-- The public marketing site is expected to operate with core Supabase browser configuration only.
+- Hosted Supabase schema migrations through the public availability RPC grant are present.
+- Hosted Supabase does not yet contain the canonical property or pricing launch data, so the live availability API returns `PROPERTY_NOT_FOUND` until that separately approved initialization is applied.
+- The public marketing site operates with the core Supabase browser configuration.
 - `ONLINE_BOOKING_ENABLED` defaults to `false` and must remain disabled until the complete hosted booking stack passes staging rehearsal.
-- When online booking is disabled or incomplete, `/availability` and `/book` must show assisted phone, WhatsApp and email contact options instead of a partial booking/payment flow.
+- `/availability` displays the read-only calendar whenever the public Supabase capability is configured. With checkout disabled, a selected date leads to an assisted WhatsApp request rather than a payment flow.
+- `/book`, hold creation and payment-order creation remain disabled or unavailable until the full booking capability is explicitly enabled and configured.
 - Readiness checks are separated into core, booking-test, email and production-live profiles.
 
 ## Current limitations
 
-- Hosted Phase 5A and Phase 5B migrations have not been deployed
-- The capacity-alignment migration has not been applied to hosted Supabase
-- Hosted Supabase has no administrator account
+- Canonical property, weekday/weekend pricing and complete non-sensitive launch settings have not been initialized in hosted Supabase
+- Hosted Supabase has no administrator membership
 - No demo username or password exists
-- The Vercel testing project is not production-approved
-- Online booking remains intentionally disabled until hosted migrations and external providers are verified
+- The Vercel deployment is not production-approved for public launch
+- Online checkout remains intentionally disabled until hosted data, external providers and end-to-end staging are verified
+- Turnstile and Razorpay test-mode provider configuration have not completed a hosted rehearsal
 - Live Razorpay is not configured
+- Transactional email delivery and error monitoring are not configured
+- Privacy, terms, cancellation/refund, liability, contracting, invoicing and jurisdiction documents are not final
 - Refund execution is not implemented
 - Automatic reconciliation is not implemented
 - Notification delivery is not implemented

@@ -12,7 +12,7 @@ Technology:
 - Tailwind CSS
 - Supabase PostgreSQL and Auth
 - Vercel
-- Razorpay planned for a later phase
+- Razorpay test-mode booking/payment architecture implemented behind an explicit disabled-by-default capability gate; hosted provider configuration and rehearsal remain pending
 
 ## Read before editing
 
@@ -32,6 +32,7 @@ Technology:
 - docs/architecture/12-open-decisions.md
 - docs/architecture/13-environment-variables.md
 - docs/architecture/14-testing-strategy.md
+- docs/deployment/phase-6-production-readiness.md
 
 ## Mandatory business rules
 
@@ -55,7 +56,16 @@ Technology:
 - Never expose customer PII publicly.
 - Never expose Supabase service-role credentials.
 - No public administrator registration.
-- Do not invent unresolved policies.
+- Do not invent unresolved policies, contracting authority, tax status or merchant ownership.
+- Varun Yadav owns the property; Arpit Chaudhary manages operations. Neither fact resolves the legal contracting, invoicing or merchant entity.
+
+## Current hosted boundary
+
+- Hosted schema migrations are present through the public monthly-availability RPC grant.
+- Hosted canonical property/pricing launch data and administrator membership are not present.
+- `/availability` may show the read-only calendar with assisted date requests while online checkout is disabled.
+- `/book`, hold creation and payment-order creation remain behind `ONLINE_BOOKING_ENABLED` and the full capability configuration.
+- Never apply seed data, migrations, create administrators, change Vercel settings, enable payments or connect domains without explicit target-specific approval.
 
 ## Working method
 
@@ -95,5 +105,19 @@ npm run typecheck
 npm run lint
 npm run test
 npm run build
+npm run db:reset
+npm run db:lint
+npm run db:test
+npm run db:types
+npm run test:concurrency
 npm run check
+```
+
+For launch-readiness work, also run the relevant profile:
+
+```bash
+npm run preflight:production -- --profile=core
+npm run preflight:production -- --profile=booking-test
+npm run preflight:production -- --profile=email
+npm run preflight:production -- --profile=production-live
 ```
