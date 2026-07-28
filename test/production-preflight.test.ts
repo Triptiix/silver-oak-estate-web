@@ -172,6 +172,19 @@ describe("production readiness preflight", () => {
     ).toBe("production-live");
   });
 
+  it.each([
+    ["profile", { profile: "" }],
+    ["target", { target: "" }],
+  ] as const)("rejects an explicitly empty %s selector", (_name, options) => {
+    expect(() =>
+      evaluateProductionReadiness(
+        createEnvironment(),
+        // @ts-expect-error Runtime validation rejects empty CLI selectors.
+        options,
+      ),
+    ).toThrow(/^Unsupported preflight (profile|target): $/);
+  });
+
   it("rejects unsupported profiles", () => {
     expect(() =>
       evaluateProductionReadiness(createEnvironment(), {
