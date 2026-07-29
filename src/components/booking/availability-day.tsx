@@ -44,7 +44,9 @@ export function AvailabilityDay({
     bgClass = "bg-[var(--soe-color-brand)]";
     textClass = "text-[var(--soe-color-canvas)]";
     borderClass = "border-[var(--soe-color-brand)]";
-  } else if (isToday) {
+  }
+
+  if (isToday) {
     borderClass = "border-[var(--soe-color-brand)] border-2";
   }
 

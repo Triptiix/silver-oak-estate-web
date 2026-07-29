@@ -117,6 +117,7 @@ export function AvailabilityCalendar({ selectedDate, onSelectDate }: Availabilit
         <h3 className="font-soe-display text-[length:var(--soe-text-xl)]">{monthLabel}</h3>
         <div className="flex gap-2">
           <button
+            type="button"
             onClick={handlePrevMonth}
             disabled={currentMonth <= currentBusinessMonth || isLoading}
             className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-[var(--soe-radius-control)] border border-[var(--soe-color-gold)]/60 font-soe-ui hover:bg-[var(--soe-color-brand-soft)] disabled:cursor-not-allowed disabled:opacity-45 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--soe-color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--soe-color-focus-offset)]"
@@ -125,6 +126,7 @@ export function AvailabilityCalendar({ selectedDate, onSelectDate }: Availabilit
             &larr;
           </button>
           <button
+            type="button"
             onClick={handleNextMonth}
             disabled={isLoading}
             className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-[var(--soe-radius-control)] border border-[var(--soe-color-gold)]/60 font-soe-ui hover:bg-[var(--soe-color-brand-soft)] disabled:cursor-not-allowed disabled:opacity-45 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--soe-color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--soe-color-focus-offset)]"
@@ -140,6 +142,7 @@ export function AvailabilityCalendar({ selectedDate, onSelectDate }: Availabilit
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center space-y-4 bg-[var(--soe-surface-bg-primary)]/95 px-6 text-center">
             <p className="font-soe-body text-[var(--soe-color-error)]" role="alert">The calendar could not be loaded. Contact the estate team or try again.</p>
             <button
+              type="button"
               onClick={() => setReloadVersion((v) => v + 1)}
               className="min-h-11 rounded-[var(--soe-radius-control)] bg-[var(--soe-surface-action-primary)] px-5 py-2 font-soe-ui font-medium text-[var(--soe-surface-text-inverse)] hover:bg-[var(--soe-surface-action-hover)] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--soe-color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--soe-color-focus-offset)]"
             >
