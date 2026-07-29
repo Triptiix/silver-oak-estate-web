@@ -48,7 +48,10 @@ describe("Phase 7B.2 public information pages", () => {
     const text = container.textContent || "";
 
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
-    expect(container.querySelector("address")).toHaveTextContent(
+    const addressElement = container.querySelector("address");
+
+    expect(addressElement).not.toBeNull();
+    expect(addressElement).toHaveTextContent(
       publicInformation.location.fullAddress,
     );
     expect(mapsLinks).not.toHaveLength(0);

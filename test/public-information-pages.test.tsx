@@ -275,13 +275,17 @@ describe("Public Information Pages & Config Contracts", () => {
       expect(telSecondary).toHaveAttribute("href", publicInformation.contact.secondaryPhone.telHref);
       expect(telSecondary).not.toHaveAttribute("target");
 
-      const waPrimary = screen.getAllByRole("link", { name: /WhatsApp/ })[0];
+      const waPrimary = screen.getByRole("link", {
+        name: `WhatsApp ${publicInformation.contact.primaryPhone.display} (opens in a new tab)`,
+      });
       expect(waPrimary).toHaveAttribute("href", publicInformation.contact.primaryPhone.whatsappHref);
       expect(waPrimary).toHaveAttribute("target", "_blank");
       expect(waPrimary.getAttribute("rel")).toContain("noopener");
       expect(waPrimary.getAttribute("rel")).toContain("noreferrer");
 
-      const waSecondary = screen.getAllByRole("link", { name: /WhatsApp/ })[1];
+      const waSecondary = screen.getByRole("link", {
+        name: `WhatsApp ${publicInformation.contact.secondaryPhone.display} (opens in a new tab)`,
+      });
       expect(waSecondary).toHaveAttribute("href", publicInformation.contact.secondaryPhone.whatsappHref);
       expect(waSecondary).toHaveAttribute("target", "_blank");
       expect(waSecondary.getAttribute("rel")).toContain("noopener");
