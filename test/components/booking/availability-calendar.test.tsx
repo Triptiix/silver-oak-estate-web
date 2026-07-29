@@ -46,7 +46,9 @@ describe("AvailabilityCalendar", () => {
     render(<AvailabilityCalendar />);
     
     await waitFor(() => {
-      expect(screen.getByText(/Failed to load calendar/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/The calendar could not be loaded/i),
+      ).toBeInTheDocument();
     });
     
     fireEvent.click(screen.getByText(/Retry/i));

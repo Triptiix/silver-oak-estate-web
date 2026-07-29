@@ -191,7 +191,27 @@ describe("assisted booking fallback", () => {
     };
 
     render(<AvailabilityPage />);
-    expect(screen.getByRole("heading", { name: "Online reservations are being prepared" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", {
+        name: "Ask the estate team for current availability",
+      }),
+    ).toBeInTheDocument();
     expect(screen.queryByTestId("availability-flow")).not.toBeInTheDocument();
+  });
+
+  it("keeps the public availability page assisted-only when the full booking stack is ready", () => {
+    process.env = {
+      ...originalEnvironment,
+      ...completeBookingEnvironment(),
+    };
+
+    render(<AvailabilityPage />);
+
+    expect(screen.getByTestId("availability-flow")).toHaveTextContent(
+      "Assisted booking only",
+    );
+    expect(
+      screen.queryByRole("link", { name: /Book Now|Continue to Book/i }),
+    ).not.toBeInTheDocument();
   });
 });
