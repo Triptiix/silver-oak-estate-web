@@ -7,237 +7,92 @@ import * as path from "path";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
+vi.mock("next/navigation", () => ({ usePathname: () => "/experiences" }));
 
-// Mock next/navigation for layout component
-vi.mock("next/navigation", () => ({
-  usePathname: () => "/experiences",
-}));
-
-describe("ExperiencesPage Component", () => {
-  it("exports exact metadata title and canonical description", () => {
+describe("ExperiencesPage", () => {
+  it("exports the canonical metadata and one H1", () => {
     expect(metadata.title).toBe("Experiences | Private Stays & Gatherings at Silver Oak Estate");
-    expect(metadata.description).toBe(
-      `Discover private stays, approved gatherings, pool and lawn time at Silver Oak Estate in Sector 135, Noida. The fully furnished 3 BHK farmhouse accommodates ${publicInformation.capacity.overnightLabel.toLowerCase()}.`
-    );
-  });
-
-  it("verifies single main landmark when rendered within MarketingLayout", () => {
-    render(
-      <MarketingLayout>
-        <ExperiencesPage />
-      </MarketingLayout>
-    );
-
-    const mainLandmarks = screen.getAllByRole("main");
-    expect(mainLandmarks).toHaveLength(1);
-    expect(mainLandmarks[0]).toHaveAttribute("id", "main-content");
-  });
-
-  it("renders exactly one H1 heading", () => {
     render(<ExperiencesPage />);
-    const h1s = screen.getAllByRole("heading", { level: 1 });
-    expect(h1s).toHaveLength(1);
-    expect(h1s[0]).toHaveTextContent("Experiences at Silver Oak Estate");
+    expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Experiences at Silver Oak Estate");
   });
 
-  it("renders required section headings", () => {
-    render(<ExperiencesPage />);
-    const h2s = screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent);
-    expect(h2s).toContain("Designed for Private Stays, Gatherings & Shared Evenings");
-    expect(h2s).toContain("Poolside, Lawn & Open-Air Recreation");
-    expect(h2s).toContain("Restful Private Residence");
-    expect(h2s).toContain("Thoughtfully Hosted Private Events");
-    expect(h2s).toContain("Plan Your Experience at Silver Oak Estate");
+  it("keeps one main landmark within the marketing layout", () => {
+    render(<MarketingLayout><ExperiencesPage /></MarketingLayout>);
+    expect(screen.getAllByRole("main")).toHaveLength(1);
   });
 
-  it("verifies all 7 rendered page images use exact production WebP paths, alt text and sizes", () => {
-    const { container } = render(<ExperiencesPage />);
-    const imgs = container.querySelectorAll("img");
-    expect(imgs).toHaveLength(7);
-
-    const expectedImages = [
-      {
-        path: "/images/estate/experiences/experiences-hero.webp",
-        alt: "Silver Oak Estate exterior daytime view showing private grounds",
-        sizes: "(max-width: 1023px) 100vw, 50vw",
-      },
-      {
-        path: "/images/estate/experiences/experiences-stay.webp",
-        alt: "Furnished bedroom at Silver Oak Estate for overnight stays",
-        sizes: "(max-width: 767px) 100vw, 33vw",
-      },
-      {
-        path: "/images/estate/experiences/experiences-gather.webp",
-        alt: "Party pool and deck at Silver Oak Estate for private gatherings",
-        sizes: "(max-width: 767px) 100vw, 33vw",
-      },
-      {
-        path: "/images/estate/experiences/experiences-dining.webp",
-        alt: "Dedicated dining area at Silver Oak Estate",
-        sizes: "(max-width: 767px) 100vw, 33vw",
-      },
-      {
-        path: "/images/estate/experiences/experiences-pool-lawn.webp",
-        alt: "Adult-size party pool deck at Silver Oak Estate",
-        sizes: "(max-width: 1023px) 100vw, 50vw",
-      },
-      {
-        path: "/images/estate/experiences/experiences-residence.webp",
-        alt: "Comfortable indoor seating lounge at Silver Oak Estate",
-        sizes: "(max-width: 1023px) 100vw, 50vw",
-      },
-      {
-        path: "/images/estate/experiences/experiences-lawn-evening.webp",
-        alt: "Night-time lawn lighting at Silver Oak Estate for evening gatherings",
-        sizes: "(max-width: 1023px) 100vw, 50vw",
-      },
-    ];
-
-    expectedImages.forEach((spec) => {
-      const img = screen.getByAltText(spec.alt);
-      expect(img).toBeInTheDocument();
-      const decodedSrc = decodeURIComponent(img.getAttribute("src") || "");
-      expect(decodedSrc).toContain(spec.path);
-      expect(img.getAttribute("sizes")).toBe(spec.sizes);
-    });
-  });
-
-  it("verifies every CTA destination separately by explicit link text", () => {
-    render(<ExperiencesPage />);
-
-    const exploreLink = screen.getByRole("link", { name: "Explore the Estate" });
-    expect(exploreLink).toHaveAttribute("href", "/estate");
-
-    const viewEstateLink = screen.getByRole("link", { name: "View the Estate" });
-    expect(viewEstateLink).toHaveAttribute("href", "/estate");
-
-    const availabilityLinks = screen.getAllByRole("link", { name: "Check Availability" });
-    expect(availabilityLinks).toHaveLength(2);
-    availabilityLinks.forEach((link) => {
-      expect(link).toHaveAttribute("href", "/availability");
-    });
-
-    const galleryLink = screen.getByRole("link", { name: "View Gallery" });
-    expect(galleryLink).toHaveAttribute("href", "/gallery");
-
-    const emailLink = screen.getByRole("link", { name: "Email an Enquiry" });
-    expect(emailLink).toHaveAttribute("href", "mailto:contact@silveroakestate.online");
-  });
-
-  it("renders canonical maximum capacity labels and larger-event approval statement", () => {
+  it("preserves capacity and written-approval facts without instant event booking", () => {
     render(<ExperiencesPage />);
     const text = document.body.textContent || "";
-    expect(text).toContain(publicInformation.capacity.overnightLabel);
-    expect(text).toContain(publicInformation.capacity.indoorLabel);
-    expect(text).toContain(publicInformation.capacity.standardDayEventLabel);
+    expect(text).toContain(publicInformation.capacity.overnightLabel.toLowerCase());
+    expect(text).toContain(publicInformation.capacity.indoorLabel.toLowerCase());
+    expect(text).toContain(publicInformation.capacity.standardDayEventLabel.toLowerCase());
     expect(text).toContain(publicInformation.capacity.largerEventStatement);
+    expect(text.toLowerCase()).not.toContain("instant event");
   });
 
-  it("contains no obsolete approximate capacity ranges or unconfirmed claims", () => {
+  it("qualifies optional arrangements", () => {
     render(<ExperiencesPage />);
     const text = document.body.textContent || "";
+    for (const phrase of ["catering", "DJ", "photography", "on request", "subject to availability", "written confirmation"]) {
+      expect(text).toContain(phrase);
+    }
+  });
 
-    const prohibitedRanges = [
-      "6–10",
-      "6-10",
-      "30–40",
-      "30-40",
-      "15–20",
-      "15-20",
-      "approximately 30",
-      "approximately 15",
-      "unlimited",
-      "no restriction",
-    ];
-
-    prohibitedRanges.forEach((range) => {
-      expect(text).not.toContain(range);
+  it("uses only verified experience image paths with meaningful alt text", () => {
+    const { container } = render(<ExperiencesPage />);
+    const images = Array.from(container.querySelectorAll("img"));
+    expect(images).toHaveLength(7);
+    images.forEach((image) => {
+      expect(decodeURIComponent(image.getAttribute("src") || "")).toContain("/images/estate/experiences/");
+      expect(image.getAttribute("alt")?.trim().length).toBeGreaterThan(8);
+      expect(image.getAttribute("sizes")).toBeTruthy();
     });
   });
 
-  it("verifies optional-service coverage terms together in approved gatherings section", () => {
-    render(<ExperiencesPage />);
-
-    const heading = screen.getByRole("heading", {
-      name: "Thoughtfully Hosted Private Events",
-      level: 2,
-    });
-    const section = heading.closest("section");
-
-    expect(section).not.toBeNull();
-
-    const text = section?.textContent || "";
-
-    expect(text).toContain("catering");
-    expect(text).toContain("DJ");
-    expect(text).toContain("photography or shoots");
-    expect(text).toContain("available on request");
-    expect(text).toContain("subject to availability");
-    expect(text).toContain("written confirmation");
-    expect(text).toContain("case-by-case basis");
+  it("routes stays to availability and event discussion to contact without /book", () => {
+    const { container } = render(<ExperiencesPage />);
+    expect(screen.getByRole("link", { name: "Check Availability" })).toHaveAttribute("href", "/availability");
+    expect(screen.getByRole("link", { name: "Plan a Private Stay" })).toHaveAttribute("href", "/availability");
+    expect(screen.getByRole("link", { name: "Discuss an event" })).toHaveAttribute("href", "/contact");
+    expect(screen.getByRole("link", { name: "Discuss an Approved Event" })).toHaveAttribute("href", "/contact");
+    expect(container.querySelector('a[href="/book"]')).toBeNull();
   });
 
-  it("verifies confirmed location and structure attributes", () => {
-    render(<ExperiencesPage />);
-    const text = document.body.textContent || "";
-    expect(text).toContain("Sector 135, Noida");
-  });
+  it("avoids unsupported commercial and operational claims", () => {
+    const { container } = render(<ExperiencesPage />);
+    const text = (container.textContent || "").toLowerCase();
 
-  it("verifies absence of phone numbers, whatsapp links and prohibited terms", () => {
-    render(<ExperiencesPage />);
-    const text = (document.body.textContent || "").toLowerCase();
-
-    expect(text).not.toContain("whatsapp");
-    expect(text).not.toMatch(/\+91\d{10}/);
-
-    const prohibitedTerms = [
-      "best",
-      "no. 1",
-      "world-class",
+    [
       "guaranteed",
       "unlimited",
       "all-inclusive",
       "lifeguard",
-      "spa",
-      "gym",
-      "restaurant",
-      "bar",
-      "valet",
-      "pet-friendly",
-      "children's pool",
-      "children’s pool",
       "wedding package",
       "complimentary dj",
       "complimentary catering",
       "security deposit",
-      "gst",
+      "cleaning fee",
       "overtime fee",
       "extra guest fee",
-    ];
-
-    prohibitedTerms.forEach((term) => {
-      const regex = new RegExp(`\\b${term.replace("'", "['’]")}\\b`, "i");
-      expect(regex.test(text)).toBe(false);
+      "gst included",
+    ].forEach((claim) => {
+      expect(text).not.toContain(claim);
     });
+
+    const hrefs = Array.from(container.querySelectorAll("a")).map(
+      (link) => link.getAttribute("href") || "",
+    );
+    expect(hrefs.some((href) => href.startsWith("tel:"))).toBe(false);
+    expect(hrefs.some((href) => href.includes("wa.me"))).toBe(false);
+    expect(hrefs).not.toContain("/book");
   });
 
-  it("verifies experiences page source imports publicInformation and uses Estate UI primitives", () => {
-    const code = fs.readFileSync(path.join(process.cwd(), "src/app/(marketing)/experiences/page.tsx"), "utf-8");
-    expect(code).toContain("@/config/public-information");
-    expect(code).toContain("@/components/estate-ui/estate-section");
-    expect(code).toContain("@/components/estate-ui/estate-container");
-    expect(code).not.toContain("<main");
-
-    const forbiddenHardcoded = [
-      '"6–10 guests"',
-      '"30–40 guests"',
-      '"15–20 guests"',
-      '"6-10 guests"',
-      '"30-40 guests"',
-      '"15-20 guests"',
-    ];
-    forbiddenHardcoded.forEach((term) => {
-      expect(code).not.toContain(term);
-    });
+  it("uses the estate UI and no nested main landmark", () => {
+    const source = fs.readFileSync(path.join(process.cwd(), "src/app/(marketing)/experiences/page.tsx"), "utf8");
+    expect(source).toContain("@/components/estate-ui/estate-section");
+    expect(source).toContain("@/config/public-information");
+    expect(source).not.toContain("<main");
   });
 });

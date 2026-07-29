@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+import Image from "next/image";
 import { EstateActionLink } from "@/components/estate-ui/estate-action-link";
 import { EstateContainer } from "@/components/estate-ui/estate-container";
 import { EstateEyebrow } from "@/components/estate-ui/estate-eyebrow";
@@ -6,291 +8,33 @@ import { EstateMediaFrame } from "@/components/estate-ui/estate-media-frame";
 import { EstateSection } from "@/components/estate-ui/estate-section";
 import { EstateText } from "@/components/estate-ui/estate-text";
 import { publicInformation } from "@/config/public-information";
-import type { Metadata } from "next";
-import Image from "next/image";
 
 export const metadata: Metadata = {
   title: "Experiences | Private Stays & Gatherings at Silver Oak Estate",
-  description:
-    `Discover private stays, approved gatherings, pool and lawn time at Silver Oak Estate in Sector 135, Noida. The fully furnished 3 BHK farmhouse accommodates ${publicInformation.capacity.overnightLabel.toLowerCase()}.`,
+  description: `Discover private stays, approved gatherings, pool and lawn time at Silver Oak Estate in Sector 135, Noida. The fully furnished 3 BHK farmhouse accommodates ${publicInformation.capacity.overnightLabel.toLowerCase()}.`,
 };
 
 export default function ExperiencesPage() {
-  const { capacity } = publicInformation;
+  const { capacity, contact, optionalArrangements } = publicInformation;
 
   return (
-    <div className="min-h-screen bg-[var(--soe-surface-bg-base)] text-[var(--soe-surface-text-primary)]">
-      {/* A. EDITORIAL HERO */}
-      <EstateSection surface="dark" spacing="lg">
-        <EstateContainer variant="content">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-            <div className="lg:col-span-6 space-y-6">
-              <EstateEyebrow className="text-[var(--soe-surface-accent-metal)]">
-                EXPERIENCES · SECTOR 135, NOIDA
-              </EstateEyebrow>
-              <EstateHeading as="h1" variant="hero">
-                Experiences at Silver Oak Estate
-              </EstateHeading>
-              <EstateText variant="lg" tone="muted">
-                From quiet family retreats to approved private gatherings, Silver Oak Estate provides a 3 BHK farmhouse with a private lawn, party pool, and self-cooking facilities in Sector 135, Noida.
-              </EstateText>
-              <div className="flex flex-wrap items-center gap-4 pt-2">
-                <EstateActionLink href="/availability" variant="button">
-                  Check Availability
-                </EstateActionLink>
-                <EstateActionLink href="/estate">
-                  Explore the Estate
-                </EstateActionLink>
-              </div>
-            </div>
-            <div className="lg:col-span-6">
-              <EstateMediaFrame aspectRatio="landscape">
-                <Image
-                  src="/images/estate/experiences/experiences-hero.webp"
-                  alt="Silver Oak Estate exterior daytime view showing private grounds"
-                  fill
-                  priority
-                  sizes="(max-width: 1023px) 100vw, 50vw"
-                  className="object-cover"
-                />
-              </EstateMediaFrame>
-            </div>
-          </div>
-        </EstateContainer>
+    <div className="overflow-x-clip bg-[var(--soe-color-canvas)]">
+      <EstateSection surface="dark" spacing="none" className="border-b border-[var(--soe-color-gold)]/45">
+        <div className="grid min-h-[calc(100svh-var(--header-height))] lg:grid-cols-[1.08fr_0.92fr]">
+          <div className="relative min-h-[44svh] overflow-hidden lg:order-2 lg:min-h-full"><Image src="/images/estate/experiences/experiences-hero.webp" alt="Silver Oak Estate exterior daytime view showing private grounds" fill priority sizes="(max-width: 1023px) 100vw, 56vw" className="object-cover" /></div>
+          <div className="flex items-center px-4 py-14 sm:px-8 lg:order-1 lg:pl-[max(3rem,calc((100vw-var(--soe-container-visual))/2+2rem))] lg:pr-12"><div className="max-w-[37rem]"><EstateEyebrow className="mb-6 text-[var(--soe-surface-accent-metal)]">Experiences · Sector 135, Noida</EstateEyebrow><EstateHeading as="h1" variant="hero" className="text-[var(--soe-surface-text-primary)]" style={{ fontSize: "clamp(3rem, 5vw, 6.1rem)" }}>Experiences at Silver Oak Estate</EstateHeading><EstateText variant="lg" className="mt-7 text-[var(--soe-surface-text-secondary)]">The entire property supports different ways of spending time together—from quiet private stays to approved gatherings, shared meals and time outside.</EstateText><div className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><EstateActionLink variant="button" href="/availability">Check Availability</EstateActionLink><EstateActionLink href="/estate" className="text-[var(--soe-surface-text-primary)]">Explore the Estate</EstateActionLink></div></div></div>
+        </div>
       </EstateSection>
 
-      {/* B. WAYS TO EXPERIENCE THE ESTATE */}
-      <EstateSection surface="light" spacing="lg">
-        <EstateContainer variant="content">
-          <div className="text-center max-w-3xl mx-auto space-y-4 mb-12">
-            <EstateEyebrow className="text-[var(--soe-color-brand)]">
-              WAYS TO EXPERIENCE THE ESTATE
-            </EstateEyebrow>
-            <EstateHeading as="h2" variant="h2">
-              Designed for Private Stays, Gatherings & Shared Evenings
-            </EstateHeading>
-            <EstateText variant="base" tone="muted">
-              Whether relaxing overnight or hosting an approved private event, your group gets complete access to the entire 3 BHK residence and grounds.
-            </EstateText>
-          </div>
+      <EstateSection surface="light" spacing="lg" aria-labelledby="pathways-heading"><EstateContainer variant="visual"><div className="max-w-2xl"><EstateEyebrow className="text-[var(--soe-color-brand)]">Ways to spend time here</EstateEyebrow><EstateHeading id="pathways-heading" as="h2" variant="h2" className="mt-3">Private stays, gatherings and shared evenings</EstateHeading><EstateText tone="muted" className="mt-5">Whether relaxing overnight or hosting an approved private event, your group has the complete 3 BHK residence and grounds to itself.</EstateText></div><div className="mt-10 grid gap-6 lg:grid-cols-12"><article className="group relative min-h-[35rem] overflow-hidden bg-[var(--soe-color-night)] lg:col-span-7"><Image src="/images/estate/experiences/experiences-stay.webp" alt="Furnished bedroom at Silver Oak Estate for overnight stays" fill sizes="(max-width: 1023px) 100vw, 58vw" className="object-cover transition-transform duration-[var(--soe-duration-editorial)] group-hover:scale-[1.02] motion-reduce:transition-none" /><div className="absolute inset-x-0 bottom-0 bg-[linear-gradient(to_top,rgba(13,15,14,0.94),transparent)] p-7 pt-32 sm:p-10"><p className="font-soe-ui text-xs font-semibold uppercase tracking-[var(--soe-tracking-eyebrow)] text-[var(--soe-color-gold)]">Private stays</p><EstateHeading as="h3" variant="h2" className="mt-2 text-[var(--soe-color-canvas)]">Stay and unwind</EstateHeading><p className="mt-3 max-w-xl font-soe-body text-[var(--soe-color-silver)]">A complete-property stay with three themed king-bed bedrooms, attached bathrooms and comfort for {capacity.overnightLabel.toLowerCase()}.</p><EstateActionLink href="/availability" className="mt-6 text-[var(--soe-color-canvas)]">Plan a private stay</EstateActionLink></div></article><div className="grid gap-6 sm:grid-cols-2 lg:col-span-5 lg:grid-cols-1"><article className="border border-[var(--soe-color-gold)]/45 bg-[var(--soe-surface-bg-surface)]"><EstateMediaFrame aspectRatio="landscape" className="rounded-none"><Image src="/images/estate/experiences/experiences-gather.webp" alt="Party pool and deck at Silver Oak Estate for private gatherings" fill sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 42vw" className="object-cover" /></EstateMediaFrame><div className="p-6"><p className="font-soe-ui text-xs font-semibold uppercase tracking-[var(--soe-tracking-eyebrow)] text-[var(--soe-color-brand)]">Approved gatherings</p><EstateHeading as="h3" variant="h3" className="mt-2">Gather and celebrate</EstateHeading><EstateText variant="sm" tone="muted" className="mt-3">Standard daytime events support {capacity.standardDayEventLabel.toLowerCase()}, with indoor gatherings for {capacity.indoorLabel.toLowerCase()}.</EstateText><EstateActionLink href="/contact" className="mt-5">Discuss an event</EstateActionLink></div></article><article className="border border-[var(--soe-color-gold)]/45 bg-[var(--soe-surface-bg-surface)]"><div className="grid sm:grid-cols-[0.9fr_1.1fr] lg:grid-cols-[1.1fr_0.9fr]"><EstateMediaFrame aspectRatio="landscape" className="rounded-none"><Image src="/images/estate/experiences/experiences-dining.webp" alt="Dedicated dining area at Silver Oak Estate" fill sizes="(max-width: 639px) 100vw, (max-width: 1023px) 25vw, 18vw" className="object-cover" /></EstateMediaFrame><div className="p-6"><p className="font-soe-ui text-xs font-semibold uppercase tracking-[var(--soe-tracking-eyebrow)] text-[var(--soe-color-brand)]">Food & evenings</p><EstateHeading as="h3" variant="h3" className="mt-2">Share food and evenings</EstateHeading><EstateText variant="sm" tone="muted" className="mt-3">A modular kitchen for self-cooking, dining seating for 5 and outdoor BBQ equipment.</EstateText></div></div></article></div></div></EstateContainer></EstateSection>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* 1. Stay & Unwind */}
-            <div className="bg-[var(--soe-surface-bg-surface)] border border-[var(--soe-surface-control-border)]/20 rounded-[var(--soe-radius-card)] overflow-hidden flex flex-col">
-              <EstateMediaFrame aspectRatio="landscape">
-                <Image
-                  src="/images/estate/experiences/experiences-stay.webp"
-                  alt="Furnished bedroom at Silver Oak Estate for overnight stays"
-                  fill
-                  sizes="(max-width: 767px) 100vw, 33vw"
-                  className="object-cover"
-                />
-              </EstateMediaFrame>
-              <div className="p-6 space-y-3 flex-1 flex flex-col justify-between">
-                <div className="space-y-2">
-                  <p className="font-soe-ui text-[length:var(--soe-text-xs)] font-semibold uppercase text-[var(--soe-color-brand)]">
-                    OVERNIGHT STAYS
-                  </p>
-                  <EstateHeading as="h3" variant="h3">
-                    Stay & Unwind
-                  </EstateHeading>
-                  <EstateText variant="sm" tone="muted">
-                    Comfortable overnight accommodation for {capacity.overnightLabel} across three themed king-bed bedrooms with attached bathrooms, air conditioning, Wi-Fi, and diesel generator power backup.
-                  </EstateText>
-                </div>
-              </div>
-            </div>
+      <EstateSection surface="light" spacing="lg" aria-labelledby="outdoors-heading"><EstateContainer variant="visual"><div className="grid items-center gap-8 lg:grid-cols-12 lg:gap-14"><div className="lg:col-span-5"><EstateEyebrow className="text-[var(--soe-color-brand)]">Outdoor time</EstateEyebrow><EstateHeading id="outdoors-heading" as="h2" variant="h2" className="mt-3">Pool, lawn and open-air recreation</EstateHeading><EstateText tone="muted" className="mt-6">Spend time on the private lawn and around the adult-size party pool. Pool access is subject to operational availability, maintenance and caretaker instructions, with a pool changing room and separate lawn bathroom available.</EstateText><EstateText tone="muted" className="mt-4">Outdoor recreation includes a projector screen, speaker, board games and BBQ equipment for open-air evenings.</EstateText></div><div className="lg:col-span-7"><EstateMediaFrame aspectRatio="cinema"><Image src="/images/estate/experiences/experiences-pool-lawn.webp" alt="Adult-size party pool deck and lawn at Silver Oak Estate" fill sizes="(max-width: 1023px) 100vw, 58vw" className="object-cover" /></EstateMediaFrame></div></div></EstateContainer></EstateSection>
 
-            {/* 2. Gather & Celebrate */}
-            <div className="bg-[var(--soe-surface-bg-surface)] border border-[var(--soe-surface-control-border)]/20 rounded-[var(--soe-radius-card)] overflow-hidden flex flex-col">
-              <EstateMediaFrame aspectRatio="landscape">
-                <Image
-                  src="/images/estate/experiences/experiences-gather.webp"
-                  alt="Party pool and deck at Silver Oak Estate for private gatherings"
-                  fill
-                  sizes="(max-width: 767px) 100vw, 33vw"
-                  className="object-cover"
-                />
-              </EstateMediaFrame>
-              <div className="p-6 space-y-3 flex-1 flex flex-col justify-between">
-                <div className="space-y-2">
-                  <p className="font-soe-ui text-[length:var(--soe-text-xs)] font-semibold uppercase text-[var(--soe-color-brand)]">
-                    PRIVATE EVENTS
-                  </p>
-                  <EstateHeading as="h3" variant="h3">
-                    Gather & Celebrate
-                  </EstateHeading>
-                  <EstateText variant="sm" tone="muted">
-                    Approved private day gatherings for {capacity.standardDayEventLabel}, utilizing the spacious open-air lawn, pool deck, and indoor seating for {capacity.indoorLabel}.
-                  </EstateText>
-                </div>
-              </div>
-            </div>
+      <EstateSection surface="dark" spacing="lg" aria-labelledby="residence-heading"><EstateContainer variant="visual"><div className="grid items-center gap-8 lg:grid-cols-12 lg:gap-14"><div className="lg:col-span-7"><EstateMediaFrame aspectRatio="landscape"><Image src="/images/estate/experiences/experiences-residence.webp" alt="Comfortable indoor seating lounge at Silver Oak Estate" fill sizes="(max-width: 1023px) 100vw, 58vw" className="object-cover" /></EstateMediaFrame></div><div className="lg:col-span-5"><EstateEyebrow className="text-[var(--soe-surface-accent-metal)]">Residence comfort</EstateEyebrow><EstateHeading id="residence-heading" as="h2" variant="h2" className="mt-3 text-[var(--soe-surface-text-primary)]">A restful private residence</EstateHeading><EstateText className="mt-6 text-[var(--soe-surface-text-secondary)]">The fully furnished 3 BHK residence accommodates {capacity.overnightLabel.toLowerCase()} with three themed king-bed bedrooms and three attached bathrooms. Essential infrastructure includes Wi-Fi, air conditioning, filtered RO drinking water, diesel generator backup, solar support, emergency lighting, CCTV security and an on-site caretaker.</EstateText><EstateActionLink href="/estate" className="mt-6 text-[var(--soe-surface-text-primary)]">View the Estate</EstateActionLink></div></div></EstateContainer></EstateSection>
 
-            {/* 3. Share Food & Evenings */}
-            <div className="bg-[var(--soe-surface-bg-surface)] border border-[var(--soe-surface-control-border)]/20 rounded-[var(--soe-radius-card)] overflow-hidden flex flex-col">
-              <EstateMediaFrame aspectRatio="landscape">
-                <Image
-                  src="/images/estate/experiences/experiences-dining.webp"
-                  alt="Dedicated dining area at Silver Oak Estate"
-                  fill
-                  sizes="(max-width: 767px) 100vw, 33vw"
-                  className="object-cover"
-                />
-              </EstateMediaFrame>
-              <div className="p-6 space-y-3 flex-1 flex flex-col justify-between">
-                <div className="space-y-2">
-                  <p className="font-soe-ui text-[length:var(--soe-text-xs)] font-semibold uppercase text-[var(--soe-color-brand)]">
-                    FOOD & ENTERTAINMENT
-                  </p>
-                  <EstateHeading as="h3" variant="h3">
-                    Share Food & Evenings
-                  </EstateHeading>
-                  <EstateText variant="sm" tone="muted">
-                    Modular kitchen for self-cooking, dedicated dining seating for 5, outdoor BBQ equipment, outdoor projector screen, speaker, and board games for evening entertainment.
-                  </EstateText>
-                </div>
-              </div>
-            </div>
-          </div>
-        </EstateContainer>
-      </EstateSection>
+      <EstateSection surface="light" spacing="lg" aria-labelledby="gathering-heading"><EstateContainer variant="visual"><div className="grid items-center gap-8 lg:grid-cols-12 lg:gap-14"><div className="lg:col-span-5"><EstateEyebrow className="text-[var(--soe-color-brand)]">Approved events</EstateEyebrow><EstateHeading id="gathering-heading" as="h2" variant="h2" className="mt-3">Thoughtfully hosted private events</EstateHeading><EstateText tone="muted" className="mt-6">Silver Oak Estate hosts approved private daytime gatherings for {capacity.standardDayEventLabel.toLowerCase()}, with indoor gathering capacity for {capacity.indoorLabel.toLowerCase()}. {capacity.largerEventStatement}</EstateText><EstateText tone="muted" className="mt-4">{optionalArrangements.statement}</EstateText><p className="mt-5 border-l border-[var(--soe-color-gold)] pl-4 font-soe-body text-sm italic leading-[var(--soe-leading-body)] text-[var(--soe-surface-text-secondary)]">Optional services and event arrangements are available on request and will be confirmed in writing before payment and booking confirmation.</p><EstateActionLink href="/contact" className="mt-6">Discuss an approved event</EstateActionLink></div><div className="lg:col-span-7"><EstateMediaFrame aspectRatio="landscape"><Image src="/images/estate/experiences/experiences-lawn-evening.webp" alt="Night-time lawn lighting at Silver Oak Estate for evening gatherings" fill sizes="(max-width: 1023px) 100vw, 58vw" className="object-cover" /></EstateMediaFrame></div></div></EstateContainer></EstateSection>
 
-      {/* C. POOL, LAWN AND OPEN-AIR TIME */}
-      <EstateSection surface="light" spacing="lg">
-        <EstateContainer variant="content">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-            <div className="lg:col-span-6 space-y-6">
-              <EstateEyebrow className="text-[var(--soe-color-brand)]">
-                OUTDOOR & RECREATION
-              </EstateEyebrow>
-              <EstateHeading as="h2" variant="h2">
-                Poolside, Lawn & Open-Air Recreation
-              </EstateHeading>
-              <EstateText variant="base" tone="muted" className="space-y-4">
-                Spend quality open-air time on the private lawn and around the adult-size party pool. Pool access is available throughout your booking period, supported by a pool changing room and separate lawn bathroom.
-              </EstateText>
-              <EstateText variant="base" tone="muted">
-                Evening recreation includes an outdoor projector screen, speaker, board games, and outdoor BBQ equipment for open-air grilling under the stars.
-              </EstateText>
-            </div>
-            <div className="lg:col-span-6">
-              <EstateMediaFrame aspectRatio="landscape">
-                <Image
-                  src="/images/estate/experiences/experiences-pool-lawn.webp"
-                  alt="Adult-size party pool deck at Silver Oak Estate"
-                  fill
-                  sizes="(max-width: 1023px) 100vw, 50vw"
-                  className="object-cover"
-                />
-              </EstateMediaFrame>
-            </div>
-          </div>
-        </EstateContainer>
-      </EstateSection>
-
-      {/* D. PRIVATE STAYS */}
-      <EstateSection surface="light" spacing="lg">
-        <EstateContainer variant="content">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-            <div className="lg:col-span-6 order-2 lg:order-1">
-              <EstateMediaFrame aspectRatio="landscape">
-                <Image
-                  src="/images/estate/experiences/experiences-residence.webp"
-                  alt="Comfortable indoor seating lounge at Silver Oak Estate"
-                  fill
-                  sizes="(max-width: 1023px) 100vw, 50vw"
-                  className="object-cover"
-                />
-              </EstateMediaFrame>
-            </div>
-            <div className="lg:col-span-6 order-1 lg:order-2 space-y-6">
-              <EstateEyebrow className="text-[var(--soe-color-brand)]">
-                ACCOMMODATION & COMFORT
-              </EstateEyebrow>
-              <EstateHeading as="h2" variant="h2">
-                Restful Private Residence
-              </EstateHeading>
-              <EstateText variant="base" tone="muted" className="space-y-4">
-                The fully furnished 3 BHK residence accommodates {capacity.overnightLabel} with three themed king-bed bedrooms and three attached bathrooms.
-              </EstateText>
-              <EstateText variant="base" tone="muted">
-                Essential infrastructure includes Wi-Fi, air conditioning, filtered RO drinking water, diesel generator power backup, solar support, emergency lighting, CCTV security, and an on-site caretaker.
-              </EstateText>
-              <div>
-                <EstateActionLink href="/estate">View the Estate</EstateActionLink>
-              </div>
-            </div>
-          </div>
-        </EstateContainer>
-      </EstateSection>
-
-      {/* E. APPROVED GATHERINGS */}
-      <EstateSection surface="light" spacing="lg">
-        <EstateContainer variant="content">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-            <div className="lg:col-span-6 space-y-6">
-              <EstateEyebrow className="text-[var(--soe-color-brand)]">
-                GATHERINGS & ARRANGEMENTS
-              </EstateEyebrow>
-              <EstateHeading as="h2" variant="h2">
-                Thoughtfully Hosted Private Events
-              </EstateHeading>
-              <EstateText variant="base" tone="muted" className="space-y-4">
-                Silver Oak Estate hosts approved private day gatherings for {capacity.standardDayEventLabel}, with indoor gathering seating for {capacity.indoorLabel} in the hall and dining areas. {capacity.largerEventStatement}
-              </EstateText>
-              <EstateText variant="base" tone="muted">
-                Optional services such as catering, DJ, photography or shoots, and custom event arrangements are available on request, subject to availability and written confirmation on a case-by-case basis.
-              </EstateText>
-              <p className="text-[length:var(--soe-text-xs)] text-[var(--soe-surface-text-secondary)] italic pt-2">
-                “Optional services and event arrangements are available on request and will be confirmed in writing before payment and booking confirmation.”
-              </p>
-            </div>
-            <div className="lg:col-span-6">
-              <EstateMediaFrame aspectRatio="landscape">
-                <Image
-                  src="/images/estate/experiences/experiences-lawn-evening.webp"
-                  alt="Night-time lawn lighting at Silver Oak Estate for evening gatherings"
-                  fill
-                  sizes="(max-width: 1023px) 100vw, 50vw"
-                  className="object-cover"
-                />
-              </EstateMediaFrame>
-            </div>
-          </div>
-        </EstateContainer>
-      </EstateSection>
-
-      {/* F. PLAN YOUR TIME HERE */}
-      <EstateSection surface="dark" spacing="lg">
-        <EstateContainer variant="content">
-          <div className="text-center max-w-3xl mx-auto space-y-6">
-            <EstateEyebrow className="text-[var(--soe-surface-accent-metal)]">
-              PLAN YOUR VISIT
-            </EstateEyebrow>
-            <EstateHeading as="h2" variant="h2">
-              Plan Your Experience at Silver Oak Estate
-            </EstateHeading>
-            <EstateText variant="lg" tone="muted">
-              Check availability for your preferred dates or contact our team to discuss your gathering requirements.
-            </EstateText>
-            <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
-              <EstateActionLink href="/availability" variant="button">
-                Check Availability
-              </EstateActionLink>
-              <EstateActionLink href="/gallery">
-                View Gallery
-              </EstateActionLink>
-              <EstateActionLink href="mailto:contact@silveroakestate.online">
-                Email an Enquiry
-              </EstateActionLink>
-            </div>
-            <p className="text-[length:var(--soe-text-xs)] text-[var(--soe-surface-text-secondary)] italic pt-4 max-w-xl mx-auto">
-              Optional services and event arrangements are available on request and will be confirmed in writing before payment and booking confirmation.
-            </p>
-          </div>
-        </EstateContainer>
-      </EstateSection>
+      <EstateSection surface="dark" spacing="lg"><EstateContainer variant="reading"><div className="text-center"><EstateEyebrow className="text-[var(--soe-surface-accent-metal)]">Plan your time here</EstateEyebrow><EstateHeading as="h2" variant="h2" className="mt-3 text-[var(--soe-surface-text-primary)]">Choose the path that suits your plans</EstateHeading><EstateText variant="lg" className="mx-auto mt-5 max-w-2xl text-[var(--soe-surface-text-secondary)]">Check dates for a private stay or speak with the estate team about an approved event.</EstateText><div className="mt-8 flex flex-wrap justify-center gap-4"><EstateActionLink variant="button" href="/availability">Plan a Private Stay</EstateActionLink><EstateActionLink href="/contact" className="text-[var(--soe-surface-text-primary)]">Discuss an Approved Event</EstateActionLink><EstateActionLink href={contact.mailtoHref} className="text-[var(--soe-surface-text-primary)]">Email an Enquiry</EstateActionLink></div></div></EstateContainer></EstateSection>
     </div>
   );
 }
