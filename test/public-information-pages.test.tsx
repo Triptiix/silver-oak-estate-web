@@ -66,21 +66,21 @@ describe("Public Information Pages & Config Contracts", () => {
       render(<PricingPage />);
       const h1s = screen.getAllByRole("heading", { level: 1 });
       expect(h1s).toHaveLength(1);
-      expect(h1s[0]).toHaveTextContent("Pricing at Silver Oak Estate");
+      expect(h1s[0]).toHaveTextContent("Rates for the complete estate");
     });
 
     it("verifies single H1 on Location Page", () => {
       render(<LocationPage />);
       const h1s = screen.getAllByRole("heading", { level: 1 });
       expect(h1s).toHaveLength(1);
-      expect(h1s[0]).toHaveTextContent("Location & Address");
+      expect(h1s[0]).toHaveTextContent("Find the estate");
     });
 
     it("verifies single H1 on Contact Page", () => {
       render(<ContactPage />);
       const h1s = screen.getAllByRole("heading", { level: 1 });
       expect(h1s).toHaveLength(1);
-      expect(h1s[0]).toHaveTextContent("Contact & Enquiries");
+      expect(h1s[0]).toHaveTextContent("Begin with a considered enquiry");
     });
 
     it("verifies single H1 on Policies Page", () => {
@@ -190,16 +190,16 @@ describe("Public Information Pages & Config Contracts", () => {
       expect(text).toContain(formatInrFromPaise(publicInformation.booking.weekday.ratePaise));
       expect(text).toContain(formatInrFromPaise(publicInformation.booking.weekend.ratePaise));
       expect(text).toContain(formatInrFromPaise(publicInformation.booking.advancePaise));
-      expect(text).toContain(`for ${publicInformation.booking.durationLabel}`);
+      expect(text).toContain(publicInformation.booking.durationLabel);
       expect(text).toContain(publicInformation.booking.checkIn.timeLabel);
       expect(text).toContain(publicInformation.booking.checkOut.timeLabel);
       expect(text).toContain(publicInformation.tax.currentStatement);
-      expect(text).toContain("Standard Booking Rates");
+      expect(text).toContain("Published rates");
       expect(text).toContain(publicInformation.optionalArrangements.statement);
       expect(text).toContain(publicInformation.booking.balanceText);
       expect(text).toContain(publicInformation.booking.confirmationNotice);
 
-      const availabilityLink = screen.getByRole("link", { name: "Check Availability" });
+      const availabilityLink = screen.getAllByRole("link", { name: "Check Availability" })[0];
       expect(availabilityLink).toHaveAttribute("href", "/availability");
 
       const emailLink = screen.getByRole("link", { name: "Email an Enquiry" });
@@ -227,17 +227,22 @@ describe("Public Information Pages & Config Contracts", () => {
       const text = document.body.textContent || "";
 
       expect(text).toContain(publicInformation.location.fullAddress);
-      expect(screen.getByRole("heading", { name: "Parking" })).toBeInTheDocument();
+      expect(screen.getByText("Parking")).toBeInTheDocument();
       expect(text).toContain(publicInformation.parking.inside.description);
       expect(text).toContain(publicInformation.parking.outside.description);
 
-      const mapsLink = screen.getByRole("link", { name: "Open in Google Maps" });
-      expect(mapsLink).toHaveAttribute("href", publicInformation.location.mapsUrl);
-      expect(mapsLink).toHaveAttribute("target", "_blank");
-      expect(mapsLink.getAttribute("rel")).toContain("noopener");
-      expect(mapsLink.getAttribute("rel")).toContain("noreferrer");
+      const mapsLinks = screen.getAllByRole("link", {
+        name: "Open in Google Maps (opens in a new tab)",
+      });
+      expect(mapsLinks).toHaveLength(2);
+      for (const mapsLink of mapsLinks) {
+        expect(mapsLink).toHaveAttribute("href", publicInformation.location.mapsUrl);
+        expect(mapsLink).toHaveAttribute("target", "_blank");
+        expect(mapsLink.getAttribute("rel")).toContain("noopener");
+        expect(mapsLink.getAttribute("rel")).toContain("noreferrer");
+      }
 
-      const availabilityLink = screen.getByRole("link", { name: "Check Availability" });
+      const availabilityLink = screen.getAllByRole("link", { name: "Check Availability" })[0];
       expect(availabilityLink).toHaveAttribute("href", "/availability");
     });
 
@@ -265,7 +270,7 @@ describe("Public Information Pages & Config Contracts", () => {
       expect(text).toContain(publicInformation.contact.secondaryPhone.display);
       expect(text).toContain(publicInformation.contact.email);
       expect(text).toContain(publicInformation.location.fullAddress);
-      expect(text).toContain("Availability and bookings are confirmed only through written confirmation");
+      expect(text).toContain("Availability and booking confirmation require written confirmation");
 
       const telPrimary = screen.getByRole("link", { name: `Call ${publicInformation.contact.primaryPhone.display}` });
       expect(telPrimary).toHaveAttribute("href", publicInformation.contact.primaryPhone.telHref);
@@ -275,13 +280,17 @@ describe("Public Information Pages & Config Contracts", () => {
       expect(telSecondary).toHaveAttribute("href", publicInformation.contact.secondaryPhone.telHref);
       expect(telSecondary).not.toHaveAttribute("target");
 
-      const waPrimary = screen.getByRole("link", { name: `WhatsApp ${publicInformation.contact.primaryPhone.display}` });
+      const waPrimary = screen.getByRole("link", {
+        name: `WhatsApp ${publicInformation.contact.primaryPhone.display} (opens in a new tab)`,
+      });
       expect(waPrimary).toHaveAttribute("href", publicInformation.contact.primaryPhone.whatsappHref);
       expect(waPrimary).toHaveAttribute("target", "_blank");
       expect(waPrimary.getAttribute("rel")).toContain("noopener");
       expect(waPrimary.getAttribute("rel")).toContain("noreferrer");
 
-      const waSecondary = screen.getByRole("link", { name: `WhatsApp ${publicInformation.contact.secondaryPhone.display}` });
+      const waSecondary = screen.getByRole("link", {
+        name: `WhatsApp ${publicInformation.contact.secondaryPhone.display} (opens in a new tab)`,
+      });
       expect(waSecondary).toHaveAttribute("href", publicInformation.contact.secondaryPhone.whatsappHref);
       expect(waSecondary).toHaveAttribute("target", "_blank");
       expect(waSecondary.getAttribute("rel")).toContain("noopener");
@@ -475,7 +484,7 @@ describe("Public Information Pages & Config Contracts", () => {
       expect(code).not.toContain("immediate enquiry assistance");
       expect(code).not.toContain("instant");
       expect(code).not.toContain("24/7");
-      expect(code).toContain("enquiry assistance");
+      expect(code).toContain("The estate team can assist");
     });
 
     it("verifies single source-of-truth contract for publicInformation module and page sources", () => {
