@@ -32,8 +32,17 @@ describe("Admin login page", () => {
     expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /register|sign up/i })).not.toBeInTheDocument();
 
+    fireEvent.change(screen.getByLabelText("Administrator email"), {
+      target: { value: "admin@example.com" },
+    });
+    fireEvent.change(screen.getByLabelText("Password"), {
+      target: { value: "correct horse battery staple" },
+    });
     fireEvent.submit(screen.getByRole("button", { name: "Sign in" }).closest("form")!);
     await waitFor(() => expect(loginAction).toHaveBeenCalledOnce());
+    const [formData] = loginAction.mock.calls[0] as [FormData];
+    expect(formData.get("email")).toBe("admin@example.com");
+    expect(formData.get("password")).toBe("correct horse battery staple");
   });
 
   it("shows only the safe administrator-access error", async () => {
