@@ -141,14 +141,21 @@ export function InventoryBlockForm({ role }: { role: AdminUiRole }) {
   }
 
   return (
-    <section className="rounded border border-[var(--border)] bg-white p-5">
-      <h2 className="text-xl font-bold">Create an inventory block</h2>
-      <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-        Block complete-property inventory for a controlled reason. The server enforces a maximum 31-night range.
+    <section className="rounded-xl border border-[var(--border)] bg-white p-5 sm:p-6">
+      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted-foreground)]">
+        Inventory workflow
       </p>
-      <form onSubmit={submit} className="mt-5 space-y-5">
-        <fieldset disabled={pending}>
-          <legend className="text-sm font-semibold">Block type</legend>
+      <h2 className="mt-2 text-xl font-bold">Create an inventory block</h2>
+      <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">
+        Block the complete property for a controlled reason. The server enforces
+        a maximum 31-night range and the role boundary for each block type.
+      </p>
+      <form onSubmit={submit} className="mt-6 space-y-5">
+        <fieldset
+          disabled={pending}
+          className="rounded-lg border border-stone-200 p-4"
+        >
+          <legend className="px-1 text-sm font-semibold">Block type and role</legend>
           {canManageOwnerBlocks ? (
             <>
               <label htmlFor="blockType" className="mt-2 block text-sm font-medium">Block type</label>
@@ -165,13 +172,30 @@ export function InventoryBlockForm({ role }: { role: AdminUiRole }) {
                 <option value="maintenance_block">Maintenance block</option>
                 <option value="owner_block">Owner block</option>
               </select>
+              <p className="mt-2 text-xs leading-5 text-stone-500">
+                Owner blocks are restricted to admin and super-admin. Maintenance
+                blocks are available to every active administrator role.
+              </p>
             </>
           ) : (
-            <p className="mt-2 text-sm">Maintenance block</p>
+            <div className="mt-2">
+              <p className="text-sm font-medium">Maintenance block</p>
+              <p className="mt-1 text-xs leading-5 text-stone-500">
+                Your operations role cannot create owner blocks.
+              </p>
+            </div>
           )}
         </fieldset>
 
-        <div className="grid gap-4 sm:grid-cols-2">
+        <fieldset
+          disabled={pending}
+          className="rounded-lg border border-stone-200 p-4"
+        >
+          <legend className="px-1 text-sm font-semibold">Blocked date range</legend>
+          <p className="mb-3 text-xs leading-5 text-stone-500">
+            Select inclusive blocked dates. The range may cover at most 31 nights.
+          </p>
+          <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor="firstBlockedDate" className="text-sm font-medium">First blocked date</label>
             <input
@@ -202,39 +226,46 @@ export function InventoryBlockForm({ role }: { role: AdminUiRole }) {
             <p id="lastBlockedDate-help" className="mt-1 text-xs text-stone-500">Must be on or after the first date.</p>
             {firstFieldError(fieldErrors, "lastBlockedDate") && <p id="lastBlockedDate-error" className={errorClassName}>{firstFieldError(fieldErrors, "lastBlockedDate")}</p>}
           </div>
-        </div>
+          </div>
+        </fieldset>
 
-        <div>
-          <label htmlFor="blockReason" className="text-sm font-medium">Reason</label>
-          <select
-            required
-            disabled={pending}
-            id="blockReason"
-            name="reason"
-            defaultValue=""
-            aria-invalid={Boolean(firstFieldError(fieldErrors, "reason"))}
-            aria-describedby="blockReason-error"
-            className={inputClassName}
-          >
-            <option value="" disabled>Select a reason</option>
-            {reasons.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-          </select>
-          {firstFieldError(fieldErrors, "reason") && <p id="blockReason-error" className={errorClassName}>{firstFieldError(fieldErrors, "reason")}</p>}
-        </div>
+        <fieldset
+          disabled={pending}
+          className="space-y-4 rounded-lg border border-stone-200 p-4"
+        >
+          <legend className="px-1 text-sm font-semibold">Reason and internal note</legend>
+          <div>
+            <label htmlFor="blockReason" className="text-sm font-medium">Reason</label>
+            <select
+              required
+              disabled={pending}
+              id="blockReason"
+              name="reason"
+              defaultValue=""
+              aria-invalid={Boolean(firstFieldError(fieldErrors, "reason"))}
+              aria-describedby="blockReason-error"
+              className={inputClassName}
+            >
+              <option value="" disabled>Select a reason</option>
+              {reasons.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+            </select>
+            {firstFieldError(fieldErrors, "reason") && <p id="blockReason-error" className={errorClassName}>{firstFieldError(fieldErrors, "reason")}</p>}
+          </div>
 
-        <div>
-          <label htmlFor="blockInternalNote" className="text-sm font-medium">Internal note (optional)</label>
-          <textarea
-            disabled={pending}
-            id="blockInternalNote"
-            name="internalNote"
-            maxLength={500}
-            rows={3}
-            className={inputClassName}
-          />
-        </div>
+          <div>
+            <label htmlFor="blockInternalNote" className="text-sm font-medium">Internal note (optional)</label>
+            <textarea
+              disabled={pending}
+              id="blockInternalNote"
+              name="internalNote"
+              maxLength={500}
+              rows={3}
+              className={inputClassName}
+            />
+          </div>
+        </fieldset>
 
-        <Button type="submit" disabled={pending}>
+        <Button type="submit" disabled={pending} className="min-h-11 w-full sm:w-auto">
           {pending ? "Creating block…" : "Create inventory block"}
         </Button>
       </form>

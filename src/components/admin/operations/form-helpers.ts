@@ -32,6 +32,6 @@ export function firstFieldError(
 }
 
 export const inputClassName =
-  "mt-1 w-full rounded border border-stone-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-800 disabled:bg-stone-100";
+  "mt-1 min-h-11 w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:bg-stone-100";
 
-export const errorClassName = "mt-1 text-sm text-red-700";
+export const errorClassName = "mt-1 text-sm leading-5 text-red-700";
