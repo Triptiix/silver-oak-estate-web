@@ -12,8 +12,22 @@ import PoliciesPage from "@/app/(marketing)/policies/page";
 import { publicInformation } from "@/config/public-information";
 import MarketingLayout from "@/app/(marketing)/layout";
 import { SiteHeader } from "@/components/layout/site-header";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { MobileBookingCTA } from "@/components/layout/mobile-booking-cta";
 import nextConfig from "../next.config";
+
+const onlineBookingCapabilityMock = vi.hoisted(() => ({
+  available: false,
+}));
+
+vi.mock("server-only", () => ({}));
+vi.mock("@/lib/capabilities/online-booking", () => ({
+  getOnlineBookingCapability: () => ({
+    available: onlineBookingCapabilityMock.available,
+    state: onlineBookingCapabilityMock.available ? "ready" : "disabled",
+    missingFields: [],
+  }),
+}));
 
 // Mock next/navigation for route suppression testing
 let mockPathname = "/";
@@ -59,6 +73,7 @@ function parseCspDirectives(cspHeader: string): Record<string, string[]> {
 describe("Smoke & Launch-Unblock Regression Suite", () => {
   beforeEach(() => {
     mockPathname = "/";
+    onlineBookingCapabilityMock.available = false;
   });
 
   describe("Root Route Ownership", () => {
@@ -88,12 +103,14 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
       expect(content).toContain("@/components/estate-ui/estate-container");
       expect(content).toContain("@/components/estate-ui/estate-heading");
       expect(content).toContain("@/components/estate-ui/estate-text");
-      expect(content).toContain("@/components/estate-ui/estate-media-frame");
+      expect(content).toContain("@/components/estate-ui/estate-eyebrow");
       expect(content).toContain("@/components/estate-ui/estate-action-link");
 
       expect(content).not.toContain("@/components/ui/container");
       expect(content).not.toContain("var(--muted-foreground)");
       expect(content).not.toContain("[Estate Image Placeholder]");
+      expect(content).toContain("focus-visible:outline-hidden");
+      expect(content).not.toContain("focus-visible:outline-none");
     });
 
     it("5. verifies heading hierarchy has exactly one H1", () => {
@@ -111,7 +128,7 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
 
       expect(hrefs).toContain("/availability");
       expect(hrefs).toContain("/estate");
-      expect(hrefs).toContain("/book");
+      expect(hrefs).not.toContain("/book");
       expect(hrefs).toContain("/contact");
       expect(hrefs).toContain("/gallery");
       expect(hrefs).toContain("/pricing");
@@ -122,6 +139,24 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
         expect(h).not.toMatch(/^tel:/i);
         expect(h).not.toContain("wa.me");
       });
+    });
+
+    it("routes the Stay panel to availability when booking is disabled", () => {
+      onlineBookingCapabilityMock.available = false;
+      render(<HomePage />);
+
+      expect(
+        screen.getByRole("link", { name: /Plan Your Stay/i })
+      ).toHaveAttribute("href", "/availability");
+    });
+
+    it("routes the Stay panel to booking when capability is ready", () => {
+      onlineBookingCapabilityMock.available = true;
+      render(<HomePage />);
+
+      expect(
+        screen.getByRole("link", { name: /Plan Your Stay/i })
+      ).toHaveAttribute("href", "/book");
     });
 
     it("7. verifies all homepage image sources use /images/estate/home/ with valid alt text including corrected bedroom alt", () => {
@@ -247,7 +282,7 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
         "/experiences",
         "/gallery",
         "/policies",
-        "/book",
+        "/availability",
       ]);
     });
 
@@ -320,27 +355,52 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
       });
     });
 
-    it("16. Book Now is an anchor whose href is /book", () => {
-      render(<SiteHeader />);
-      const bookLinks = screen.getAllByRole("link", { name: "Book Now" });
-      expect(bookLinks.length).toBeGreaterThan(0);
-      bookLinks.forEach((link) => {
-        expect(link.tagName).toBe("A");
-        expect(link).toHaveAttribute("href", "/book");
+    it("16. disabled booking state uses assisted availability actions", () => {
+      render(<SiteHeader onlineBookingAvailable={false} />);
+
+      expect(screen.queryByRole("link", { name: "Book Now" })).toBeNull();
+
+      fireEvent.click(screen.getByRole("button", { name: "Open navigation" }));
+      const availabilityLinks = screen.getAllByRole("link", {
+        name: "Check Availability",
       });
+
+      expect(availabilityLinks).toHaveLength(2);
+      availabilityLinks.forEach((link) => {
+        expect(link.tagName).toBe("A");
+        expect(link).toHaveAttribute("href", "/availability");
+      });
+
+      const mobileNav = screen.getByRole("navigation", {
+        name: "Mobile navigation",
+      });
+      fireEvent.click(
+        within(mobileNav).getByRole("link", { name: "Check Availability" })
+      );
+      expect(
+        screen.queryByRole("navigation", { name: "Mobile navigation" })
+      ).toBeNull();
     });
 
-    it("17. desktop Book Now uses hidden md:inline-flex and not sm:inline-flex", () => {
-      render(<SiteHeader />);
-      const bookNowWrapper = screen.getByRole("link", { name: "Book Now" }).parentElement;
+    it("17. enabled booking state uses Book Now actions linking to /book", () => {
+      render(<SiteHeader onlineBookingAvailable />);
+      fireEvent.click(screen.getByRole("button", { name: "Open navigation" }));
+
+      const bookLinks = screen.getAllByRole("link", { name: "Book Now" });
+      expect(bookLinks).toHaveLength(2);
+      bookLinks.forEach((link) => {
+        expect(link).toHaveAttribute("href", "/book");
+      });
+
+      const bookNowWrapper = bookLinks[0].parentElement;
       expect(bookNowWrapper?.className).toContain("hidden md:inline-flex");
       expect(bookNowWrapper?.className).not.toContain("sm:inline-flex");
     });
 
-    it("18. mobile trigger uses md:hidden", () => {
+    it("18. mobile trigger remains available through tablet widths", () => {
       render(<SiteHeader />);
       const trigger = screen.getByRole("button", { name: "Open navigation" });
-      expect(trigger.className).toContain("md:hidden");
+      expect(trigger.className).toContain("lg:hidden");
     });
 
     it("19. SiteHeader contains no SVG elements", () => {
@@ -360,6 +420,74 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
       links.forEach((l) => {
         expect(l.className).toContain("focus-visible:ring-[var(--soe-color-focus-ring)]");
       });
+      expect(
+        within(mobileNav).getByRole("link", { name: "The Estate" }).className
+      ).toContain("focus-visible:outline-hidden");
+      expect(
+        screen.getByRole("button", { name: "Close navigation" }).className
+      ).toContain("focus-visible:outline-hidden");
+    });
+  });
+
+  describe("Premium Estate Footer", () => {
+    it("renders complete verified footer destinations", () => {
+      render(<SiteFooter />);
+
+      const hrefs = Array.from(document.querySelectorAll("a")).map((link) =>
+        link.getAttribute("href")
+      );
+
+      expect(hrefs).toEqual(
+        expect.arrayContaining([
+          "/estate",
+          "/experiences",
+          "/gallery",
+          "/availability",
+          "/pricing",
+          "/location",
+          "/policies",
+          "/privacy",
+          "/terms",
+          "/contact",
+          publicInformation.contact.mailtoHref,
+        ])
+      );
+    });
+
+    it("uses labelled navigation landmarks and visible focus classes", () => {
+      render(<SiteFooter />);
+
+      expect(
+        screen.getByRole("navigation", { name: "Footer Estate" })
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("navigation", { name: "Footer Plan your visit" })
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("navigation", { name: "Footer information" })
+      ).toBeInTheDocument();
+
+      document.querySelectorAll("footer a").forEach((link) => {
+        expect(link.className).toContain(
+          "focus-visible:ring-[var(--soe-color-focus-ring)]"
+        );
+        expect(link.className).toContain("focus-visible:outline-hidden");
+      });
+    });
+
+    it("contains no invented social, telephone, or legal-entity links", () => {
+      render(<SiteFooter />);
+
+      const text = (document.body.textContent || "").toLowerCase();
+      const hrefs = Array.from(document.querySelectorAll("footer a")).map(
+        (link) => link.getAttribute("href") || ""
+      );
+
+      expect(text).not.toContain("instagram");
+      expect(text).not.toContain("facebook");
+      expect(text).not.toContain("private limited");
+      expect(hrefs.some((href) => href.startsWith("tel:"))).toBe(false);
+      expect(hrefs.some((href) => href.includes("wa.me"))).toBe(false);
     });
   });
 
@@ -367,13 +495,17 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
     it("21. CTA renders on /estate", () => {
       mockPathname = "/estate";
       render(<MobileBookingCTA />);
-      expect(screen.getByRole("link", { name: "Check Availability & Book" })).toBeInTheDocument();
+      expect(
+        screen.getByRole("link", { name: "Check Availability" })
+      ).toBeInTheDocument();
     });
 
     it("22. CTA renders on /", () => {
       mockPathname = "/";
       render(<MobileBookingCTA />);
-      expect(screen.getByRole("link", { name: "Check Availability & Book" })).toBeInTheDocument();
+      expect(
+        screen.getByRole("link", { name: "Check Availability" })
+      ).toBeInTheDocument();
     });
 
     it("23. CTA is absent on /book", () => {
@@ -403,15 +535,24 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
     it("27. CTA is an anchor, not a button", () => {
       mockPathname = "/";
       render(<MobileBookingCTA />);
-      const cta = screen.getByRole("link", { name: "Check Availability & Book" });
+      const cta = screen.getByRole("link", { name: "Check Availability" });
       expect(cta.tagName).toBe("A");
       expect(cta.querySelector("button")).toBeNull();
     });
 
-    it("28. CTA href is /book", () => {
+    it("28. disabled CTA points to assisted availability", () => {
       mockPathname = "/";
-      render(<MobileBookingCTA />);
-      const cta = screen.getByRole("link", { name: "Check Availability & Book" });
+      render(<MobileBookingCTA onlineBookingAvailable={false} />);
+      const cta = screen.getByRole("link", { name: "Check Availability" });
+      expect(cta).toHaveAttribute("href", "/availability");
+    });
+
+    it("enabled CTA points to the booking flow", () => {
+      mockPathname = "/";
+      render(<MobileBookingCTA onlineBookingAvailable />);
+      const cta = screen.getByRole("link", {
+        name: "Check Availability & Book",
+      });
       expect(cta).toHaveAttribute("href", "/book");
     });
 
@@ -438,11 +579,11 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
       });
 
       const link = within(landmark).getByRole("link", {
-        name: "Check Availability & Book",
+        name: "Check Availability",
       });
 
       expect(landmark).toBeInTheDocument();
-      expect(link).toHaveAttribute("href", "/book");
+      expect(link).toHaveAttribute("href", "/availability");
     });
 
     it("CTA landmark contains md:hidden and not sm:hidden on /", () => {
@@ -478,6 +619,23 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
       render(<MobileBookingCTA />);
       expect(screen.queryByRole("complementary", { name: "Booking action" })).toBeNull();
       expect(screen.queryByTestId("mobile-booking-spacer")).toBeNull();
+    });
+
+    it("enabled CTA remains suppressed on booking and availability routes", () => {
+      for (const pathname of [
+        "/book",
+        "/book/confirmation",
+        "/availability",
+        "/availability/calendar",
+      ]) {
+        mockPathname = pathname;
+        const { container, unmount } = render(
+          <MobileBookingCTA onlineBookingAvailable />
+        );
+
+        expect(container.firstChild).toBeNull();
+        unmount();
+      }
     });
   });
 
