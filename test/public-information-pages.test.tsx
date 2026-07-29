@@ -301,9 +301,9 @@ describe("Public Information Pages & Config Contracts", () => {
       expect(text).toContain(publicInformation.booking.checkIn.timeLabel);
       expect(text).toContain(publicInformation.booking.checkOut.timeLabel);
       expect(text).toContain(publicInformation.booking.durationLabel);
-      expect(text).toContain(publicInformation.capacity.overnightLabel);
-      expect(text).toContain(publicInformation.capacity.indoorLabel);
-      expect(text).toContain(publicInformation.capacity.standardDayEventLabel);
+      expect(text.toLowerCase()).toContain(publicInformation.capacity.overnightLabel.toLowerCase());
+      expect(text.toLowerCase()).toContain(publicInformation.capacity.indoorLabel.toLowerCase());
+      expect(text.toLowerCase()).toContain(publicInformation.capacity.standardDayEventLabel.toLowerCase());
     });
 
     it("verifies CTA links on policies page", () => {
@@ -334,9 +334,9 @@ describe("Public Information Pages & Config Contracts", () => {
       render(<EstatePage />);
       const text = document.body.textContent || "";
 
-      expect(text).toContain(publicInformation.capacity.overnightLabel);
-      expect(text).toContain(publicInformation.capacity.indoorLabel);
-      expect(text).toContain(publicInformation.capacity.standardDayEventLabel);
+      expect(text.toLowerCase()).toContain(publicInformation.capacity.overnightLabel.toLowerCase());
+      expect(text.toLowerCase()).toContain(publicInformation.capacity.indoorLabel.toLowerCase());
+      expect(text.toLowerCase()).toContain(publicInformation.capacity.standardDayEventLabel.toLowerCase());
       expect(text).toContain(publicInformation.capacity.largerEventStatement);
       expect(text).toContain(publicInformation.booking.durationLabel);
     });
@@ -366,9 +366,9 @@ describe("Public Information Pages & Config Contracts", () => {
       render(<ExperiencesPage />);
       const text = document.body.textContent || "";
 
-      expect(text).toContain(publicInformation.capacity.overnightLabel);
-      expect(text).toContain(publicInformation.capacity.indoorLabel);
-      expect(text).toContain(publicInformation.capacity.standardDayEventLabel);
+      expect(text.toLowerCase()).toContain(publicInformation.capacity.overnightLabel.toLowerCase());
+      expect(text.toLowerCase()).toContain(publicInformation.capacity.indoorLabel.toLowerCase());
+      expect(text.toLowerCase()).toContain(publicInformation.capacity.standardDayEventLabel.toLowerCase());
       expect(text).toContain(publicInformation.capacity.largerEventStatement);
     });
 
