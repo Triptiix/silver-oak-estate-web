@@ -23,7 +23,7 @@ const informationLinks = [
 ] as const;
 
 const footerLinkClasses =
-  "inline-flex min-h-11 items-center rounded-[var(--soe-radius-control)] font-soe-ui text-[length:var(--soe-text-sm)] text-[var(--soe-surface-text-secondary)] transition-colors duration-[var(--soe-duration-interface)] hover:text-[var(--soe-surface-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--soe-color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--soe-color-focus-offset)]";
+  "inline-flex min-h-11 items-center rounded-[var(--soe-radius-control)] font-soe-ui text-[length:var(--soe-text-sm)] text-[var(--soe-surface-text-secondary)] transition-colors duration-[var(--soe-duration-interface)] hover:text-[var(--soe-surface-text-primary)] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--soe-color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--soe-color-focus-offset)]";
 
 export function SiteFooter() {
   return (

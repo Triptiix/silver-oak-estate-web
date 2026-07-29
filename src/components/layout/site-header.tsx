@@ -13,9 +13,18 @@ const navLinks = [
   { href: "/policies", label: "Policies" },
 ] as const;
 
-export function SiteHeader() {
+type SiteHeaderProps = {
+  onlineBookingAvailable?: boolean;
+};
+
+export function SiteHeader({
+  onlineBookingAvailable = false,
+}: SiteHeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const triggerRef = React.useRef<HTMLButtonElement>(null);
+  const bookingAction = onlineBookingAvailable
+    ? { href: "/book", label: "Book Now" }
+    : { href: "/availability", label: "Check Availability" };
 
   React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -40,7 +49,7 @@ export function SiteHeader() {
       >
         <Link
           href="/"
-          className="group min-w-0 rounded-[var(--soe-radius-control)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--soe-color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--soe-color-focus-offset)]"
+          className="group min-w-0 rounded-[var(--soe-radius-control)] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--soe-color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--soe-color-focus-offset)]"
         >
           <span className="block truncate font-soe-display text-[length:var(--soe-text-xl)] leading-none tracking-[var(--soe-tracking-heading)] text-[var(--soe-surface-text-primary)]">
             {siteConfig.name}
@@ -58,7 +67,7 @@ export function SiteHeader() {
             <Link
               key={link.href}
               href={link.href}
-              className="flex min-h-11 items-center rounded-[var(--soe-radius-control)] px-4 text-[var(--soe-surface-text-primary)] transition-colors duration-[var(--soe-duration-interface)] hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--soe-color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--soe-color-focus-offset)]"
+              className="flex min-h-11 items-center rounded-[var(--soe-radius-control)] px-4 text-[var(--soe-surface-text-primary)] transition-colors duration-[var(--soe-duration-interface)] hover:bg-white/10 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--soe-color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--soe-color-focus-offset)]"
             >
               {link.label}
             </Link>
@@ -67,15 +76,15 @@ export function SiteHeader() {
 
         <div className="flex items-center gap-3">
           <div className="hidden md:inline-flex">
-            <EstateActionLink variant="button" href="/book">
-              Book Now
+            <EstateActionLink variant="button" href={bookingAction.href}>
+              {bookingAction.label}
             </EstateActionLink>
           </div>
 
           <button
             ref={triggerRef}
             type="button"
-            className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-[var(--soe-radius-control)] border border-[var(--soe-color-gold)]/70 p-2 text-[var(--soe-surface-text-primary)] transition-colors duration-[var(--soe-duration-interface)] hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--soe-color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--soe-color-focus-offset)] lg:hidden"
+            className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-[var(--soe-radius-control)] border border-[var(--soe-color-gold)]/70 p-2 text-[var(--soe-surface-text-primary)] transition-colors duration-[var(--soe-duration-interface)] hover:bg-white/10 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--soe-color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--soe-color-focus-offset)] lg:hidden"
             aria-expanded={isMobileMenuOpen}
             aria-controls="mobile-navigation"
             aria-label={isMobileMenuOpen ? "Close navigation" : "Open navigation"}
@@ -115,18 +124,18 @@ export function SiteHeader() {
                   key={link.href}
                   href={link.href}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex min-h-[48px] items-center border-b border-white/10 px-3 font-soe-ui text-[length:var(--soe-text-base)] font-medium text-[var(--soe-surface-text-primary)] transition-colors duration-[var(--soe-duration-interface)] hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--soe-color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--soe-color-focus-offset)]"
+                  className="flex min-h-[48px] items-center border-b border-white/10 px-3 font-soe-ui text-[length:var(--soe-text-base)] font-medium text-[var(--soe-surface-text-primary)] transition-colors duration-[var(--soe-duration-interface)] hover:bg-white/10 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--soe-color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--soe-color-focus-offset)]"
                 >
                   {link.label}
                 </Link>
               ))}
               <EstateActionLink
                 variant="button"
-                href="/book"
+                href={bookingAction.href}
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="mt-4 w-full justify-center"
               >
-                Book Now
+                {bookingAction.label}
               </EstateActionLink>
             </div>
           </EstateContainer>

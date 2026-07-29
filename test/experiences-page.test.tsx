@@ -6,6 +6,8 @@ import * as fs from "fs";
 import * as path from "path";
 import { describe, expect, it, vi } from "vitest";
 
+vi.mock("server-only", () => ({}));
+
 // Mock next/navigation for layout component
 vi.mock("next/navigation", () => ({
   usePathname: () => "/experiences",

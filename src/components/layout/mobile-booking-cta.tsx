@@ -3,8 +3,17 @@
 import { usePathname } from "next/navigation";
 import { EstateActionLink } from "@/components/estate-ui/estate-action-link";
 
-export function MobileBookingCTA() {
+type MobileBookingCTAProps = {
+  onlineBookingAvailable?: boolean;
+};
+
+export function MobileBookingCTA({
+  onlineBookingAvailable = false,
+}: MobileBookingCTAProps) {
   const pathname = usePathname();
+  const bookingAction = onlineBookingAvailable
+    ? { href: "/book", label: "Check Availability & Book" }
+    : { href: "/availability", label: "Check Availability" };
 
   if (
     pathname === "/book" ||
@@ -33,11 +42,11 @@ export function MobileBookingCTA() {
         }}
       >
         <EstateActionLink
-          href="/book"
+          href={bookingAction.href}
           variant="button"
           className="w-full justify-center"
         >
-          Check Availability & Book
+          {bookingAction.label}
         </EstateActionLink>
       </aside>
     </>

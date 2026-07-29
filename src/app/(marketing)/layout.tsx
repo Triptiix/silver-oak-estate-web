@@ -1,12 +1,15 @@
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { MobileBookingCTA } from "@/components/layout/mobile-booking-cta";
+import { getOnlineBookingCapability } from "@/lib/capabilities/online-booking";
 
 export default function MarketingLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const onlineBooking = getOnlineBookingCapability();
+
   return (
     <div className="relative flex min-h-screen flex-col bg-[var(--soe-color-canvas)]">
       <a
@@ -15,12 +18,12 @@ export default function MarketingLayout({
       >
         Skip to main content
       </a>
-      <SiteHeader />
+      <SiteHeader onlineBookingAvailable={onlineBooking.available} />
       <main id="main-content" tabIndex={-1} className="flex-1">
         {children}
       </main>
       <SiteFooter />
-      <MobileBookingCTA />
+      <MobileBookingCTA onlineBookingAvailable={onlineBooking.available} />
     </div>
   );
 }

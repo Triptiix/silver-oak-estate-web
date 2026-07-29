@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 };
 
 const focusClasses =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--soe-color-focus-ring)] focus-visible:ring-offset-4 focus-visible:ring-offset-[var(--soe-color-focus-offset)]";
+  "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--soe-color-focus-ring)] focus-visible:ring-offset-4 focus-visible:ring-offset-[var(--soe-color-focus-offset)]";
 
 export default function HomePage() {
   const { booking, capacity, contact } = publicInformation;
