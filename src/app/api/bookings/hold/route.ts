@@ -5,6 +5,7 @@ import { envServer } from "@/lib/env/server";
 import { bookingError, mapDatabaseError } from "@/lib/booking/api-errors";
 import { createHold } from "@/lib/booking/database";
 import { createRequestFingerprint, getTrustedClientAddress } from "@/lib/booking/fingerprint";
+import { ACTOR_COOKIE_NAME, getOrCreateActorIdentity } from "@/lib/booking/actor-cookie";
 import { signHoldToken } from "@/lib/booking/hold-token";
 import { HOLD_COOKIE_NAME, holdCookieOptions } from "@/lib/booking/hold-cookie";
 import { holdRequestSchema, normalizePhone } from "@/lib/booking/schemas";
@@ -14,6 +15,21 @@ import { readBoundedJson } from "@/lib/security/bounded-json";
 import { hasTrustedMutationOrigin } from "@/lib/security/mutation-origin";
 
 const MAX_BOOKING_HOLD_JSON_BYTES = 16 * 1024;
+
+function withActorCookie(
+  response: NextResponse,
+  cookieValue: string,
+): NextResponse {
+  response.cookies.set(ACTOR_COOKIE_NAME, cookieValue, {
+    httpOnly: true,
+    secure: envServer.APP_ENV !== "development",
+    sameSite: "lax",
+    path: "/api/bookings",
+    maxAge: 86_400,
+  });
+
+  return response;
+}
 
 export async function POST(request: NextRequest) {
   if (!hasTrustedMutationOrigin(request, envClient.NEXT_PUBLIC_SITE_URL)) {
@@ -47,6 +63,9 @@ export async function POST(request: NextRequest) {
   }
   const nonce = randomUUID();
   const fingerprint = createRequestFingerprint(address, phone, envServer.BOOKING_TOKEN_SECRET);
+  const existingActorCookie = request.cookies.get(ACTOR_COOKIE_NAME)?.value;
+  const actorIdentity = getOrCreateActorIdentity(existingActorCookie, envServer.BOOKING_TOKEN_SECRET);
+
   try {
     const result = await createHold({
       p_property_slug: parsed.data.propertySlug,
@@ -61,6 +80,7 @@ export async function POST(request: NextRequest) {
       p_hold_request_id: parsed.data.requestId,
       p_hold_token_nonce: nonce,
       p_request_fingerprint_hash: fingerprint,
+      p_actor_identity_hash: actorIdentity.actorIdentityHash,
       p_fallback_hold_minutes: envServer.BOOKING_HOLD_MINUTES,
     });
     const token = signHoldToken({ v: 1, bookingId: result.bookingId, nonce: result.holdTokenNonce, expiresAt: result.holdExpiresAt }, envServer.BOOKING_TOKEN_SECRET);
@@ -71,6 +91,11 @@ export async function POST(request: NextRequest) {
       ...holdCookieOptions(envServer.APP_ENV === "production"),
       maxAge: Math.max(0, Math.floor((new Date(result.holdExpiresAt).valueOf() - Date.now()) / 1000)),
     });
-    return response;
-  } catch (error) { return mapDatabaseError(error); }
+    return withActorCookie(response, actorIdentity.cookieValue);
+  } catch (error) {
+    return withActorCookie(
+      mapDatabaseError(error),
+      actorIdentity.cookieValue,
+    );
+  }
 }

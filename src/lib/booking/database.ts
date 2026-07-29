@@ -2,6 +2,7 @@ import "server-only";
 import { createPublicSupabaseClient } from "@/lib/supabase/public";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import type { AvailabilityResponse, HoldResponse } from "@/types/booking";
+import type { Database } from "@/types/database.types";
 
 export type HoldDatabaseResult = HoldResponse & {
   created: boolean; bookingId: string; holdTokenNonce: string;
@@ -15,11 +16,36 @@ export async function getAvailability(propertySlug: string, month: string): Prom
   return data as unknown as AvailabilityResponse;
 }
 
-export async function createHold(values: Record<string, unknown>): Promise<HoldDatabaseResult> {
+type GeneratedCreateHoldArgs =
+  Database["public"]["Functions"]["create_booking_hold"]["Args"];
+
+export type CreateHoldArgs = Omit<
+  GeneratedCreateHoldArgs,
+  "p_customer_email" | "p_whatsapp" | "p_special_requests"
+> & {
+  p_customer_email: string | null;
+  p_whatsapp: string | null;
+  p_special_requests: string | null;
+};
+
+function toGeneratedCreateHoldArgs(
+  values: CreateHoldArgs,
+): GeneratedCreateHoldArgs {
+  /*
+   * PostgreSQL accepts NULL for these optional text parameters, but the
+   * generated Supabase routine type cannot represent parameter nullability.
+   * Keep the application/database NULL semantics and narrow the mismatch only
+   * at the generated RPC boundary.
+   */
+  return values as unknown as GeneratedCreateHoldArgs;
+}
+
+export async function createHold(values: CreateHoldArgs): Promise<HoldDatabaseResult> {
   const client = createServiceRoleClient();
-  let { data, error } = await client.rpc("create_booking_hold", values as never);
+  const rpcValues = toGeneratedCreateHoldArgs(values);
+  let { data, error } = await client.rpc("create_booking_hold", rpcValues);
   if (error?.message.includes("idempotency_retry")) {
-    ({ data, error } = await client.rpc("create_booking_hold", values as never));
+    ({ data, error } = await client.rpc("create_booking_hold", rpcValues));
   }
   if (error) throw error;
   return data as unknown as HoldDatabaseResult;

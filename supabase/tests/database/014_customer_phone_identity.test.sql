@@ -287,7 +287,8 @@ select lives_ok(
         '+91 (96666) 00001', '+91 96666 00001', 2, 0, null,
         'e0000000-0000-4000-8000-000000000101'::uuid,
         'e0000000-0000-4000-8000-000000000102'::uuid,
-        'phone-identity-public-fingerprint', 10
+        'phone-identity-public-fingerprint',
+        '1111111111111111111111111111111111111111111111111111111111111111', 10
       )
     $sql$,
     (select public_date from phone_identity_context)
@@ -327,6 +328,7 @@ select is(
       'e0000000-0000-4000-8000-000000000101',
       'e0000000-0000-4000-8000-000000000102',
       'phone-identity-public-fingerprint',
+      '1111111111111111111111111111111111111111111111111111111111111111',
       10
     )->>'created'
   )::boolean,
@@ -341,7 +343,8 @@ select throws_ok(
         '+91-96666-00001', null, 2, 0, null,
         'e0000000-0000-4000-8000-000000000106'::uuid,
         'e0000000-0000-4000-8000-000000000107'::uuid,
-        'canonical-abuse-fingerprint', 10
+        'canonical-abuse-fingerprint',
+        '2222222222222222222222222222222222222222222222222222222222222222', 10
       )
     $sql$,
     (select public_date + 2 from phone_identity_context)
@@ -357,7 +360,8 @@ select throws_ok(
       '+91+9666600002', null, 2, 0, null,
       'e0000000-0000-4000-8000-000000000103'::uuid,
       'e0000000-0000-4000-8000-000000000104'::uuid,
-      'invalid-phone-must-win', 10
+      'invalid-phone-must-win',
+      '3333333333333333333333333333333333333333333333333333333333333333', 10
     )
   $$,
   '22023',

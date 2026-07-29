@@ -43,30 +43,34 @@ select is((public.get_monthly_availability('silver-oak-estate', '2026-08')->'dat
 select is(public.expire_stale_holds((select property_id from phase2_context)), 1, 'cleanup expires one stale hold');
 select is(public.expire_stale_holds((select property_id from phase2_context)), 0, 'cleanup is idempotent');
 
+-- Actor a1 is the primary test actor; distinct actors are used below wherever a
+-- test must reach an assertion other than the actor-level active-hold limit.
 select lives_ok($$
   select public.create_booking_hold(
     'silver-oak-estate','2026-08-10','Test Guest',null,'+919999000001',null,8,4,null,
     '31000000-0000-0000-0000-000000000001','32000000-0000-0000-0000-000000000001',
-    'fingerprint-one',10
+    'fingerprint-one',
+    'a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1',
+    10
   )
 $$, 'trusted operation creates a hold');
 select is((select count(*)::integer from public.bookings where hold_request_id = '31000000-0000-0000-0000-000000000001'), 1, 'hold creates one booking');
 select is((select count(*)::integer from public.inventory_reservations where booking_id = (select id from public.bookings where hold_request_id = '31000000-0000-0000-0000-000000000001')), 1, 'hold creates one reservation');
 select is((select count(*)::integer from public.booking_events where booking_id = (select id from public.bookings where hold_request_id = '31000000-0000-0000-0000-000000000001')), 2, 'hold creates two lifecycle events');
-select is((public.create_booking_hold('silver-oak-estate','2026-08-10','Test Guest',null,'+919999000001',null,8,4,null,'31000000-0000-0000-0000-000000000001','32000000-0000-0000-0000-000000000099','fingerprint-one',10)->>'created')::boolean, false, 'exact retry returns existing hold');
+select is((public.create_booking_hold('silver-oak-estate','2026-08-10','Test Guest',null,'+919999000001',null,8,4,null,'31000000-0000-0000-0000-000000000001','32000000-0000-0000-0000-000000000099','fingerprint-one','a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1',10)->>'created')::boolean, false, 'exact retry returns existing hold');
 select is((select count(*)::integer from public.booking_events where booking_id = (select id from public.bookings where hold_request_id = '31000000-0000-0000-0000-000000000001')), 2, 'retry does not duplicate events');
-select throws_ok($$select public.create_booking_hold('silver-oak-estate','2026-08-10','Other',null,'+919999000002',null,2,0,null,'31000000-0000-0000-0000-000000000001','32000000-0000-0000-0000-000000000002','different-fingerprint',10)$$, 'P0001', 'idempotency_conflict', 'mismatched retry is rejected');
-select throws_ok($$select public.create_booking_hold('silver-oak-estate','2026-08-11','Test Guest',null,'+919999000001',null,2,0,null,'31000000-0000-0000-0000-000000000002','32000000-0000-0000-0000-000000000002','fingerprint-one',10)$$, 'P0001', 'hold_abuse_limit', 'identity cannot hoard another hold');
-select throws_ok($$select public.create_booking_hold('silver-oak-estate','2026-08-10','Conflict',null,'+919999000003',null,2,0,null,'31000000-0000-0000-0000-000000000003','32000000-0000-0000-0000-000000000003','fingerprint-three',10)$$, 'P0001', 'date_unavailable', 'overlapping hold receives controlled conflict');
+select throws_ok($$select public.create_booking_hold('silver-oak-estate','2026-08-10','Other',null,'+919999000002',null,2,0,null,'31000000-0000-0000-0000-000000000001','32000000-0000-0000-0000-000000000002','different-fingerprint','a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1',10)$$, 'P0001', 'idempotency_conflict', 'mismatched retry is rejected');
+select throws_ok($$select public.create_booking_hold('silver-oak-estate','2026-08-11','Test Guest',null,'+919999000001',null,2,0,null,'31000000-0000-0000-0000-000000000002','32000000-0000-0000-0000-000000000002','fingerprint-one','a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1',10)$$, 'P0001', 'hold_abuse_limit', 'identity cannot hoard another hold');
+select throws_ok($$select public.create_booking_hold('silver-oak-estate','2026-08-10','Conflict',null,'+919999000003',null,2,0,null,'31000000-0000-0000-0000-000000000003','32000000-0000-0000-0000-000000000003','fingerprint-three','a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3',10)$$, 'P0001', 'date_unavailable', 'overlapping hold receives controlled conflict');
 select is(public.release_booking_hold((select id from public.bookings where hold_request_id = '31000000-0000-0000-0000-000000000001'),'32000000-0000-0000-0000-000000000001'), true, 'valid hold releases');
 select is(public.release_booking_hold((select id from public.bookings where hold_request_id = '31000000-0000-0000-0000-000000000001'),'32000000-0000-0000-0000-000000000001'), true, 'duplicate release is idempotent');
 select is((select count(*)::integer from public.booking_events where booking_id = (select id from public.bookings where hold_request_id = '31000000-0000-0000-0000-000000000001') and event_type = 'hold_released'), 1, 'duplicate release does not add another event');
 select is((select status from public.inventory_reservations where booking_id = (select id from public.bookings where hold_request_id = '31000000-0000-0000-0000-000000000001')), 'released'::public.reservation_status, 'release changes inventory status');
 select is((select booking_status from public.bookings where hold_request_id = '31000000-0000-0000-0000-000000000001'), 'expired'::public.booking_status, 'release uses terminal expired booking state');
 
-select is(has_function_privilege('anon','public.create_booking_hold(text,date,text,text,text,text,integer,integer,text,uuid,uuid,text,integer)','EXECUTE'), false, 'anon cannot execute hold creation');
-select is(has_function_privilege('authenticated','public.create_booking_hold(text,date,text,text,text,text,integer,integer,text,uuid,uuid,text,integer)','EXECUTE'), false, 'authenticated cannot execute hold creation');
-select is(has_function_privilege('service_role','public.create_booking_hold(text,date,text,text,text,text,integer,integer,text,uuid,uuid,text,integer)','EXECUTE'), true, 'service role can execute hold creation');
+select is(has_function_privilege('anon','public.create_booking_hold(text,date,text,text,text,text,integer,integer,text,uuid,uuid,text,text,integer)','EXECUTE'), false, 'anon cannot execute hold creation');
+select is(has_function_privilege('authenticated','public.create_booking_hold(text,date,text,text,text,text,integer,integer,text,uuid,uuid,text,text,integer)','EXECUTE'), false, 'authenticated cannot execute hold creation');
+select is(has_function_privilege('service_role','public.create_booking_hold(text,date,text,text,text,text,integer,integer,text,uuid,uuid,text,text,integer)','EXECUTE'), true, 'service role can execute hold creation');
 
 select * from finish();
 rollback;

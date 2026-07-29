@@ -44,7 +44,7 @@ function request(origin: string | null = "http://localhost:3000") {
     bookingId: "22000000-0000-4000-8000-000000000001",
     nonce: "33000000-0000-4000-8000-000000000001",
     expiresAt: new Date(Date.now() + 600_000).toISOString(),
-  }, "dummy");
+  }, "unit-test-only-secret-not-a-real-credential");
   return new NextRequest("http://localhost/api/payments/order", {
     method: "POST",
     headers: { ...(origin ? { origin } : {}), cookie: `soe_booking_hold=${token}` },

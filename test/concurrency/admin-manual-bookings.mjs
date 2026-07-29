@@ -115,6 +115,7 @@ const publicResultPromise = service.rpc("create_booking_hold", {
   p_hold_request_id: publicRequest,
   p_hold_token_nonce: randomUUID(),
   p_request_fingerprint_hash: `manual-public-${randomUUID()}`,
+  p_actor_identity_hash: "6666666666666666666666666666666666666666666666666666666666666666",
   p_fallback_hold_minutes: 10,
 });
 const manualPublicRequest = randomUUID();
@@ -198,6 +199,7 @@ const [sharedPublicResult, sharedManualResult] = await Promise.all([
     p_hold_request_id: sharedPublicRequest,
     p_hold_token_nonce: randomUUID(),
     p_request_fingerprint_hash: `shared-phone-${randomUUID()}`,
+    p_actor_identity_hash: "7777777777777777777777777777777777777777777777777777777777777777",
     p_fallback_hold_minutes: 10,
   }),
   adminA.rpc(
