@@ -1,5 +1,5 @@
 begin;
-select plan(19);
+select plan(21);
 
 -- 1. Verify existence of 14-argument public wrapper and private internal functions
 select has_function(
@@ -149,6 +149,31 @@ select throws_ok(
   'P0001',
   'idempotency_conflict',
   'mismatched actor identity hash on same request ID raises idempotency_conflict'
+);
+
+select is(
+  (public.create_booking_hold(
+    'silver-oak-estate', '2032-05-14'::date, 'Serial Actor', null, '+919999900003', null, 2, 0, null,
+    '99999999-9999-4999-8999-999999999991'::uuid, '99999999-9999-4999-8999-999999999992'::uuid,
+    '9999999999999999999999999999999999999999999999999999999999999993',
+    'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+    10
+  )->>'created')::boolean,
+  true,
+  'serial actor abuse setup creates the first hold'
+);
+
+select throws_ok(
+  $$ select public.create_booking_hold(
+    'silver-oak-estate', '2032-05-16'::date, 'Serial Actor Changed', null, '+919999900004', null, 2, 0, null,
+    '99999999-9999-4999-8999-999999999994'::uuid, '99999999-9999-4999-8999-999999999995'::uuid,
+    '9999999999999999999999999999999999999999999999999999999999999996',
+    'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+    10
+  ) $$,
+  'P0001',
+  'hold_abuse_limit',
+  'same actor cannot create another active hold with changed request, fingerprint, phone, and date'
 );
 
 select * from finish();

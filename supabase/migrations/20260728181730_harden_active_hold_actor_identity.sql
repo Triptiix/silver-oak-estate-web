@@ -6,12 +6,22 @@ alter table public.bookings
   check (
     actor_identity_hash is null
     or actor_identity_hash ~ '^[a-f0-9]{64}$'
-  );
+  )
+  not valid;
+
+set lock_timeout = '4s';
+set statement_timeout = '30s';
+
+alter table public.bookings
+  validate constraint bookings_actor_identity_hash_format;
 
 create index bookings_active_actor_identity_idx
   on public.bookings (property_id, actor_identity_hash)
   where booking_status = 'held'
     and actor_identity_hash is not null;
+
+reset lock_timeout;
+reset statement_timeout;
 
 create function private.create_booking_hold_v3_internal(
   p_property_slug text,
@@ -84,7 +94,14 @@ begin
       'created', false, 'bookingId', v_existing.id,
       'bookingReference', v_existing.booking_reference,
       'checkInAt', v_existing.check_in_at, 'checkOutAt', v_existing.check_out_at,
-      'holdExpiresAt', (select expires_at from public.inventory_reservations where booking_id = v_existing.id and status = 'active' limit 1),
+      'holdExpiresAt', (
+        select expires_at
+        from public.inventory_reservations
+        where booking_id = v_existing.id
+          and reservation_type = 'temporary_hold'
+          and status = 'active'
+        limit 1
+      ),
       'priceAmountPaise', v_existing.total_amount_paise,
       'advanceAmountPaise', v_existing.advance_amount_paise,
       'balanceAmountPaise', v_existing.balance_amount_paise,

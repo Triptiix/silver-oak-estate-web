@@ -11,7 +11,7 @@ select is((select proconfig[1] from pg_proc where oid = 'public.resolve_booking_
 select is((select proconfig[1] from pg_proc where oid = 'public.resolve_booking_price(uuid,date)'::regprocedure), 'search_path=pg_catalog', 'pricing resolver has safe search path');
 select is((select proconfig[1] from pg_proc where oid = 'public.get_monthly_availability(text,text)'::regprocedure), 'search_path=pg_catalog', 'availability resolver has safe search path');
 select is((select proconfig[1] from pg_proc where oid = 'public.expire_stale_holds(uuid)'::regprocedure), 'search_path=pg_catalog', 'cleanup has safe search path');
-select is((select proconfig[1] from pg_proc where oid = 'public.create_booking_hold(text,date,text,text,text,text,integer,integer,text,uuid,uuid,text,integer)'::regprocedure), 'search_path=pg_catalog', 'hold creation has safe search path');
+select is((select proconfig[1] from pg_proc where oid = 'public.create_booking_hold(text,date,text,text,text,text,integer,integer,text,uuid,uuid,text,text,integer)'::regprocedure), 'search_path=pg_catalog', 'hold creation has safe search path');
 select is((select proconfig[1] from pg_proc where oid = 'public.release_booking_hold(uuid,uuid)'::regprocedure), 'search_path=pg_catalog', 'release has safe search path');
 
 select is(has_function_privilege('anon','public.get_monthly_availability(text,text)','EXECUTE'), true, 'anon can execute only the public availability resolver');

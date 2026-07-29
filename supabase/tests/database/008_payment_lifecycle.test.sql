@@ -11,43 +11,50 @@ insert into payment_test_context values
     'silver-oak-estate', (now() at time zone 'Asia/Kolkata')::date + 30,
     'Payment Active', null, '+919976000001', null, 2, 0, null,
     '51000000-0000-4000-8000-000000000001',
-    '52000000-0000-4000-8000-000000000001', 'payment-active', 10
+    '52000000-0000-4000-8000-000000000001', 'payment-active',
+    '1111111111111111111111111111111111111111111111111111111111111111', 10
   )),
   ('released_hold', public.create_booking_hold(
     'silver-oak-estate', (now() at time zone 'Asia/Kolkata')::date + 31,
     'Payment Released', null, '+919976000002', null, 2, 0, null,
     '51000000-0000-4000-8000-000000000002',
-    '52000000-0000-4000-8000-000000000002', 'payment-released', 10
+    '52000000-0000-4000-8000-000000000002', 'payment-released',
+    '2222222222222222222222222222222222222222222222222222222222222222', 10
   )),
   ('expired_hold', public.create_booking_hold(
     'silver-oak-estate', (now() at time zone 'Asia/Kolkata')::date + 32,
     'Payment Expired', null, '+919976000003', null, 2, 0, null,
     '51000000-0000-4000-8000-000000000003',
-    '52000000-0000-4000-8000-000000000003', 'payment-expired', 10
+    '52000000-0000-4000-8000-000000000003', 'payment-expired',
+    '3333333333333333333333333333333333333333333333333333333333333333', 10
   )),
   ('mismatch_hold', public.create_booking_hold(
     'silver-oak-estate', (now() at time zone 'Asia/Kolkata')::date + 33,
     'Payment Mismatch', null, '+919976000004', null, 2, 0, null,
     '51000000-0000-4000-8000-000000000004',
-    '52000000-0000-4000-8000-000000000004', 'payment-mismatch', 10
+    '52000000-0000-4000-8000-000000000004', 'payment-mismatch',
+    '4444444444444444444444444444444444444444444444444444444444444444', 10
   )),
   ('authorized_hold', public.create_booking_hold(
     'silver-oak-estate', (now() at time zone 'Asia/Kolkata')::date + 34,
     'Payment Authorized', null, '+919976000005', null, 2, 0, null,
     '51000000-0000-4000-8000-000000000005',
-    '52000000-0000-4000-8000-000000000005', 'payment-authorized', 10
+    '52000000-0000-4000-8000-000000000005', 'payment-authorized',
+    '5555555555555555555555555555555555555555555555555555555555555555', 10
   )),
   ('currency_hold', public.create_booking_hold(
     'silver-oak-estate', (now() at time zone 'Asia/Kolkata')::date + 35,
     'Payment Currency', null, '+919976000006', null, 2, 0, null,
     '51000000-0000-4000-8000-000000000006',
-    '52000000-0000-4000-8000-000000000006', 'payment-currency', 10
+    '52000000-0000-4000-8000-000000000006', 'payment-currency',
+    '6666666666666666666666666666666666666666666666666666666666666666', 10
   )),
   ('failure_hold', public.create_booking_hold(
     'silver-oak-estate', (now() at time zone 'Asia/Kolkata')::date + 36,
     'Payment Failure Recovery', null, '+919976000007', null, 2, 0, null,
     '51000000-0000-4000-8000-000000000007',
-    '52000000-0000-4000-8000-000000000007', 'payment-failure-recovery', 10
+    '52000000-0000-4000-8000-000000000007', 'payment-failure-recovery',
+    '7777777777777777777777777777777777777777777777777777777777777777', 10
   ));
 
 insert into payment_test_context

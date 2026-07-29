@@ -38,9 +38,12 @@ describe("hold API", () => {
     expect(response.status).toBe(201);
     const cookies = response.headers.getSetCookie();
     const holdCookie = cookies.find((c) => c.startsWith("soe_booking_hold=")) ?? "";
+    const actorCookie = cookies.find((c) => c.startsWith("soe_actor=")) ?? "";
     expect(holdCookie).toMatch(/soe_booking_hold=.*HttpOnly.*SameSite=lax/i);
     expect(holdCookie).toContain("Path=/api;");
     expect(holdCookie).not.toContain("Path=/api/bookings");
+    expect(actorCookie).toMatch(/soe_actor=.*HttpOnly.*SameSite=lax/i);
+    expect(actorCookie).toContain("Path=/api/bookings");
     expect(holdCookie).not.toContain(input.customerName);
     expect(holdCookie).not.toContain(input.customerPhone);
     expect(holdCookie).not.toContain(input.turnstileToken);
@@ -193,7 +196,16 @@ describe("hold API", () => {
     expect(verifyTurnstile).not.toHaveBeenCalled();
     expect(createHold).not.toHaveBeenCalled();
   });
-  it("maps date conflicts safely", async () => { createHold.mockRejectedValue(new Error("date_unavailable internal")); const response = await POST(request(input)); expect(response.status).toBe(409); expect(JSON.stringify(await response.json())).not.toContain("internal"); });
+  it("maps date conflicts safely and persists the actor cookie", async () => {
+    createHold.mockRejectedValue(new Error("date_unavailable internal"));
+    const response = await POST(request(input));
+    expect(response.status).toBe(409);
+    expect(JSON.stringify(await response.json())).not.toContain("internal");
+    const actorCookie = response.headers.getSetCookie()
+      .find((cookie) => cookie.startsWith("soe_actor=")) ?? "";
+    expect(actorCookie).toMatch(/soe_actor=.*HttpOnly.*SameSite=lax/i);
+    expect(actorCookie).toContain("Path=/api/bookings");
+  });
   it("maps abuse limits to 429", async () => { createHold.mockRejectedValue(new Error("hold_abuse_limit")); expect((await POST(request(input))).status).toBe(429); });
   it("maps a database-rejected past business date to a safe 400", async () => { createHold.mockRejectedValue(new Error("past_booking_date internal detail")); const response = await POST(request(input)); expect(response.status).toBe(400); expect(JSON.stringify(await response.json())).not.toContain("internal detail"); });
 });

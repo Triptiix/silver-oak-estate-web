@@ -3,6 +3,9 @@ import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 
 export const ACTOR_COOKIE_NAME = "soe_actor";
 
+const COOKIE_SIGNATURE_DOMAIN = "soe-actor-cookie-signature:v1:";
+const DATABASE_IDENTITY_DOMAIN = "soe-actor-database-identity:v1:";
+
 export type ActorIdentity = {
   cookieValue: string;
   actorIdentityHash: string;
@@ -26,7 +29,7 @@ export function getOrCreateActorIdentity(
 
   const rawToken = randomBytes(32).toString("base64url");
   const signature = createHmac("sha256", secret)
-    .update(`soe-actor-cookie-signature:v1:${rawToken}`)
+    .update(`${COOKIE_SIGNATURE_DOMAIN}${rawToken}`)
     .digest("base64url");
 
   const cookieValue = `${rawToken}.${signature}`;
@@ -55,7 +58,7 @@ function verifyActorCookieValue(
   if (decodedRawToken.length !== 32) return null;
 
   const expectedSignature = createHmac("sha256", secret)
-    .update(`soe-actor-cookie-signature:v1:${rawToken}`)
+    .update(`${COOKIE_SIGNATURE_DOMAIN}${rawToken}`)
     .digest("base64url");
 
   const sigBuf = Buffer.from(signature);
@@ -70,6 +73,6 @@ function verifyActorCookieValue(
 
 function deriveActorDatabaseHash(rawToken: string, secret: string): string {
   return createHmac("sha256", secret)
-    .update(`soe-actor-database-identity:v1:${rawToken}`)
+    .update(`${DATABASE_IDENTITY_DOMAIN}${rawToken}`)
     .digest("hex");
 }

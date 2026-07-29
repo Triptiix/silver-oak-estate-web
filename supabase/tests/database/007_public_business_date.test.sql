@@ -40,7 +40,8 @@ select throws_ok(
     $$select public.create_booking_hold(
       'silver-oak-estate', %L::date, 'Past Date', null, '+919977000001', null,
       2, 0, null, '41000000-0000-4000-8000-000000000001',
-      '42000000-0000-4000-8000-000000000001', 'past-date-fingerprint', 10
+      '42000000-0000-4000-8000-000000000001', 'past-date-fingerprint',
+      '1111111111111111111111111111111111111111111111111111111111111111', 10
     )$$,
     (now() at time zone 'Asia/Kolkata')::date - 1
   ),
@@ -54,7 +55,8 @@ select lives_ok(
     $$select public.create_booking_hold(
       'silver-oak-estate', %L::date, 'Current Date', null, '+919977000002', null,
       2, 0, null, '41000000-0000-4000-8000-000000000002',
-      '42000000-0000-4000-8000-000000000002', 'current-date-fingerprint', 10
+      '42000000-0000-4000-8000-000000000002', 'current-date-fingerprint',
+      '2222222222222222222222222222222222222222222222222222222222222222', 10
     )$$,
     (now() at time zone 'Asia/Kolkata')::date
   ),
@@ -66,7 +68,8 @@ select lives_ok(
     $$select public.create_booking_hold(
       'silver-oak-estate', %L::date, 'Future Date', null, '+919977000003', null,
       2, 0, null, '41000000-0000-4000-8000-000000000003',
-      '42000000-0000-4000-8000-000000000003', 'future-date-fingerprint', 10
+      '42000000-0000-4000-8000-000000000003', 'future-date-fingerprint',
+      '3333333333333333333333333333333333333333333333333333333333333333', 10
     )$$,
     (now() at time zone 'Asia/Kolkata')::date + 1
   ),

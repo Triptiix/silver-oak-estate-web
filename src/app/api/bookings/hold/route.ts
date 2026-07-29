@@ -16,6 +16,21 @@ import { hasTrustedMutationOrigin } from "@/lib/security/mutation-origin";
 
 const MAX_BOOKING_HOLD_JSON_BYTES = 16 * 1024;
 
+function withActorCookie(
+  response: NextResponse,
+  cookieValue: string,
+): NextResponse {
+  response.cookies.set(ACTOR_COOKIE_NAME, cookieValue, {
+    httpOnly: true,
+    secure: envServer.APP_ENV !== "development",
+    sameSite: "lax",
+    path: "/api/bookings",
+    maxAge: 86_400,
+  });
+
+  return response;
+}
+
 export async function POST(request: NextRequest) {
   if (!hasTrustedMutationOrigin(request, envClient.NEXT_PUBLIC_SITE_URL)) {
     return bookingError(403, "ORIGIN_REJECTED", "Request origin was rejected.");
@@ -76,13 +91,11 @@ export async function POST(request: NextRequest) {
       ...holdCookieOptions(envServer.APP_ENV === "production"),
       maxAge: Math.max(0, Math.floor((new Date(result.holdExpiresAt).valueOf() - Date.now()) / 1000)),
     });
-    response.cookies.set(ACTOR_COOKIE_NAME, actorIdentity.cookieValue, {
-      httpOnly: true,
-      secure: envServer.APP_ENV !== "development",
-      sameSite: "lax",
-      path: "/api/bookings",
-      maxAge: 86400,
-    });
-    return response;
-  } catch (error) { return mapDatabaseError(error); }
+    return withActorCookie(response, actorIdentity.cookieValue);
+  } catch (error) {
+    return withActorCookie(
+      mapDatabaseError(error),
+      actorIdentity.cookieValue,
+    );
+  }
 }
