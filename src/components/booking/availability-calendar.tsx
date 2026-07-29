@@ -112,22 +112,24 @@ export function AvailabilityCalendar({ selectedDate, onSelectDate }: Availabilit
   const monthLabel = monthFormatter.format(firstDayOfMonth);
 
   return (
-    <div className="w-full max-w-3xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-medium">{monthLabel}</h2>
+    <div className="mx-auto w-full max-w-3xl">
+      <div className="mb-6 flex items-center justify-between gap-4 border-b border-[var(--soe-color-gold)]/45 pb-5">
+        <h3 className="font-soe-display text-[length:var(--soe-text-xl)]">{monthLabel}</h3>
         <div className="flex gap-2">
           <button
+            type="button"
             onClick={handlePrevMonth}
             disabled={currentMonth <= currentBusinessMonth || isLoading}
-            className="p-2 border rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-[var(--soe-radius-control)] border border-[var(--soe-color-gold)]/60 font-soe-ui hover:bg-[var(--soe-color-brand-soft)] disabled:cursor-not-allowed disabled:opacity-45 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--soe-color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--soe-color-focus-offset)]"
             aria-label="Previous month"
           >
             &larr;
           </button>
           <button
+            type="button"
             onClick={handleNextMonth}
             disabled={isLoading}
-            className="p-2 border rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-[var(--soe-radius-control)] border border-[var(--soe-color-gold)]/60 font-soe-ui hover:bg-[var(--soe-color-brand-soft)] disabled:cursor-not-allowed disabled:opacity-45 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--soe-color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--soe-color-focus-offset)]"
             aria-label="Next month"
           >
             &rarr;
@@ -137,11 +139,12 @@ export function AvailabilityCalendar({ selectedDate, onSelectDate }: Availabilit
 
       <div className="relative min-h-[400px]">
         {error && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/90 z-10 space-y-4">
-            <p className="text-red-600" role="alert">Failed to load calendar. Please try again.</p>
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center space-y-4 bg-[var(--soe-surface-bg-primary)]/95 px-6 text-center">
+            <p className="font-soe-body text-[var(--soe-color-error)]" role="alert">The calendar could not be loaded. Contact the estate team or try again.</p>
             <button
+              type="button"
               onClick={() => setReloadVersion((v) => v + 1)}
-              className="px-4 py-2 bg-slate-900 text-white rounded-md font-medium hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2"
+              className="min-h-11 rounded-[var(--soe-radius-control)] bg-[var(--soe-surface-action-primary)] px-5 py-2 font-soe-ui font-medium text-[var(--soe-surface-text-inverse)] hover:bg-[var(--soe-surface-action-hover)] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--soe-color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--soe-color-focus-offset)]"
             >
               Retry
             </button>
@@ -149,21 +152,21 @@ export function AvailabilityCalendar({ selectedDate, onSelectDate }: Availabilit
         )}
         
         {isLoading && !data && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/80 z-10" aria-live="polite">
-            <p className="text-slate-500">Loading availability…</p>
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-[var(--soe-surface-bg-primary)]/90" aria-live="polite">
+            <p className="font-soe-body text-[var(--soe-surface-text-secondary)]">Loading availability…</p>
           </div>
         )}
 
         <div className={`transition-opacity duration-200 ${isTransitioning ? "opacity-50 pointer-events-none" : "opacity-100"}`}>
-          <div className="grid grid-cols-7 gap-2 mb-2">
+          <div className="mb-2 grid grid-cols-7 gap-1 sm:gap-2">
             {WEEKDAYS.map((day) => (
-              <div key={day} className="text-center text-sm font-medium text-slate-500 py-2">
+              <div key={day} className="py-2 text-center font-soe-ui text-xs font-semibold uppercase tracking-wide text-[var(--soe-surface-text-secondary)]">
                 {day}
               </div>
             ))}
           </div>
 
-          <div className="grid grid-cols-7 gap-2">
+          <div className="grid grid-cols-7 gap-1 sm:gap-2">
             {blanks.map((key) => (
               <AvailabilityDay
                 key={key}
@@ -208,8 +211,8 @@ export function AvailabilityCalendar({ selectedDate, onSelectDate }: Availabilit
           </div>
 
           {data && data.dates.length === 0 && (
-            <div className="mt-8 text-center text-slate-500">
-              <p>No availability data returned for this month.</p>
+            <div className="mt-8 text-center font-soe-body text-[var(--soe-surface-text-secondary)]">
+              <p>No availability information was returned for this month. Contact the estate team for assistance.</p>
             </div>
           )}
         </div>

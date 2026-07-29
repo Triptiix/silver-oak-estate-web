@@ -15,11 +15,14 @@ describe("selected date summary", () => {
   it("offers a prefilled assisted-booking request when online checkout is disabled", () => {
     render(<SelectedDateSummary {...sharedProps} onlineBookingAvailable={false} />);
 
-    const link = screen.getByRole("link", { name: "Request This Date" });
+    const link = screen.getByRole("link", {
+      name: "Request this date on WhatsApp (opens in a new tab)",
+    });
     expect(link).toHaveAttribute("target", "_blank");
+    expect(link).toHaveAttribute("rel", "noopener noreferrer");
     expect(link.getAttribute("href")).toMatch(/^https:\/\/wa\.me\/918679470955\?text=/);
     expect(decodeURIComponent(link.getAttribute("href") ?? "")).toContain("Sat, 15 Aug, 2026");
-    expect(screen.getByText(/Online checkout is not active yet/)).toBeInTheDocument();
+    expect(screen.getByText(/does not reserve the estate/)).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Continue to Book" })).not.toBeInTheDocument();
   });
 
@@ -30,6 +33,10 @@ describe("selected date summary", () => {
       "href",
       "/book?date=2026-08-15",
     );
-    expect(screen.queryByRole("link", { name: "Request This Date" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", {
+        name: "Request this date on WhatsApp (opens in a new tab)",
+      }),
+    ).not.toBeInTheDocument();
   });
 });
