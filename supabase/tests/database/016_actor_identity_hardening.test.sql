@@ -33,13 +33,21 @@ select hasnt_function(
 
 -- 3. Verify search_path settings
 select is(
-  (select proconfig[1] from pg_proc where oid = 'public.create_booking_hold(text,date,text,text,text,text,integer,integer,text,uuid,uuid,text,text,integer)'::regprocedure),
+  (
+    select proconfig[1]
+    from pg_proc
+    where oid = 'public.create_booking_hold(text,date,text,text,text,text,integer,integer,text,uuid,uuid,text,text,integer)'::regprocedure
+  ),
   'search_path=pg_catalog',
   'public 14-arg create_booking_hold has safe search_path'
 );
 
 select is(
-  (select proconfig[1] from pg_proc where oid = 'private.create_booking_hold_v3_internal(text,date,text,text,text,text,integer,integer,text,uuid,uuid,text,text,integer)'::regprocedure),
+  (
+    select proconfig[1]
+    from pg_proc
+    where oid = 'private.create_booking_hold_v3_internal(text,date,text,text,text,text,integer,integer,text,uuid,uuid,text,text,integer)'::regprocedure
+  ),
   'search_path=pg_catalog',
   'private 14-arg create_booking_hold_v3_internal has safe search_path'
 );

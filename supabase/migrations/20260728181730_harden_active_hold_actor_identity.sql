@@ -1,3 +1,6 @@
+set lock_timeout = '4s';
+set statement_timeout = '30s';
+
 alter table public.bookings
   add column actor_identity_hash text;
 
@@ -8,9 +11,6 @@ alter table public.bookings
     or actor_identity_hash ~ '^[a-f0-9]{64}$'
   )
   not valid;
-
-set lock_timeout = '4s';
-set statement_timeout = '30s';
 
 alter table public.bookings
   validate constraint bookings_actor_identity_hash_format;
