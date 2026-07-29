@@ -26,11 +26,20 @@ const factRows = [
 const amenityGroups = [
   {
     title: "Comfort",
-    details: ["Air conditioning in bedrooms, hall, kitchen and dining area", "Wi-Fi", "RO drinking water", "Toiletries"],
+    details: [
+      "Air conditioning in bedrooms, hall, kitchen and dining area",
+      "Wi-Fi",
+      "RO drinking water",
+      "Toiletries",
+    ],
   },
   {
     title: "Power & operational support",
-    details: ["Diesel generator backup", "Solar power support", "Emergency lighting"],
+    details: [
+      "Diesel generator backup",
+      "Solar power support",
+      "Emergency lighting",
+    ],
   },
   {
     title: "Security & caretaker",
@@ -38,7 +47,11 @@ const amenityGroups = [
   },
   {
     title: "Parking & access",
-    details: ["Approximately 3 vehicles inside", "10 or more vehicles outside", "Green Beauty Farms, Sector 135, Noida"],
+    details: [
+      `${publicInformation.parking.inside.valueLabel} inside the property`,
+      `${publicInformation.parking.outside.valueLabel} outside the property`,
+      "Green Beauty Farms, Sector 135, Noida",
+    ],
   },
 ] as const;
 
@@ -103,7 +116,47 @@ export default function EstatePage() {
         <EstateContainer variant="visual"><div className="grid gap-8 lg:grid-cols-12 lg:gap-14"><div className="lg:col-span-5"><EstateEyebrow className="text-[var(--soe-surface-accent-metal)]">Lawn, pool & evening</EstateEyebrow><EstateHeading id="outdoors-heading" as="h2" variant="h2" className="mt-3 text-[var(--soe-surface-text-primary)]">Open-air time from lawn to poolside</EstateHeading><EstateText className="mt-6 text-[var(--soe-surface-text-secondary)]">Enjoy the private lawn and adult-size party pool during the standard booking period. Pool access is subject to operational availability, maintenance and caretaker instructions. A pool changing room and separate lawn bathroom are provided.</EstateText><EstateText className="mt-4 text-[var(--soe-surface-text-secondary)]">Outdoor amenities include a projector screen, speaker, board games and BBQ equipment for evenings together.</EstateText></div><div className="grid gap-6 lg:col-span-7"><EstateMediaFrame aspectRatio="cinema"><Image src="/images/estate/estate/estate-pool-deck.webp" alt="Adult-size party pool and deck at Silver Oak Estate" fill sizes="(max-width: 1023px) 100vw, 58vw" className="object-cover" /></EstateMediaFrame><EstateMediaFrame aspectRatio="landscape" className="lg:ml-auto lg:w-4/5"><Image src="/images/estate/estate/estate-lawn-evening.webp" alt="Evening view of the private lawn and grounds at Silver Oak Estate" fill sizes="(max-width: 1023px) 100vw, 46vw" className="object-cover" /></EstateMediaFrame></div></div></EstateContainer>
       </EstateSection>
 
-      <EstateSection surface="light" spacing="lg" aria-labelledby="operations-heading"><EstateContainer variant="visual"><div className="grid gap-10 border-y border-[var(--soe-color-gold)]/45 py-8 lg:grid-cols-12 lg:py-12"><div className="lg:col-span-4"><EstateEyebrow className="text-[var(--soe-color-brand)]">Amenities & operations</EstateEyebrow><EstateHeading id="operations-heading" as="h2" variant="h2" className="mt-3">Prepared for a comfortable private booking</EstateHeading></div><div className="grid gap-x-8 gap-y-9 sm:grid-cols-2 lg:col-span-8">{amenityGroups.map((group) => <section key={group.title}><EstateHeading as="h3" variant="h4" className="text-[var(--soe-color-brand)]">{group.title}</EstateHeading><ul className="mt-4 space-y-2 border-l border-[var(--soe-color-gold)]/60 pl-4 font-soe-body text-sm leading-[var(--soe-leading-body)] text-[var(--soe-surface-text-secondary)]">{group.details.map((detail) => <li key={detail}>{detail}</li>)}</ul></section>)}</div></div></EstateContainer></EstateSection>
+      <EstateSection
+        surface="light"
+        spacing="lg"
+        aria-labelledby="operations-heading"
+      >
+        <EstateContainer variant="visual">
+          <div className="grid gap-10 border-y border-[var(--soe-color-gold)]/45 py-8 lg:grid-cols-12 lg:py-12">
+            <div className="lg:col-span-4">
+              <EstateEyebrow className="text-[var(--soe-color-brand)]">
+                Amenities & operations
+              </EstateEyebrow>
+              <EstateHeading
+                id="operations-heading"
+                as="h2"
+                variant="h2"
+                className="mt-3"
+              >
+                Prepared for a comfortable private booking
+              </EstateHeading>
+            </div>
+            <div className="grid gap-x-8 gap-y-9 sm:grid-cols-2 lg:col-span-8">
+              {amenityGroups.map((group) => (
+                <section key={group.title}>
+                  <EstateHeading
+                    as="h3"
+                    variant="h4"
+                    className="text-[var(--soe-color-brand)]"
+                  >
+                    {group.title}
+                  </EstateHeading>
+                  <ul className="mt-4 space-y-2 border-l border-[var(--soe-color-gold)]/60 pl-4 font-soe-body text-sm leading-[var(--soe-leading-body)] text-[var(--soe-surface-text-secondary)]">
+                    {group.details.map((detail) => (
+                      <li key={detail}>{detail}</li>
+                    ))}
+                  </ul>
+                </section>
+              ))}
+            </div>
+          </div>
+        </EstateContainer>
+      </EstateSection>
 
       <EstateSection surface="light" spacing="lg" aria-labelledby="capacity-heading"><EstateContainer variant="content"><EstateEyebrow className="text-[var(--soe-color-brand)]">Guest capacity</EstateEyebrow><EstateHeading id="capacity-heading" as="h2" variant="h2" className="mt-3">Designed around your group</EstateHeading><div className="mt-8 grid border border-[var(--soe-color-gold)]/45 sm:grid-cols-3">{[["Overnight stays", capacity.overnightLabel], ["Indoor gatherings", capacity.indoorLabel], ["Standard daytime events", capacity.standardDayEventLabel]].map(([label, value]) => <div key={label} className="border-b border-[var(--soe-color-gold)]/35 p-6 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0"><p className="font-soe-ui text-xs font-semibold uppercase tracking-[var(--soe-tracking-eyebrow)] text-[var(--soe-color-brand)]">{label}</p><p className="mt-2 font-soe-display text-[length:var(--soe-text-xl)]">{value}</p></div>)}</div><p className="mt-5 max-w-3xl font-soe-body text-sm leading-[var(--soe-leading-body)] text-[var(--soe-surface-text-secondary)]">{capacity.largerEventStatement} Final guest count, event requirements and permitted arrangements must be confirmed with the estate team before booking.</p></EstateContainer></EstateSection>
 

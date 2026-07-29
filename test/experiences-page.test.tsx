@@ -60,6 +60,35 @@ describe("ExperiencesPage", () => {
     expect(container.querySelector('a[href="/book"]')).toBeNull();
   });
 
+  it("avoids unsupported commercial and operational claims", () => {
+    const { container } = render(<ExperiencesPage />);
+    const text = (container.textContent || "").toLowerCase();
+
+    [
+      "guaranteed",
+      "unlimited",
+      "all-inclusive",
+      "lifeguard",
+      "wedding package",
+      "complimentary dj",
+      "complimentary catering",
+      "security deposit",
+      "cleaning fee",
+      "overtime fee",
+      "extra guest fee",
+      "gst included",
+    ].forEach((claim) => {
+      expect(text).not.toContain(claim);
+    });
+
+    const hrefs = Array.from(container.querySelectorAll("a")).map(
+      (link) => link.getAttribute("href") || "",
+    );
+    expect(hrefs.some((href) => href.startsWith("tel:"))).toBe(false);
+    expect(hrefs.some((href) => href.includes("wa.me"))).toBe(false);
+    expect(hrefs).not.toContain("/book");
+  });
+
   it("uses the estate UI and no nested main landmark", () => {
     const source = fs.readFileSync(path.join(process.cwd(), "src/app/(marketing)/experiences/page.tsx"), "utf8");
     expect(source).toContain("@/components/estate-ui/estate-section");

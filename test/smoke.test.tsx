@@ -837,8 +837,19 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
       expect(screen.getAllByText(/Emergency lighting/i).length).toBeGreaterThan(0);
       expect(screen.getAllByText(/24\/7 caretaker/i).length).toBeGreaterThan(0);
       expect(screen.getAllByText(/CCTV security/i).length).toBeGreaterThan(0);
-      expect(screen.getAllByText(/Approximately 3 vehicles inside/i).length).toBeGreaterThan(0);
-      expect(screen.getAllByText(/10 or more vehicles outside/i).length).toBeGreaterThan(0);
+      expect(
+        screen.getAllByText(
+          `${publicInformation.parking.inside.valueLabel} inside the property`,
+        ).length,
+      ).toBeGreaterThan(0);
+      expect(
+        screen.getAllByText(
+          `${publicInformation.parking.outside.valueLabel} outside the property`,
+        ).length,
+      ).toBeGreaterThan(0);
+      const text = document.body.textContent || "";
+      expect(text).not.toContain("Approximately 3 vehicles");
+      expect(text).not.toContain("10 or more vehicles");
     });
 
     it("verifies unsupported claims are absent from the page source", () => {
