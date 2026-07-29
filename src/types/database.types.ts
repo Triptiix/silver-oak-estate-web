@@ -190,6 +190,7 @@ export type Database = {
       }
       bookings: {
         Row: {
+          actor_identity_hash: string | null
           advance_amount_paise: number
           balance_amount_paise: number
           booking_reference: string
@@ -217,6 +218,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          actor_identity_hash?: string | null
           advance_amount_paise: number
           balance_amount_paise: number
           booking_reference: string
@@ -244,6 +246,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          actor_identity_hash?: string | null
           advance_amount_paise?: number
           balance_amount_paise?: number
           booking_reference?: string
@@ -818,6 +821,7 @@ export type Database = {
       }
       create_booking_hold: {
         Args: {
+          p_actor_identity_hash: string
           p_check_in_date: string
           p_customer_email: string
           p_customer_name: string
