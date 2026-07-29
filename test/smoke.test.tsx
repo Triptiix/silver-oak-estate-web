@@ -1036,18 +1036,18 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
   describe("PublicInformationPages Smoke Architecture", () => {
     it("renders expected H1 heading and metadata title for Pricing Page", async () => {
       render(<PricingPage />);
-      expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Pricing at Silver Oak Estate");
+      expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Rates for the complete estate");
       const pricingMod = await import("@/app/(marketing)/pricing/page");
       expect(pricingMod.metadata.title).toBe("Pricing | Silver Oak Estate");
-      expect(screen.getByRole("link", { name: "Check Availability" })).toHaveAttribute("href", "/availability");
+      expect(screen.getAllByRole("link", { name: "Check Availability" })[0]).toHaveAttribute("href", "/availability");
     });
 
     it("renders expected H1 heading and metadata title for Location Page", async () => {
       render(<LocationPage />);
-      expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Location & Address");
+      expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Find the estate");
       const locationMod = await import("@/app/(marketing)/location/page");
       expect(locationMod.metadata.title).toBe("Location | Silver Oak Estate, Sector 135 Noida");
-      expect(screen.getByRole("link", { name: "Open in Google Maps" })).toHaveAttribute(
+      expect(screen.getAllByRole("link", { name: "Open in Google Maps" })[0]).toHaveAttribute(
         "href",
         "https://maps.app.goo.gl/zaB8oYQeiaUWChYM7"
       );
@@ -1055,7 +1055,7 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
 
     it("renders expected H1 heading and metadata title for Contact Page", async () => {
       render(<ContactPage />);
-      expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Contact & Enquiries");
+      expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Begin with a considered enquiry");
       const contactMod = await import("@/app/(marketing)/contact/page");
       expect(contactMod.metadata.title).toBe("Contact | Silver Oak Estate");
       const emailLinks = screen.getAllByRole("link", { name: "Email an Enquiry" });
@@ -1095,11 +1095,11 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
       expect(screen.getByRole("link", { name: "Call +91 86794 70955" })).toHaveAttribute("href", "tel:+918679470955");
       expect(screen.getByRole("link", { name: "Call +91 99102 03212" })).toHaveAttribute("href", "tel:+919910203212");
 
-      const wa1 = screen.getByRole("link", { name: "WhatsApp +91 86794 70955" });
+      const wa1 = screen.getByRole("link", { name: /WhatsApp \+91 86794 70955/ });
       expect(wa1).toHaveAttribute("href", "https://wa.me/918679470955");
       expect(wa1).toHaveAttribute("target", "_blank");
 
-      const wa2 = screen.getByRole("link", { name: "WhatsApp +91 99102 03212" });
+      const wa2 = screen.getByRole("link", { name: /WhatsApp \+91 99102 03212/ });
       expect(wa2).toHaveAttribute("href", "https://wa.me/919910203212");
       expect(wa2).toHaveAttribute("target", "_blank");
     });
