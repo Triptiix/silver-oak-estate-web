@@ -1,10 +1,12 @@
-import { readFileSync } from "node:fs";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
-vi.mock("@/app/admin/login/actions", () => ({
+const { loginAction } = vi.hoisted(() => ({
   loginAction: vi.fn(),
+}));
+vi.mock("@/app/admin/login/actions", () => ({
+  loginAction,
 }));
 
 import AdminLoginPage from "@/app/admin/login/page";
@@ -29,9 +31,9 @@ describe("Admin login page", () => {
     );
     expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /register|sign up/i })).not.toBeInTheDocument();
-    expect(readFileSync("src/app/admin/login/page.tsx", "utf8")).toContain(
-      "action={loginAction}",
-    );
+
+    fireEvent.submit(screen.getByRole("button", { name: "Sign in" }).closest("form")!);
+    await waitFor(() => expect(loginAction).toHaveBeenCalledOnce());
   });
 
   it("shows only the safe administrator-access error", async () => {

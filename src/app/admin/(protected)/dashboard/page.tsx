@@ -3,7 +3,7 @@ import { AdminShell } from "@/components/admin/admin-shell";
 import { AdminRoleSummary } from "@/components/admin/admin-role-summary";
 
 export const metadata = {
-  title: "Admin Dashboard",
+  title: "Operations dashboard",
 };
 
 const workspaces = [
