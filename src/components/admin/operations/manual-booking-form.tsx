@@ -150,14 +150,22 @@ export function ManualBookingForm() {
   }
 
   return (
-    <section className="rounded border border-[var(--border)] bg-white p-5">
-      <h2 className="text-xl font-bold">Create a manual booking</h2>
-      <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-        Pricing, checkout time, status and hold duration are resolved by the server. The inventory hold expires if payment is not verified.
+    <section className="rounded-xl border border-[var(--border)] bg-white p-5 sm:p-6">
+      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted-foreground)]">
+        Booking workflow
       </p>
-      <form onSubmit={submit} className="mt-5 space-y-5">
-        <fieldset disabled={pending} className="space-y-4">
-          <legend className="text-sm font-semibold">Stay and customer</legend>
+      <h2 className="mt-2 text-xl font-bold">Create a manual booking</h2>
+      <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">
+        Enter the check-in and customer facts only. Pricing, checkout, status and
+        hold duration remain server-owned. The reservation expires if payment is
+        not verified.
+      </p>
+      <form onSubmit={submit} className="mt-6 space-y-5">
+        <fieldset
+          disabled={pending}
+          className="space-y-4 rounded-lg border border-stone-200 p-4"
+        >
+          <legend className="px-1 text-sm font-semibold">Stay and customer</legend>
           <div>
             <label htmlFor="manualCheckInDate" className="text-sm font-medium">Check-in date</label>
             <input
@@ -218,8 +226,11 @@ export function ManualBookingForm() {
           </div>
         </fieldset>
 
-        <fieldset disabled={pending}>
-          <legend className="text-sm font-semibold">Guests</legend>
+        <fieldset
+          disabled={pending}
+          className="rounded-lg border border-stone-200 p-4"
+        >
+          <legend className="px-1 text-sm font-semibold">Guest limits</legend>
           <div className="mt-3 grid gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="manualGuestCount" className="text-sm font-medium">Total guest count</label>
@@ -257,29 +268,40 @@ export function ManualBookingForm() {
           </div>
         </fieldset>
 
-        <div>
-          <label htmlFor="manualSpecialRequests" className="text-sm font-medium">Special requests (optional)</label>
-          <textarea id="manualSpecialRequests" name="specialRequests" maxLength={1000} rows={3} disabled={pending} className={inputClassName} />
-        </div>
-        <div>
-          <label htmlFor="manualPaymentProvider" className="text-sm font-medium">Manual payment provider</label>
-          <select
-            required
-            id="manualPaymentProvider"
-            name="manualProvider"
-            defaultValue=""
-            disabled={pending}
-            aria-invalid={Boolean(firstFieldError(fieldErrors, "manualProvider"))}
-            aria-describedby="manualPaymentProvider-error"
-            className={inputClassName}
-          >
-            <option value="" disabled>Select a provider</option>
-            <option value="manual_upi">Manual UPI</option>
-            <option value="payment_link">Payment link</option>
-          </select>
-          {firstFieldError(fieldErrors, "manualProvider") && <p id="manualPaymentProvider-error" className={errorClassName}>{firstFieldError(fieldErrors, "manualProvider")}</p>}
-        </div>
-        <Button type="submit" disabled={pending}>
+        <fieldset
+          disabled={pending}
+          className="space-y-4 rounded-lg border border-stone-200 p-4"
+        >
+          <legend className="px-1 text-sm font-semibold">
+            Notes and manual payment
+          </legend>
+          <div>
+            <label htmlFor="manualSpecialRequests" className="text-sm font-medium">Special requests (optional)</label>
+            <textarea id="manualSpecialRequests" name="specialRequests" maxLength={1000} rows={3} disabled={pending} className={inputClassName} />
+          </div>
+          <div>
+            <label htmlFor="manualPaymentProvider" className="text-sm font-medium">Manual payment provider</label>
+            <select
+              required
+              id="manualPaymentProvider"
+              name="manualProvider"
+              defaultValue=""
+              disabled={pending}
+              aria-invalid={Boolean(firstFieldError(fieldErrors, "manualProvider"))}
+              aria-describedby="manualPaymentProvider-help manualPaymentProvider-error"
+              className={inputClassName}
+            >
+              <option value="" disabled>Select a provider</option>
+              <option value="manual_upi">Manual UPI</option>
+              <option value="payment_link">Payment link</option>
+            </select>
+            <p id="manualPaymentProvider-help" className="mt-1 text-xs leading-5 text-stone-500">
+              Only Manual UPI and Payment link are supported.
+            </p>
+            {firstFieldError(fieldErrors, "manualProvider") && <p id="manualPaymentProvider-error" className={errorClassName}>{firstFieldError(fieldErrors, "manualProvider")}</p>}
+          </div>
+        </fieldset>
+        <Button type="submit" disabled={pending} className="min-h-11 w-full sm:w-auto">
           {pending ? "Creating booking…" : "Create manual booking"}
         </Button>
       </form>

@@ -34,15 +34,15 @@ export const AdminOperationResult = forwardRef<
       tabIndex={-1}
       role={isFailure ? "alert" : undefined}
       aria-live={isFailure ? undefined : "polite"}
-      className={`rounded border p-4 ${palette}`}
+      className={`rounded-lg border p-4 ${palette}`}
     >
-      <div className="flex items-start justify-between gap-4">
-        <div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
           <h3 className="font-bold">{feedback.title}</h3>
           <p className="mt-1 text-sm">{feedback.message}</p>
           {feedback.details && (
             <ul className="mt-3 space-y-1 text-sm">
-              {feedback.details.map((detail) => <li key={detail}>{detail}</li>)}
+              {feedback.details.map((detail) => <li className="break-words" key={detail}>{detail}</li>)}
             </ul>
           )}
           {feedback.link && (
@@ -65,7 +65,7 @@ export const AdminOperationResult = forwardRef<
         <button
           type="button"
           onClick={onDismiss}
-          className="rounded px-2 py-1 text-sm font-medium underline focus-visible:outline-none focus-visible:ring-2"
+          className="min-h-11 self-start rounded px-3 py-2 text-sm font-medium underline focus-visible:outline-hidden focus-visible:ring-2"
         >
           Dismiss
         </button>

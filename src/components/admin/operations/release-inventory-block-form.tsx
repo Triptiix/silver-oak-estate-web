@@ -130,11 +130,11 @@ export function ReleaseInventoryBlockForm({
   }
 
   return (
-    <details className="mt-3 rounded border border-stone-200 p-3">
-      <summary className="cursor-pointer font-medium focus-visible:outline-none focus-visible:ring-2">
+    <details className="rounded-lg border border-red-200 bg-white p-3">
+      <summary className="min-h-11 cursor-pointer content-center rounded px-1 font-medium text-red-900 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-red-800">
         Release this {block.reservationType.replaceAll("_", " ")}
       </summary>
-      <p className="mt-3 text-sm text-stone-600">
+      <p className="mt-3 text-sm leading-6 text-stone-600">
         You are releasing {block.reservationType.replaceAll("_", " ")} inventory from{" "}
         <time>{new Date(block.startAt).toLocaleDateString("en-IN")}</time> to{" "}
         <time>{new Date(block.endAt).toLocaleDateString("en-IN")}</time>.
@@ -182,7 +182,12 @@ export function ReleaseInventoryBlockForm({
           </label>
           {firstFieldError(fieldErrors, "confirmed") && <p id={`${fieldId}-confirm-error`} className={errorClassName}>{firstFieldError(fieldErrors, "confirmed")}</p>}
         </div>
-        <Button type="submit" variant="outline" disabled={pending}>
+        <Button
+          type="submit"
+          variant="outline"
+          disabled={pending}
+          className="min-h-11 border-red-300 text-red-900 hover:bg-red-50"
+        >
           {pending ? "Releasing block…" : "Release inventory block"}
         </Button>
       </form>

@@ -21,21 +21,33 @@ export default async function AdminLoginPage({
   const errorMessage = error ? errorMessages[error] : undefined;
 
   return (
-    <Container className="flex h-screen items-center justify-center">
-      <div className="w-full max-w-md rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] p-8">
-        <h1 className="mb-2 text-2xl font-bold">Admin Login</h1>
-        <p className="mb-6 text-sm text-[var(--muted-foreground)]">
-          Sign in with an administrator account provisioned by the estate team.
+    <Container className="flex min-h-dvh items-center justify-center py-8 sm:py-12">
+      <section
+        aria-labelledby="admin-login-heading"
+        className="w-full max-w-md rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm sm:p-8"
+      >
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
+          Silver Oak Estate
+        </p>
+        <h1 id="admin-login-heading" className="mt-3 text-2xl font-bold tracking-tight">
+          Administrator sign in
+        </h1>
+        <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">
+          Private, provisioned access for the estate operations workspace. No
+          public administrator registration is available.
         </p>
         {errorMessage ? (
-          <p role="alert" className="mb-4 text-sm text-[var(--error)]">
+          <p
+            role="alert"
+            className="mt-5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-[var(--error)]"
+          >
             {errorMessage}
           </p>
         ) : null}
-        <form action={loginAction} className="space-y-4">
+        <form action={loginAction} className="mt-6 space-y-5">
           <div className="space-y-2">
             <label htmlFor="email" className="block text-sm font-medium">
-              Email
+              Administrator email
             </label>
             <Input
               id="email"
@@ -57,11 +69,15 @@ export default async function AdminLoginPage({
               required
             />
           </div>
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="min-h-11 w-full">
             Sign in
           </Button>
         </form>
-      </div>
+        <p className="mt-5 text-xs leading-5 text-[var(--muted-foreground)]">
+          Access is limited to active administrator accounts provisioned by the
+          estate team.
+        </p>
+      </section>
     </Container>
   );
 }
