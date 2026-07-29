@@ -12,6 +12,7 @@ import PoliciesPage from "@/app/(marketing)/policies/page";
 import { publicInformation } from "@/config/public-information";
 import MarketingLayout from "@/app/(marketing)/layout";
 import { SiteHeader } from "@/components/layout/site-header";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { MobileBookingCTA } from "@/components/layout/mobile-booking-cta";
 import nextConfig from "../next.config";
 
@@ -88,7 +89,7 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
       expect(content).toContain("@/components/estate-ui/estate-container");
       expect(content).toContain("@/components/estate-ui/estate-heading");
       expect(content).toContain("@/components/estate-ui/estate-text");
-      expect(content).toContain("@/components/estate-ui/estate-media-frame");
+      expect(content).toContain("@/components/estate-ui/estate-eyebrow");
       expect(content).toContain("@/components/estate-ui/estate-action-link");
 
       expect(content).not.toContain("@/components/ui/container");
@@ -337,10 +338,10 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
       expect(bookNowWrapper?.className).not.toContain("sm:inline-flex");
     });
 
-    it("18. mobile trigger uses md:hidden", () => {
+    it("18. mobile trigger remains available through tablet widths", () => {
       render(<SiteHeader />);
       const trigger = screen.getByRole("button", { name: "Open navigation" });
-      expect(trigger.className).toContain("md:hidden");
+      expect(trigger.className).toContain("lg:hidden");
     });
 
     it("19. SiteHeader contains no SVG elements", () => {
@@ -360,6 +361,67 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
       links.forEach((l) => {
         expect(l.className).toContain("focus-visible:ring-[var(--soe-color-focus-ring)]");
       });
+    });
+  });
+
+  describe("Premium Estate Footer", () => {
+    it("renders complete verified footer destinations", () => {
+      render(<SiteFooter />);
+
+      const hrefs = Array.from(document.querySelectorAll("a")).map((link) =>
+        link.getAttribute("href")
+      );
+
+      expect(hrefs).toEqual(
+        expect.arrayContaining([
+          "/estate",
+          "/experiences",
+          "/gallery",
+          "/availability",
+          "/pricing",
+          "/location",
+          "/policies",
+          "/privacy",
+          "/terms",
+          "/contact",
+          publicInformation.contact.mailtoHref,
+        ])
+      );
+    });
+
+    it("uses labelled navigation landmarks and visible focus classes", () => {
+      render(<SiteFooter />);
+
+      expect(
+        screen.getByRole("navigation", { name: "Footer Estate" })
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("navigation", { name: "Footer Plan your visit" })
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("navigation", { name: "Footer information" })
+      ).toBeInTheDocument();
+
+      document.querySelectorAll("footer a").forEach((link) => {
+        expect(link.className).toContain(
+          "focus-visible:ring-[var(--soe-color-focus-ring)]"
+        );
+      });
+    });
+
+    it("contains no invented social, telephone, or legal-entity links", () => {
+      render(<SiteFooter />);
+
+      const text = (document.body.textContent || "").toLowerCase();
+      const hrefs = Array.from(document.querySelectorAll("footer a")).map(
+        (link) => link.getAttribute("href") || ""
+      );
+
+      expect(text).not.toContain("instagram");
+      expect(text).not.toContain("facebook");
+      expect(text).not.toContain("private limited");
+      expect(hrefs.some((href) => href.startsWith("tel:"))).toBe(false);
+      expect(hrefs.some((href) => href.includes("wa.me"))).toBe(false);
     });
   });
 

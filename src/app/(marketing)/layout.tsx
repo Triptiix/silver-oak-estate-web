@@ -8,7 +8,7 @@ export default function MarketingLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="relative flex min-h-screen flex-col">
+    <div className="relative flex min-h-screen flex-col bg-[var(--soe-color-canvas)]">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:rounded-[var(--soe-radius-control)] focus:bg-[var(--soe-surface-bg-primary)] focus:text-[var(--soe-surface-text-primary)] focus:shadow-[var(--soe-shadow-overlay)] focus:outline focus:outline-2 focus:outline-[var(--soe-color-focus-ring)]"
