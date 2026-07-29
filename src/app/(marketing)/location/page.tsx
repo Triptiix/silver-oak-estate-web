@@ -33,8 +33,7 @@ export default function LocationPage() {
               <EstateHeading
                 as="h1"
                 variant="hero"
-                className="text-[var(--soe-surface-text-primary)]"
-                style={{ fontSize: "clamp(3rem, 5vw, 6.2rem)" }}
+                className="text-[length:clamp(3rem,5vw,6.2rem)] text-[var(--soe-surface-text-primary)]"
               >
                 Find the estate
               </EstateHeading>
@@ -50,6 +49,7 @@ export default function LocationPage() {
                   href={location.mapsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label="Open in Google Maps (opens in a new tab)"
                   variant="button"
                 >
                   Open in Google Maps
@@ -185,6 +185,7 @@ export default function LocationPage() {
               href={location.mapsUrl}
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="Open in Google Maps (opens in a new tab)"
               variant="button"
             >
               Open in Google Maps

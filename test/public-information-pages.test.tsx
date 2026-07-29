@@ -231,11 +231,16 @@ describe("Public Information Pages & Config Contracts", () => {
       expect(text).toContain(publicInformation.parking.inside.description);
       expect(text).toContain(publicInformation.parking.outside.description);
 
-      const mapsLink = screen.getAllByRole("link", { name: "Open in Google Maps" })[0];
-      expect(mapsLink).toHaveAttribute("href", publicInformation.location.mapsUrl);
-      expect(mapsLink).toHaveAttribute("target", "_blank");
-      expect(mapsLink.getAttribute("rel")).toContain("noopener");
-      expect(mapsLink.getAttribute("rel")).toContain("noreferrer");
+      const mapsLinks = screen.getAllByRole("link", {
+        name: "Open in Google Maps (opens in a new tab)",
+      });
+      expect(mapsLinks).toHaveLength(2);
+      for (const mapsLink of mapsLinks) {
+        expect(mapsLink).toHaveAttribute("href", publicInformation.location.mapsUrl);
+        expect(mapsLink).toHaveAttribute("target", "_blank");
+        expect(mapsLink.getAttribute("rel")).toContain("noopener");
+        expect(mapsLink.getAttribute("rel")).toContain("noreferrer");
+      }
 
       const availabilityLink = screen.getAllByRole("link", { name: "Check Availability" })[0];
       expect(availabilityLink).toHaveAttribute("href", "/availability");

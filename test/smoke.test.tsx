@@ -1047,7 +1047,7 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
       expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Find the estate");
       const locationMod = await import("@/app/(marketing)/location/page");
       expect(locationMod.metadata.title).toBe("Location | Silver Oak Estate, Sector 135 Noida");
-      expect(screen.getAllByRole("link", { name: "Open in Google Maps" })[0]).toHaveAttribute(
+      expect(screen.getAllByRole("link", { name: "Open in Google Maps (opens in a new tab)" })[0]).toHaveAttribute(
         "href",
         "https://maps.app.goo.gl/zaB8oYQeiaUWChYM7"
       );

@@ -40,8 +40,7 @@ export default function ContactPage() {
               <EstateHeading
                 as="h1"
                 variant="hero"
-                className="max-w-4xl text-[var(--soe-surface-text-primary)]"
-                style={{ fontSize: "clamp(3rem, 5.2vw, 6.4rem)" }}
+                className="max-w-4xl text-[length:clamp(3rem,5.2vw,6.4rem)] text-[var(--soe-surface-text-primary)]"
               >
                 Begin with a considered enquiry
               </EstateHeading>
