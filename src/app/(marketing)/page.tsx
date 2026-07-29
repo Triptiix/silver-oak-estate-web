@@ -11,6 +11,7 @@ import {
   formatInrFromPaise,
   publicInformation,
 } from "@/config/public-information";
+import { getOnlineBookingCapability } from "@/lib/capabilities/online-booking";
 
 export const metadata: Metadata = {
   title: "Silver Oak Estate | Private Farmhouse Stay & Event Venue in Noida",
@@ -23,9 +24,11 @@ const focusClasses =
 
 export default function HomePage() {
   const { booking, capacity, contact } = publicInformation;
+  const onlineBooking = getOnlineBookingCapability();
   const weekdayRate = formatInrFromPaise(booking.weekday.ratePaise);
   const weekendRate = formatInrFromPaise(booking.weekend.ratePaise);
   const advanceAmount = formatInrFromPaise(booking.advancePaise);
+  const stayHref = onlineBooking.available ? "/book" : "/availability";
 
   const facts = [
     "Private 3 BHK estate",
@@ -181,7 +184,7 @@ export default function HomePage() {
 
           <div className="grid gap-px overflow-hidden border border-[var(--soe-color-gold)]/35 bg-[var(--soe-color-gold)]/35 lg:grid-cols-2">
             <Link
-              href="/book"
+              href={stayHref}
               className={`group relative min-h-[32rem] overflow-hidden bg-[var(--soe-color-night)] sm:min-h-[40rem] ${focusClasses}`}
             >
               <Image

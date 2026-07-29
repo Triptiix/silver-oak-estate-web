@@ -16,7 +16,18 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { MobileBookingCTA } from "@/components/layout/mobile-booking-cta";
 import nextConfig from "../next.config";
 
+const onlineBookingCapabilityMock = vi.hoisted(() => ({
+  available: false,
+}));
+
 vi.mock("server-only", () => ({}));
+vi.mock("@/lib/capabilities/online-booking", () => ({
+  getOnlineBookingCapability: () => ({
+    available: onlineBookingCapabilityMock.available,
+    state: onlineBookingCapabilityMock.available ? "ready" : "disabled",
+    missingFields: [],
+  }),
+}));
 
 // Mock next/navigation for route suppression testing
 let mockPathname = "/";
@@ -62,6 +73,7 @@ function parseCspDirectives(cspHeader: string): Record<string, string[]> {
 describe("Smoke & Launch-Unblock Regression Suite", () => {
   beforeEach(() => {
     mockPathname = "/";
+    onlineBookingCapabilityMock.available = false;
   });
 
   describe("Root Route Ownership", () => {
@@ -116,7 +128,7 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
 
       expect(hrefs).toContain("/availability");
       expect(hrefs).toContain("/estate");
-      expect(hrefs).toContain("/book");
+      expect(hrefs).not.toContain("/book");
       expect(hrefs).toContain("/contact");
       expect(hrefs).toContain("/gallery");
       expect(hrefs).toContain("/pricing");
@@ -127,6 +139,24 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
         expect(h).not.toMatch(/^tel:/i);
         expect(h).not.toContain("wa.me");
       });
+    });
+
+    it("routes the Stay panel to availability when booking is disabled", () => {
+      onlineBookingCapabilityMock.available = false;
+      render(<HomePage />);
+
+      expect(
+        screen.getByRole("link", { name: /Plan Your Stay/i })
+      ).toHaveAttribute("href", "/availability");
+    });
+
+    it("routes the Stay panel to booking when capability is ready", () => {
+      onlineBookingCapabilityMock.available = true;
+      render(<HomePage />);
+
+      expect(
+        screen.getByRole("link", { name: /Plan Your Stay/i })
+      ).toHaveAttribute("href", "/book");
     });
 
     it("7. verifies all homepage image sources use /images/estate/home/ with valid alt text including corrected bedroom alt", () => {
