@@ -115,7 +115,7 @@ export function SiteHeader({
         <nav
           id="mobile-navigation"
           aria-label="Mobile navigation"
-          className="border-t border-[var(--soe-color-gold)]/35 bg-[var(--soe-color-night)] px-4 pb-7 pt-4 lg:hidden"
+          className="soe-motion-menu-enter border-t border-[var(--soe-color-gold)]/35 bg-[var(--soe-color-night)]/95 backdrop-blur-md px-4 pb-7 pt-4 lg:hidden"
         >
           <EstateContainer variant="visual" className="px-0">
             <div className="grid gap-1">
