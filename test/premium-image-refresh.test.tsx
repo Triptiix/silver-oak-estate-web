@@ -41,6 +41,61 @@ function publicPathFor(source: string) {
   return path.join(process.cwd(), "public", source.replace(/^\//, ""));
 }
 
+/**
+ * Mirrors CSS grid's default ("sparse") auto-placement: the cursor only moves
+ * forward, so an item too wide for the columns left in the current row skips to
+ * the next row and leaves a hole behind rather than backfilling it. Returns the
+ * number of empty cells inside the occupied rows.
+ */
+function countGridHoles(
+  tiles: readonly { colSpan: number; rowSpan: number }[],
+  columns: number,
+) {
+  const occupied: boolean[][] = [];
+  const cellAt = (row: number, column: number) => {
+    while (occupied.length <= row) occupied.push(new Array(columns).fill(false));
+    return occupied[row][column];
+  };
+  const fits = (row: number, column: number, tile: { colSpan: number; rowSpan: number }) => {
+    if (column + tile.colSpan > columns) return false;
+    for (let r = row; r < row + tile.rowSpan; r += 1) {
+      for (let c = column; c < column + tile.colSpan; c += 1) {
+        if (cellAt(r, c)) return false;
+      }
+    }
+    return true;
+  };
+
+  let cursorRow = 0;
+  let cursorColumn = 0;
+
+  for (const tile of tiles) {
+    let row = cursorRow;
+    let column = cursorColumn;
+    while (!fits(row, column, tile)) {
+      column += 1;
+      if (column >= columns) {
+        column = 0;
+        row += 1;
+      }
+    }
+    for (let r = row; r < row + tile.rowSpan; r += 1) {
+      for (let c = column; c < column + tile.colSpan; c += 1) {
+        cellAt(r, c);
+        occupied[r][c] = true;
+      }
+    }
+    cursorRow = row;
+    cursorColumn = column + tile.colSpan;
+    if (cursorColumn >= columns) {
+      cursorColumn = 0;
+      cursorRow = row + 1;
+    }
+  }
+
+  return occupied.flat().filter((cell) => !cell).length;
+}
+
 describe("premium image refresh — priority assets", () => {
   it("resolves every newly added priority image to a real file on disk", () => {
     for (const source of [HERO_PRIMARY, HERO_INSET, ...GALLERY_PRIORITY_IMAGES]) {
@@ -121,16 +176,34 @@ describe("premium image refresh — gallery curation", () => {
   it("tiles the three-column grid without leaving an empty cell", () => {
     const { container } = render(<GalleryPage />);
     const figures = Array.from(container.querySelectorAll("figure"));
-
-    const columnsPerRow = 3;
-    const used = figures.reduce((total, figure) => {
-      const wide = figure.className.includes("md:col-span-2");
-      const tall = figure.className.includes("md:row-span-2");
-      return total + (wide ? 2 : 1) * (tall ? 2 : 1);
-    }, 0);
-
     expect(figures).toHaveLength(12);
-    expect(used % columnsPerRow).toBe(0);
+
+    const tiles = figures.map((figure) => ({
+      colSpan: figure.className.includes("md:col-span-2") ? 2 : 1,
+      rowSpan: figure.className.includes("md:row-span-2") ? 2 : 1,
+    }));
+
+    expect(countGridHoles(tiles, 3)).toBe(0);
+  });
+
+  it("detects the gaps the previous tile order produced", () => {
+    // The pre-refresh order: wide, standard, tall, standard, wide, standard,
+    // wide, tall, standard, standard. Its cell count is also a multiple of
+    // three, so only real placement simulation catches the holes.
+    const previousOrder = [
+      { colSpan: 2, rowSpan: 1 },
+      { colSpan: 1, rowSpan: 1 },
+      { colSpan: 1, rowSpan: 2 },
+      { colSpan: 1, rowSpan: 1 },
+      { colSpan: 2, rowSpan: 1 },
+      { colSpan: 1, rowSpan: 1 },
+      { colSpan: 2, rowSpan: 1 },
+      { colSpan: 1, rowSpan: 2 },
+      { colSpan: 1, rowSpan: 1 },
+      { colSpan: 1, rowSpan: 1 },
+    ];
+
+    expect(countGridHoles(previousOrder, 3)).toBeGreaterThan(0);
   });
 
   it("drops the redundant duplicate experience photographs", () => {
