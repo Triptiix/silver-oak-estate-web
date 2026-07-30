@@ -14,16 +14,16 @@ vi.mock("@/lib/capabilities/online-booking", () => ({
   }),
 }));
 
-const HERO_PRIMARY = "/images/estate/home/hero-page.PNG";
-const HERO_INSET = "/images/estate/home/hero 1.PNG";
+const HERO_PRIMARY = "/images/estate/home/hero-page.webp";
+const HERO_INSET = "/images/estate/home/hero-evening.webp";
 
 const GALLERY_PRIORITY_IMAGES = [
-  "/images/estate/experiences/deck01.PNG",
-  "/images/estate/estate/estate-deck-03.PNG",
-  "/images/estate/estate/estate-dinning-03.PNG",
-  "/images/estate/estate/estate-Bedroom-02.PNG",
-  "/images/estate/estate/estate-bedroom-03.PNG",
-  "/images/estate/estate/estate-kitchen-03.PNG",
+  "/images/estate/experiences/deck-01.webp",
+  "/images/estate/estate/estate-deck-03.webp",
+  "/images/estate/estate/estate-dining-03.webp",
+  "/images/estate/estate/estate-bedroom-02.webp",
+  "/images/estate/estate/estate-bedroom-03.webp",
+  "/images/estate/estate/estate-kitchen-03.webp",
 ] as const;
 
 // next/image rewrites src to /_next/image?url=<encoded>&w=…&q=…

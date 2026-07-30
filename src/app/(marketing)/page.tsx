@@ -92,7 +92,7 @@ export default function HomePage() {
 
           <div className="relative min-h-[45svh] overflow-hidden lg:min-h-full">
             <Image
-              src="/images/estate/home/hero-page.PNG"
+              src="/images/estate/home/hero-page.webp"
               alt="Silver Oak Estate at golden hour, with the residence, open private lawn, pool and garden gazebo"
               fill
               sizes="(max-width: 1023px) 100vw, 64vw"
@@ -106,7 +106,7 @@ export default function HomePage() {
             <figure className="absolute bottom-4 left-4 w-40 sm:bottom-6 sm:left-6 sm:w-56 lg:bottom-10 lg:left-10 lg:w-[21rem]">
               <div className="relative aspect-[16/10] overflow-hidden rounded-[var(--soe-radius-media)] border border-[var(--soe-color-gold)]/70 shadow-[0_18px_40px_rgba(13,15,14,0.45)]">
                 <Image
-                  src="/images/estate/home/hero 1.PNG"
+                  src="/images/estate/home/hero-evening.webp"
                   alt="The estate residence at twilight, with warm façade lighting, landscaped hedges and the pool beyond"
                   fill
                   sizes="(max-width: 639px) 160px, (max-width: 1023px) 224px, 336px"

@@ -6,10 +6,10 @@ import { siteConfig } from "@/config/site";
  * on-disk asset rather than each page repeating the path.
  */
 export const SHARE_IMAGE = {
-  url: "/images/estate/home/hero-estate-exterior.webp",
-  width: 3840,
-  height: 2877,
-  alt: "Exterior view of Silver Oak Estate private farmhouse in Sector 135, Noida",
+  url: "/images/brand/silver-oak-estate-og.webp",
+  width: 1200,
+  height: 630,
+  alt: "Silver Oak Estate private farmhouse at twilight, with the residence lit and the pool beyond",
 } as const;
 
 /**

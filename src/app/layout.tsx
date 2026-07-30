@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { siteConfig } from "@/config/site";
+import { SHARE_IMAGE } from "@/lib/seo/page-metadata";
 
 import { Newsreader, Manrope } from "next/font/google";
 
@@ -33,20 +34,13 @@ export const metadata: Metadata = {
     description: siteConfig.description,
     url: "/",
     locale: "en_IN",
-    images: [
-      {
-        url: "/images/estate/home/hero-estate-exterior.webp",
-        width: 3840,
-        height: 2877,
-        alt: "Exterior view of Silver Oak Estate private farmhouse in Sector 135, Noida",
-      },
-    ],
+    images: [SHARE_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
     title: siteConfig.name,
     description: siteConfig.description,
-    images: ["/images/estate/home/hero-estate-exterior.webp"],
+    images: [SHARE_IMAGE.url],
   },
 };
 

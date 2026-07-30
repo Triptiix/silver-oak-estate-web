@@ -1,3 +1,4 @@
+import { EstateStructuredData } from "@/components/seo/estate-structured-data";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { MobileBookingCTA } from "@/components/layout/mobile-booking-cta";
@@ -18,6 +19,7 @@ export default function MarketingLayout({
       >
         Skip to main content
       </a>
+      <EstateStructuredData />
       <SiteHeader onlineBookingAvailable={onlineBooking.available} />
       <main id="main-content" tabIndex={-1} className="flex-1">
         {children}
