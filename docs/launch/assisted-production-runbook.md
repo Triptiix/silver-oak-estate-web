@@ -5,20 +5,17 @@ mutation command is **labelled and must not be executed in Phase 7D.3A**. No
 secret values appear here. "Online booking stays disabled" is a standing
 invariant across every step.
 
-Last updated: 2026-07-30 · Phase 7D.3A
+Last updated: 2026-07-30 · Phase 7D.3A.2
 
 Legend: **RO** = read-only check · **MUT** = mutation (7D.3B only).
 
 ---
 
-### 1. Approve final legal pack
-- **Precondition:** `docs/launch/legal-readiness-register.md` blockers for assisted launch resolved.
-- **RO:** review approved privacy/terms source; confirm approver and date.
-- **MUT (code, not infra):** replace placeholder pages, remove `noindex`, re-add to `sitemap.ts`, add effective/last-updated dates.
-- **Expected:** `/privacy` and `/terms` render approved content; `robots` no longer `noindex`.
-- **Verify:** metadata + sitemap tests updated and passing.
-- **Rollback:** revert the commit; pages return to review-draft placeholders.
-- **Owner:** Owner + counsel. **Evidence:** signed legal pack reference.
+### 1. Approve final legal pack — **DONE (Phase 7D.3A.2, owner-approved 30 July 2026)**
+- Approved Privacy Policy and Terms and Conditions are published, indexable and in the sitemap; `/policies` summarises them.
+- Values are centralised in `src/config/legal-information.ts`.
+- **Still open:** legal entity type, identity-document requirements, overtime fee schedule, accepted payment methods, cash-payment limits and chargeback handling — required before card-based online self-service booking. A legal-professional review remains recommended before high-volume paid bookings.
+- **Owner:** Owner. **Evidence:** owner approval dated 30 July 2026.
 
 ### 2. Supply approved logo source
 - **Precondition:** owner provides an approved mark — SVG preferred, or transparent PNG ≥1024×1024, with approved colour and (when available) monochrome versions.
@@ -67,8 +64,17 @@ Legend: **RO** = read-only check · **MUT** = mutation (7D.3B only).
 - **Verify:** `curl -sI https://www.silveroakestate.online` returns 308 to apex.
 
 ### 10. Verify DNS without disturbing MX/TXT
-- **RO:** re-run the full `dig` set; confirm any mail records are unchanged.
-- **Expected:** apex/www resolve to Vercel; mail records intact.
+- **RO:** re-run the full `dig` set; confirm mail records are unchanged.
+- **Expected:** apex/www resolve to Vercel; `MX` (mx1/mx2.hostinger.com), SPF (`v=spf1 include:_spf.mail.hostinger.com ~all`) and `_dmarc` (`v=DMARC1; p=none`) remain exactly as recorded in `domain-dns-plan.md`.
+
+### 10a. Complete the email verification (manual)
+- **Precondition:** access to the `contact@silveroakestate.online` mailbox.
+- **RO:** obtain the DKIM selector from the Hostinger mail panel and resolve it; do not guess selectors.
+- **Manual test:** send from an unrelated external mailbox to `contact@`, confirm receipt, reply from `contact@`, confirm external receipt, then inspect headers for `spf=pass`, `dkim=pass` and the DMARC result.
+- **Expected:** inbound and outbound both work and authenticate.
+- **Note:** DNS records are present, but real send/receive delivery was **not** verified in Phase 7D.3A.2 (no mailbox access) and must be confirmed here.
+- **Follow-up:** consider moving DMARC from `p=none` to `p=quarantine`/`p=reject` only after SPF and DKIM pass.
+- **Owner:** Owner/Ops. **Evidence:** retained message headers.
 
 ### 11. Verify HTTPS
 - **RO:** `curl -sI https://silveroakestate.online | grep -i strict-transport-security`.

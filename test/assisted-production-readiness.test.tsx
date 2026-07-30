@@ -134,22 +134,22 @@ describe("assisted preflight — output safety and profile isolation", () => {
   });
 });
 
-describe("legal placeholders stay unindexed and out of the sitemap", () => {
-  it("marks privacy and terms noindex", () => {
-    expect(privacyMetadata.robots).toMatchObject({ index: false, follow: false });
-    expect(termsMetadata.robots).toMatchObject({ index: false, follow: false });
+describe("published legal pages are indexable and in the sitemap", () => {
+  it("no longer marks privacy or terms noindex", () => {
+    // Phase 7D.3A.2 published the approved legal pack; the drafts are gone.
+    expect(privacyMetadata.robots).toBeUndefined();
+    expect(termsMetadata.robots).toBeUndefined();
   });
 
-  it("keeps privacy and terms out of the sitemap", () => {
+  it("includes privacy and terms in the sitemap", () => {
     const urls = sitemap().map((e) => e.url);
-    expect(urls.some((u) => u.endsWith("/privacy"))).toBe(false);
-    expect(urls.some((u) => u.endsWith("/terms"))).toBe(false);
-    // Non-placeholder public routes remain present.
+    expect(urls.some((u) => u.endsWith("/privacy"))).toBe(true);
+    expect(urls.some((u) => u.endsWith("/terms"))).toBe(true);
     expect(urls.some((u) => u.endsWith("/policies"))).toBe(true);
     expect(urls.some((u) => u.endsWith("/contact"))).toBe(true);
   });
 
-  it("does not disallow privacy or terms in robots (crawlers must read noindex)", () => {
+  it("does not disallow privacy or terms in robots", () => {
     const disallow = ([] as string[]).concat(
       (robots().rules as { disallow?: string | string[] }).disallow ?? [],
     );
@@ -157,25 +157,15 @@ describe("legal placeholders stay unindexed and out of the sitemap", () => {
     expect(disallow).not.toContain("/terms");
   });
 
-  it("keeps the pages accessible and honestly labelled as review drafts", () => {
+  it("no longer renders a review-draft notice on either page", () => {
     for (const file of [
       "src/app/(marketing)/privacy/page.tsx",
       "src/app/(marketing)/terms/page.tsx",
     ]) {
       const source = readFileSync(file, "utf8");
-      expect(source).toContain("LegalDraftNotice");
+      expect(source).not.toContain("LegalDraftNotice");
+      expect(source).not.toContain("Review draft");
     }
-    const notice = readFileSync(
-      "src/components/legal/legal-draft-notice.tsx",
-      "utf8",
-    );
-    expect(notice).toContain("Review draft");
-    expect(notice).toContain("Not yet effective");
-    // The draft is never positively asserted as effective/final; it only
-    // disclaims effectiveness ("does not yet state final, legally effective…").
-    expect(notice).not.toMatch(/\bthese terms are (?:now )?effective\b/i);
-    expect(notice).not.toMatch(/\bthis policy is (?:now )?in effect\b/i);
-    expect(notice).toMatch(/does not yet state final/i);
   });
 });
 

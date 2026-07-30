@@ -48,7 +48,7 @@ describe("Public Information Pages & Config Contracts", () => {
     it("exports exact metadata for Policies Page", () => {
       expect(effectiveTitle(policiesMetadata.title)).toBe("Booking Information | Silver Oak Estate");
       expect(policiesMetadata.description).toBe(
-        "Review verified capacity, payment and operational information for Silver Oak Estate. Final legal booking terms will be provided before payment and confirmation."
+        "Summary of booking terms, capacity, payment, cancellation and operational information for Silver Oak Estate in Sector 135, Noida."
       );
     });
 
@@ -313,9 +313,12 @@ describe("Public Information Pages & Config Contracts", () => {
       render(<PoliciesPage />);
       const text = document.body.textContent || "";
 
-      expect(text).toContain("Legal review in progress");
+      // Phase 7D.3A.2: the legal pack is published, so the page now summarises
+      // effective terms and links to them instead of announcing a pending review.
+      expect(text).not.toContain("Legal review in progress");
+      expect(text).toContain("Terms effective");
       expect(text).toContain("Verified operational parameters, guest capacity information and current payment information for Silver Oak Estate.");
-      expect(text).toContain("It is an operational summary and does not constitute a final booking contract");
+      expect(text).toContain("The complete and binding terms are set out in our Terms and Conditions");
       expect(text).toContain(publicInformation.booking.checkIn.timeLabel);
       expect(text).toContain(publicInformation.booking.checkOut.timeLabel);
       expect(text).toContain(publicInformation.booking.durationLabel);
