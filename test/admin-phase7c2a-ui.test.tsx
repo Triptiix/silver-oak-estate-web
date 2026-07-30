@@ -578,10 +578,12 @@ describe("Phase 7C.2A shared embedded history", () => {
     const { rerender } = render(<PaymentTable items={[payment]} recovery />);
     expect(screen.getByText("Diagnosis only — no action available"))
       .toBeInTheDocument();
-    expect(screen.getByRole("table")).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: "Payment recovery queue" }))
+      .toBeInTheDocument();
 
     rerender(<NotificationTable items={[notification]} />);
-    expect(screen.getByRole("table")).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: "Notification outbox" }))
+      .toBeInTheDocument();
     expect(screen.getByText("Delivery not implemented in Phase 5A."))
       .toBeInTheDocument();
   });
