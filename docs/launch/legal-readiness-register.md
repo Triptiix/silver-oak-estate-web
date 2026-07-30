@@ -79,7 +79,10 @@ public online self-service booking.
 **Still unresolved / not approved.** These are distinct from the generic approvals
 above and remain required before card-based online self-service booking:
 
-- Legal entity type (#2) and registered business address (#3)
+- **Legal entity type (#2)** — the owner approved contracting as an individual with
+  no separate incorporated entity; whether a registered proprietorship or firm is
+  required for tax and payment purposes is undecided. Registered business address
+  (#3) is likewise unconfirmed.
 - **Merchant of record for card acquiring (#4)** — the approved decision is the
   *payment beneficiary* (#6, owner's designated bank account); a card-acquiring
   MoR has not been appointed
@@ -103,7 +106,7 @@ above and remain required before card-based online self-service booking:
 | # | Decision | Why it matters | Blocks | Status | Approver | Evidence required |
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | Legal contracting party | Who the guest actually contracts with | M, 3P, O | Approved 2026-07-30 (owner) | Owner + counsel | Signed determination |
-| 2 | Legal entity type (individual / firm / company) | Governs liability and tax | M, O | UNRESOLVED — OWNER/COUNSEL DECISION REQUIRED | Owner + counsel | Registration proof |
+| 2 | Legal entity type (individual / firm / company) | Governs liability and tax | M, O | Partially verified — owner approved contracting as an individual, with no separate incorporated entity (2026-07-30); whether a registered proprietorship or firm is required for tax and payment purposes is UNRESOLVED and needs counsel | Owner + counsel | Registration proof |
 | 3 | Business / registered address | Invoices, notices, jurisdiction | M, O | Partially verified (property address known; registered address unconfirmed) | Owner | Registration proof |
 | 4 | Merchant of record | Who is paid and bears chargebacks | M, O | UNRESOLVED — card-acquiring MoR not approved (payment beneficiary #6 is approved) | Owner + payment provider | MoR agreement |
 | 5 | Invoice issuer | Tax invoice validity | M, O | Approved 2026-07-30 (owner) | Owner | Invoice template |
