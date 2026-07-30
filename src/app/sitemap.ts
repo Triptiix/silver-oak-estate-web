@@ -1,9 +1,6 @@
 import type { MetadataRoute } from "next";
 import { siteConfig } from "@/config/site";
 
-// /privacy and /terms are intentionally excluded while they remain review-draft
-// placeholders (they are also noindex). They return to the sitemap once approved
-// legal content is published.
 const PUBLIC_SITEMAP_PATHS = [
   "",
   "/estate",
@@ -12,6 +9,8 @@ const PUBLIC_SITEMAP_PATHS = [
   "/pricing",
   "/location",
   "/policies",
+  "/privacy",
+  "/terms",
   "/contact",
   "/availability",
 ] as const;

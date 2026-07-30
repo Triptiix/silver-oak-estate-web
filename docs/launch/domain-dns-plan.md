@@ -4,46 +4,50 @@
 Phase 7D.3B under separate authorization. All commands below are labelled and
 must not be run in this phase.
 
-Last updated: 2026-07-30 · Phase 7D.3A
+Last updated: 2026-07-30 · Phase 7D.3A.2 (email DNS re-verified)
 
-## Current observed state (read-only, 2026-07-30)
+## Current observed state (read-only, re-verified 2026-07-30, Phase 7D.3A.2)
 
 | Check | Result |
 | --- | --- |
-| `NS silveroakestate.online` | `athena.dns-parking.com.`, `apollo.dns-parking.com.` (parked, Hostinger) |
-| `A silveroakestate.online` | none |
-| `AAAA silveroakestate.online` | none |
+| `NS` | `apollo.dns-parking.com.`, `athena.dns-parking.com.` (Hostinger) |
+| `A` apex | **none** — the domain is not yet pointed at Vercel |
+| `AAAA` apex | none |
 | `CNAME www` | none |
-| `A www` | none |
-| `MX silveroakestate.online` | none |
-| `TXT silveroakestate.online` | none (no SPF) |
-| `TXT _dmarc` | none (no DMARC) |
-| `CAA` | none |
+| `MX` | **`5 mx1.hostinger.com.`, `10 mx2.hostinger.com.`** — email is configured |
+| `TXT` apex (SPF) | **`v=spf1 include:_spf.mail.hostinger.com ~all`** |
+| `TXT _dmarc` | **`v=DMARC1; p=none`** (monitoring mode only) |
+| DKIM | **Not verified** — the provider selector was not supplied, and selectors must not be guessed |
 
-**Interpretation:** the domain is registered and parked. It resolves to nothing,
-has **no email records**, and is **not attached to Vercel** (the Vercel account
-holds unrelated domains only, and production currently serves on `*.vercel.app`).
+Verified with `dig` against 1.1.1.1, 8.8.8.8 and 9.9.9.9 and cross-checked with
+Node's `dns/promises`. A first local query returned an empty TXT set from a stale
+cache; the authoritative multi-resolver result above is the correct one.
 
-## Email status and risk
+## Email status
 
-**Email at `@silveroakestate.online` is currently UNCONFIGURED at the DNS layer.**
-There are no `MX`, SPF `TXT`, DKIM or `DMARC` records, so this domain cannot
-receive mail today and `contact@silveroakestate.online` is **not yet a working
-inbound mailbox** unless it is hosted under a different domain/alias. This is a
-**launch blocker for relying on email enquiries**: verify with the owner whether
-mail is expected here.
+The owner reports that domain email was configured manually, and DNS now supports
+that: **MX, SPF and DMARC records are present.** This is a material change from
+Phase 7D.3A, when the domain had no mail records at all.
 
-- If email should work at this domain, the mail provider's `MX`, SPF `TXT` and
-  DKIM records must be added first, and then **left untouched** by any website
-  change.
-- Until mail is configured, the assisted-enquiry pathways that are actually
-  functional are **phone and WhatsApp** (the `tel:`/`wa.me` links); the site's
-  `mailto:` link opens the visitor's own mail client and does not itself prove
-  the estate can receive replies.
+Outstanding for a complete verification (manual, Phase 7D.3B):
 
-**Website-DNS risk to mail: none in either direction** — because there are no mail
-records to overwrite, adding website `A`/`CNAME` records cannot break mail. Once
-mail records exist, never overwrite them when changing website records.
+1. **DKIM** — obtain the selector from the Hostinger mail panel and confirm the
+   record resolves. Do not guess selectors.
+2. **Real send/receive test** — send from an unrelated external mailbox to
+   `contact@silveroakestate.online`, confirm receipt, reply from that address,
+   confirm external receipt, then inspect the received headers for
+   `spf=pass`, `dkim=pass` and the DMARC result.
+3. Consider tightening DMARC from `p=none` to `p=quarantine` or `p=reject` only
+   after DKIM and SPF are confirmed passing, to avoid rejecting legitimate mail.
+
+**No mailbox access was available in this phase, so real send/receive delivery is
+NOT verified and is not claimed.**
+
+### Protecting mail when the website DNS changes
+
+The `MX`, SPF `TXT` and `_dmarc` `TXT` records above **must be left untouched**
+when adding the website `A`/`CNAME` records. Adding website records does not
+affect mail provided the existing mail records are preserved.
 
 ## Target state
 

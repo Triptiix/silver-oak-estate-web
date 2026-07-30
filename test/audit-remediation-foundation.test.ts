@@ -49,9 +49,8 @@ describe("audit remediation foundation", () => {
   it("publishes a stable explicit public sitemap without the disabled checkout route", () => {
     const entries = sitemap();
 
-    // /privacy and /terms are intentionally excluded while they are review-draft
-    // placeholders (also noindex) — see Phase 7D.3A. They return once approved
-    // legal content is published.
+    // Phase 7D.3A.2 published the approved legal pack, so /privacy and /terms
+    // are indexable and back in the sitemap.
     expect(entries.map((entry) => new URL(entry.url).pathname)).toEqual([
       "/",
       "/estate",
@@ -60,6 +59,8 @@ describe("audit remediation foundation", () => {
       "/pricing",
       "/location",
       "/policies",
+      "/privacy",
+      "/terms",
       "/contact",
       "/availability",
     ]);
