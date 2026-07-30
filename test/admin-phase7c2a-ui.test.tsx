@@ -58,6 +58,7 @@ import {
   Pagination,
 } from "@/components/admin/pagination";
 import { PaymentTable } from "@/components/admin/payment-table";
+import { isEligibleManualPayment } from "@/components/admin/operations/manual-payment-candidate";
 import { parseAdminListQuery } from "@/lib/admin/query";
 import type {
   AdminBookingDetail,
@@ -601,5 +602,26 @@ describe("Phase 7C.2A shared embedded history", () => {
     rerender(<PaymentTable items={[]} />);
     expect(screen.getByText("No payment attempts match these filters."))
       .toBeInTheDocument();
+  });
+});
+
+describe("Phase 7C.2A manual-payment eligibility predicate", () => {
+  it.each([
+    { provider: "manual_upi", status: "pending" },
+    { provider: "manual_upi", status: "expired" },
+    { provider: "payment_link", status: "pending" },
+    { provider: "payment_link", status: "expired" },
+  ])("accepts $provider + $status", (payment) => {
+    expect(isEligibleManualPayment(payment)).toBe(true);
+  });
+
+  it.each([
+    { label: "razorpay + pending", payment: { provider: "razorpay", status: "pending" } },
+    { label: "manual_upi + verified", payment: { provider: "manual_upi", status: "verified" } },
+    { label: "payment_link + failed", payment: { provider: "payment_link", status: "failed" } },
+    { label: "null", payment: null },
+    { label: "undefined", payment: undefined },
+  ])("rejects $label", ({ payment }) => {
+    expect(isEligibleManualPayment(payment)).toBe(false);
   });
 });

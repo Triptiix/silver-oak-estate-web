@@ -3,7 +3,10 @@ import { notFound } from "next/navigation";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { NotificationTable } from "@/components/admin/notification-table";
 import { ManualPaymentVerificationPanel } from "@/components/admin/operations/manual-payment-verification-panel";
-import { resolveManualPaymentCandidate } from "@/components/admin/operations/manual-payment-candidate";
+import {
+  isEligibleManualPayment,
+  resolveManualPaymentCandidate,
+} from "@/components/admin/operations/manual-payment-candidate";
 import { PaymentTable } from "@/components/admin/payment-table";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { formatAdminDateTime, formatPaise } from "@/lib/admin/format";
@@ -68,11 +71,7 @@ export default async function AdminBookingDetailPage({
 
   const { booking } = detail;
   const latestPayment = detail.payments.at(-1);
-  const hasEligibleManualPayment = Boolean(
-    latestPayment
-      && ["manual_upi", "payment_link"].includes(latestPayment.provider)
-      && ["pending", "expired"].includes(latestPayment.status),
-  );
+  const hasEligibleManualPayment = isEligibleManualPayment(latestPayment);
   const manualPaymentCandidate = resolveManualPaymentCandidate(
     admin.role,
     booking.bookingReference,
