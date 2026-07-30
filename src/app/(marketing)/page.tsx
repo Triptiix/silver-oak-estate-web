@@ -123,12 +123,12 @@ export default function HomePage() {
         <EstateContainer variant="visual">
           <ul
             aria-label="Essential estate facts"
-            className="grid border-y border-[var(--soe-color-gold)]/45 py-2 sm:grid-cols-2 lg:grid-cols-6"
+            className="grid grid-cols-2 gap-px border-y border-[var(--soe-color-gold)]/45 bg-[var(--soe-color-gold)]/30 sm:grid-cols-3 lg:grid-cols-5"
           >
             {facts.map((fact) => (
               <li
                 key={fact}
-                className="flex min-h-16 items-center border-b border-[var(--soe-color-gold)]/25 px-4 py-3 font-soe-display text-[length:var(--soe-text-base)] text-[var(--soe-surface-text-primary)] last:border-b-0 sm:odd:border-r sm:[&:nth-last-child(-n+2)]:border-b-0 lg:border-b-0 lg:border-r lg:last:border-r-0"
+                className="flex min-h-16 items-center justify-center bg-[var(--soe-color-night)] p-4 text-center font-soe-display text-[length:var(--soe-text-base)] text-[var(--soe-surface-text-primary)]"
               >
                 {fact}
               </li>
@@ -145,7 +145,7 @@ export default function HomePage() {
       >
         <EstateContainer variant="visual">
           <div className="grid items-center gap-10 lg:grid-cols-12 lg:gap-16">
-            <div className="relative min-h-[24rem] overflow-hidden rounded-[var(--soe-radius-media)] sm:min-h-[34rem] lg:col-span-7 lg:min-h-[44rem]">
+            <div className="soe-motion-image-reveal relative min-h-[24rem] overflow-hidden rounded-[var(--soe-radius-media)] sm:min-h-[34rem] lg:col-span-7 lg:min-h-[44rem]">
               <Image
                 src="/images/estate/home/estate-lawn.webp"
                 alt="Spacious private lawn and grounds at Silver Oak Estate"
@@ -205,7 +205,7 @@ export default function HomePage() {
           <div className="grid gap-px overflow-hidden border border-[var(--soe-color-gold)]/35 bg-[var(--soe-color-gold)]/35 lg:grid-cols-2">
             <Link
               href={stayHref}
-              className={`group relative min-h-[32rem] overflow-hidden bg-[var(--soe-color-night)] sm:min-h-[40rem] ${focusClasses}`}
+              className={`soe-motion-image-reveal group relative min-h-[32rem] overflow-hidden bg-[var(--soe-color-night)] sm:min-h-[40rem] ${focusClasses}`}
             >
               <Image
                 src="/images/estate/home/estate-bedroom.webp"
@@ -237,7 +237,7 @@ export default function HomePage() {
 
             <Link
               href="/contact"
-              className={`group relative min-h-[32rem] overflow-hidden bg-[var(--soe-color-night)] sm:min-h-[40rem] ${focusClasses}`}
+              className={`soe-motion-image-reveal group relative min-h-[32rem] overflow-hidden bg-[var(--soe-color-night)] sm:min-h-[40rem] ${focusClasses}`}
             >
               <Image
                 src="/images/estate/home/estate-pool.webp"
@@ -299,7 +299,7 @@ export default function HomePage() {
             </div>
 
             <div className="grid min-w-0 gap-3 sm:grid-cols-2 lg:col-span-9 lg:grid-cols-5 lg:grid-rows-2">
-              <div className="relative min-h-72 overflow-hidden rounded-[var(--soe-radius-media)] sm:col-span-2 lg:col-span-3 lg:row-span-2 lg:min-h-[42rem]">
+              <div className="soe-motion-image-reveal relative min-h-72 overflow-hidden rounded-[var(--soe-radius-media)] sm:col-span-2 lg:col-span-3 lg:row-span-2 lg:min-h-[42rem]">
                 <Image
                   src="/images/estate/home/estate-evening.webp"
                   alt="Illuminated evening view of Silver Oak Estate deck and building"
@@ -308,7 +308,7 @@ export default function HomePage() {
                   className="object-cover"
                 />
               </div>
-              <div className="relative min-h-60 overflow-hidden rounded-[var(--soe-radius-media)] lg:col-span-2">
+              <div className="soe-motion-image-reveal relative min-h-60 overflow-hidden rounded-[var(--soe-radius-media)] lg:col-span-2">
                 <Image
                   src="/images/estate/home/estate-interior.webp"
                   alt="Furnished indoor living area with comfortable seating"
@@ -317,7 +317,7 @@ export default function HomePage() {
                   className="object-cover"
                 />
               </div>
-              <div className="relative min-h-60 overflow-hidden rounded-[var(--soe-radius-media)] lg:col-span-2">
+              <div className="soe-motion-image-reveal relative min-h-60 overflow-hidden rounded-[var(--soe-radius-media)] lg:col-span-2">
                 <Image
                   src="/images/estate/home/estate-bedroom.webp"
                   alt="Bedroom with a king bed at Silver Oak Estate"
@@ -376,8 +376,7 @@ export default function HomePage() {
               ))}
             </div>
             <p className="mt-10 border-t border-[var(--soe-color-gold)]/35 pt-6 text-center font-soe-body text-[length:var(--soe-text-sm)] text-[var(--soe-color-ink-muted)]">
-              Final pricing, inclusions and any applicable charges will be
-              confirmed in writing before payment and booking confirmation.
+              Rates shown are indicative and subject to date, guest count, event requirements, taxes and final confirmation by the Silver Oak Estate team.
             </p>
           </div>
         </EstateContainer>
