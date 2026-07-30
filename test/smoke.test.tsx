@@ -16,6 +16,15 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { MobileBookingCTA } from "@/components/layout/mobile-booking-cta";
 import nextConfig from "../next.config";
 
+// Effective <title>: an absolute title renders verbatim; a plain string gets the
+// root template's " | Silver Oak Estate" suffix appended.
+function effectiveTitle(title: unknown): string {
+  if (title && typeof title === "object" && "absolute" in title) {
+    return String((title as { absolute: string }).absolute);
+  }
+  return `${String(title)} | Silver Oak Estate`;
+}
+
 const onlineBookingCapabilityMock = vi.hoisted(() => ({
   available: false,
 }));
@@ -750,7 +759,7 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
 
     it("verifies exact metadata title and complete description are exported", async () => {
       const estateModule = await import("@/app/(marketing)/estate/page");
-      expect(estateModule.metadata.title).toBe("The Estate | Silver Oak Estate Private Farmhouse in Noida");
+      expect(effectiveTitle(estateModule.metadata.title)).toBe("The Estate | Silver Oak Estate Private Farmhouse in Noida");
       expect(estateModule.metadata.description).toBe(
         "Explore the fully furnished 3 BHK residence, lawn, pool, kitchen and private gathering spaces at Silver Oak Estate in Sector 135, Noida."
       );
@@ -947,7 +956,7 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
 
     it("verifies exact metadata title and complete description are exported", async () => {
       const expModule = await import("@/app/(marketing)/experiences/page");
-      expect(expModule.metadata.title).toBe("Experiences | Private Stays & Gatherings at Silver Oak Estate");
+      expect(effectiveTitle(expModule.metadata.title)).toBe("Experiences | Private Stays & Gatherings at Silver Oak Estate");
       expect(expModule.metadata.description).toBe(
         `Discover private stays, approved gatherings, pool and lawn time at Silver Oak Estate in Sector 135, Noida. The fully furnished 3 BHK farmhouse accommodates ${publicInformation.capacity.overnightLabel.toLowerCase()}.`
       );
@@ -1038,7 +1047,7 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
       render(<PricingPage />);
       expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Rates for the complete estate");
       const pricingMod = await import("@/app/(marketing)/pricing/page");
-      expect(pricingMod.metadata.title).toBe("Pricing | Silver Oak Estate");
+      expect(effectiveTitle(pricingMod.metadata.title)).toBe("Pricing | Silver Oak Estate");
       expect(screen.getAllByRole("link", { name: "Check Availability" })[0]).toHaveAttribute("href", "/availability");
     });
 
@@ -1046,7 +1055,7 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
       render(<LocationPage />);
       expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Find the estate");
       const locationMod = await import("@/app/(marketing)/location/page");
-      expect(locationMod.metadata.title).toBe("Location | Silver Oak Estate, Sector 135 Noida");
+      expect(effectiveTitle(locationMod.metadata.title)).toBe("Location | Silver Oak Estate, Sector 135 Noida");
       expect(screen.getAllByRole("link", { name: "Open in Google Maps (opens in a new tab)" })[0]).toHaveAttribute(
         "href",
         "https://maps.app.goo.gl/zaB8oYQeiaUWChYM7"
@@ -1057,7 +1066,7 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
       render(<ContactPage />);
       expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Begin with a considered enquiry");
       const contactMod = await import("@/app/(marketing)/contact/page");
-      expect(contactMod.metadata.title).toBe("Contact | Silver Oak Estate");
+      expect(effectiveTitle(contactMod.metadata.title)).toBe("Contact | Silver Oak Estate");
       const emailLinks = screen.getAllByRole("link", { name: "Email an Enquiry" });
       expect(emailLinks.length).toBeGreaterThanOrEqual(1);
       expect(emailLinks[0]).toHaveAttribute("href", "mailto:contact@silveroakestate.online");
@@ -1067,7 +1076,7 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
       render(<PoliciesPage />);
       expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Booking Information & Current Policies");
       const policiesMod = await import("@/app/(marketing)/policies/page");
-      expect(policiesMod.metadata.title).toBe("Booking Information | Silver Oak Estate");
+      expect(effectiveTitle(policiesMod.metadata.title)).toBe("Booking Information | Silver Oak Estate");
       expect(screen.getByRole("link", { name: "View Pricing" })).toHaveAttribute("href", "/pricing");
     });
 

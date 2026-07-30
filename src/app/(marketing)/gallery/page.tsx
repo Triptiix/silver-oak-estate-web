@@ -1,3 +1,4 @@
+import { buildPageMetadata } from "@/lib/seo/page-metadata";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { EstateActionLink } from "@/components/estate-ui/estate-action-link";
@@ -8,11 +9,11 @@ import { EstateMediaFrame } from "@/components/estate-ui/estate-media-frame";
 import { EstateSection } from "@/components/estate-ui/estate-section";
 import { EstateText } from "@/components/estate-ui/estate-text";
 
-export const metadata: Metadata = {
-  title: "Gallery | Silver Oak Estate",
-  description:
-    "Explore verified photographs of the residence, bedrooms, lawn, pool, living spaces and evening atmosphere at Silver Oak Estate in Sector 135, Noida.",
-};
+export const metadata: Metadata = buildPageMetadata({
+  title: "Gallery",
+  description: "Explore verified photographs of the residence, bedrooms, lawn, pool, living spaces and evening atmosphere at Silver Oak Estate in Sector 135, Noida.",
+  path: "/gallery",
+});
 
 type GalleryImage = {
   src: string;

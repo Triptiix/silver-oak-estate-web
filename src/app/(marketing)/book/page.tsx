@@ -5,7 +5,13 @@ import { BookingUnavailable } from "@/components/booking/booking-unavailable";
 import { getOnlineBookingCapability } from "@/lib/capabilities/online-booking";
 
 export const metadata = {
-  title: "Book Your Stay - Silver Oak Estate",
+  title: "Book Your Stay",
+  // Online booking is disabled, so this capability-gated route must not be
+  // indexed or surfaced in search results while it is unavailable.
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function BookPage() {

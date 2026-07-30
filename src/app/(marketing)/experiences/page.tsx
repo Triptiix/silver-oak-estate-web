@@ -1,3 +1,4 @@
+import { buildPageMetadata } from "@/lib/seo/page-metadata";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { EstateActionLink } from "@/components/estate-ui/estate-action-link";
@@ -9,10 +10,12 @@ import { EstateSection } from "@/components/estate-ui/estate-section";
 import { EstateText } from "@/components/estate-ui/estate-text";
 import { publicInformation } from "@/config/public-information";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Experiences | Private Stays & Gatherings at Silver Oak Estate",
   description: `Discover private stays, approved gatherings, pool and lawn time at Silver Oak Estate in Sector 135, Noida. The fully furnished 3 BHK farmhouse accommodates ${publicInformation.capacity.overnightLabel.toLowerCase()}.`,
-};
+  path: "/experiences",
+  absoluteTitle: true,
+});
 
 export default function ExperiencesPage() {
   const { capacity, contact, optionalArrangements } = publicInformation;

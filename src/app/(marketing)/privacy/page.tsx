@@ -1,8 +1,13 @@
+import type { Metadata } from "next";
+import { buildPageMetadata } from "@/lib/seo/page-metadata";
 import { Container } from "@/components/ui/container";
 
-export const metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Privacy Policy",
-};
+  description:
+    "Privacy policy for Silver Oak Estate, the private farmhouse estate in Sector 135, Noida.",
+  path: "/privacy",
+});
 
 export default function PrivacyPage() {
   return (

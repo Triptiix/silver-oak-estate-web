@@ -130,7 +130,7 @@ describe("AvailabilityCalendar", () => {
   });
 
   it("cancels request on unmount", async () => {
-        const p1 = new Promise((resolve) => {  });
+        const p1 = new Promise(() => {  });
     // @ts-expect-error mock
     global.fetch.mockReturnValueOnce(p1);
     

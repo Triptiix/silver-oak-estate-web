@@ -1,3 +1,4 @@
+import { buildPageMetadata } from "@/lib/seo/page-metadata";
 import { EstateActionLink } from "@/components/estate-ui/estate-action-link";
 import { EstateContainer } from "@/components/estate-ui/estate-container";
 import { EstateEyebrow } from "@/components/estate-ui/estate-eyebrow";
@@ -7,11 +8,11 @@ import { EstateText } from "@/components/estate-ui/estate-text";
 import { formatInrFromPaise, publicInformation } from "@/config/public-information";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Booking Information | Silver Oak Estate",
-  description:
-    "Review verified capacity, payment and operational information for Silver Oak Estate. Final legal booking terms will be provided before payment and confirmation.",
-};
+export const metadata: Metadata = buildPageMetadata({
+  title: "Booking Information",
+  description: "Review verified capacity, payment and operational information for Silver Oak Estate. Final legal booking terms will be provided before payment and confirmation.",
+  path: "/policies",
+});
 
 export default function PoliciesPage() {
   const { booking, capacity, parking, optionalArrangements, contact, tax } = publicInformation;

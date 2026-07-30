@@ -1,3 +1,4 @@
+import { buildPageMetadata } from "@/lib/seo/page-metadata";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { EstateActionLink } from "@/components/estate-ui/estate-action-link";
@@ -9,10 +10,12 @@ import { EstateSection } from "@/components/estate-ui/estate-section";
 import { EstateText } from "@/components/estate-ui/estate-text";
 import { publicInformation } from "@/config/public-information";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Location | Silver Oak Estate, Sector 135 Noida",
   description: `Find Silver Oak Estate at ${publicInformation.location.fullAddress} and open the official Google Maps location.`,
-};
+  path: "/location",
+  absoluteTitle: true,
+});
 
 export default function LocationPage() {
   const { location, parking } = publicInformation;

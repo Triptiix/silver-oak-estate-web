@@ -1,3 +1,4 @@
+import { buildPageMetadata } from "@/lib/seo/page-metadata";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { EstateActionLink } from "@/components/estate-ui/estate-action-link";
@@ -9,11 +10,12 @@ import { EstateSection } from "@/components/estate-ui/estate-section";
 import { EstateText } from "@/components/estate-ui/estate-text";
 import { publicInformation } from "@/config/public-information";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "The Estate | Silver Oak Estate Private Farmhouse in Noida",
-  description:
-    "Explore the fully furnished 3 BHK residence, lawn, pool, kitchen and private gathering spaces at Silver Oak Estate in Sector 135, Noida.",
-};
+  description: "Explore the fully furnished 3 BHK residence, lawn, pool, kitchen and private gathering spaces at Silver Oak Estate in Sector 135, Noida.",
+  path: "/estate",
+  absoluteTitle: true,
+});
 
 const factRows = [
   ["Residence", "Fully furnished 3 BHK"],
