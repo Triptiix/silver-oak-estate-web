@@ -11,13 +11,13 @@ Legend: **RO** = read-only check · **MUT** = mutation (7D.3B only).
 
 ---
 
-### 1. Approve final legal pack — **DONE (Phase 7D.3A.2, owner-approved 30 July 2026)**
+## 1. Approve final legal pack — **DONE (Phase 7D.3A.2, owner-approved 30 July 2026)**
 - Approved Privacy Policy and Terms and Conditions are published, indexable and in the sitemap; `/policies` summarises them.
 - Values are centralised in `src/config/legal-information.ts`.
-- **Still open:** legal entity type, identity-document requirements, overtime fee schedule, accepted payment methods, cash-payment limits and chargeback handling — required before card-based online self-service booking. A legal-professional review remains recommended before high-volume paid bookings.
+- **Still open (card-acquiring / platform gates, distinct from the generic approvals):** legal entity type (#2), registered business address (#3), **merchant of record for card acquiring (#4 — the approved item is the payment beneficiary #6, not an acquiring MoR)**, identity-document requirements (#11), overtime fee schedule (#23), **per-platform precedence detail (#36)**, accepted payment methods (#43), cash-payment limits (#44) and chargeback handling (#46) — all required before card-based online self-service booking. A legal-professional review remains recommended before high-volume paid bookings.
 - **Owner:** Owner. **Evidence:** owner approval dated 30 July 2026.
 
-### 2. Supply approved logo source
+## 2. Supply approved logo source
 - **Precondition:** owner provides an approved mark — SVG preferred, or transparent PNG ≥1024×1024, with approved colour and (when available) monochrome versions.
 - **RO:** confirm the file is the approved Silver Oak Estate mark, not the scaffold placeholder.
 - **MUT (code):** derive favicon, apple-icon, 192 and 512 icons deterministically; add dimension/reference tests.
@@ -26,48 +26,49 @@ Legend: **RO** = read-only check · **MUT** = mutation (7D.3B only).
 - **Rollback:** revert to previous icons.
 - **Owner:** Owner. **Evidence:** approval message + source file.
 
-### 3. Merge code readiness
+## 3. Merge code readiness
 - **RO:** Phase 7D.3A PR **#45** (`phase-7d3a/assisted-launch-readiness`) merged with CI green at its exact head; record the merge commit SHA here at execution time: `__________`.
 - **MUT:** merge via review, not force.
 - **Verify:** `origin/main` at the merged SHA.
 - **Rollback:** revert merge commit.
 
-### 4. Verify production environment variable **names**
+## 4. Verify production environment variable **names**
 - **RO:** `vercel link --project silver-oak-estate-web` (in a scratch checkout) then `vercel env ls production` — inspect **names only**.
 - **Expected:** the six assisted-required names present; no live payment names required.
 - **Verify:** cross-check against `docs/launch/production-environment-matrix.md`.
 - **Owner:** Ops.
 
-### 5. Configure canonical production variables
+## 5. Configure canonical production variables
 - **MUT (Vercel dashboard or CLI, 7D.3B):** set `NEXT_PUBLIC_SITE_URL=https://silveroakestate.online`, `APP_ENV=production`, `APP_TIMEZONE=Asia/Kolkata`, `ONLINE_BOOKING_ENABLED=false`, and the two public Supabase values. **Never paste secrets into chat or docs.**
 - **Verify:** `vercel env ls production` shows the names.
 - **Rollback:** restore prior values (record them before change).
 - **Owner:** Ops.
 
-### 6. Run assisted-production preflight
+## 6. Run assisted-production preflight
 - **RO/MUT (build step):** `npm run preflight:assisted` inside the Vercel/production environment.
 - **Expected:** `Status: PASS` (monitoring DSN warning acceptable).
 - **Verify:** exit code 0.
 - **Rollback:** n/a (read-only gate).
 
-### 7. Attach apex domain
+## 7. Attach apex domain
 - **MUT (7D.3B):** `vercel domains add silveroakestate.online` and add to the project. Follow `docs/launch/domain-dns-plan.md` Option A.
 - **RO:** `dig +short A silveroakestate.online`.
 - **Rollback:** remove the domain; DNS returns to parked.
 
-### 8. Attach `www`
+## 8. Attach `www`
 - **MUT:** add `www.silveroakestate.online` to the project.
 - **Verify:** `dig +short CNAME www.silveroakestate.online`.
 
-### 9. Configure permanent `www` → apex redirect
+## 9. Configure permanent `www` → apex redirect
 - **MUT:** set 308 redirect in Vercel.
 - **Verify:** `curl -sI https://www.silveroakestate.online` returns 308 to apex.
 
-### 10. Verify DNS without disturbing MX/TXT
+## 10. Verify DNS without disturbing MX/TXT
 - **RO:** re-run the full `dig` set; confirm mail records are unchanged.
 - **Expected:** apex/www resolve to Vercel; `MX` (mx1/mx2.hostinger.com), SPF (`v=spf1 include:_spf.mail.hostinger.com ~all`) and `_dmarc` (`v=DMARC1; p=none`) remain exactly as recorded in `domain-dns-plan.md`.
 
-### 10a. Complete the email verification (manual)
+## 10a. Complete the email verification (manual)
+
 - **Precondition:** access to the `contact@silveroakestate.online` mailbox.
 - **RO:** obtain the DKIM selector from the Hostinger mail panel and resolve it; do not guess selectors.
 - **Manual test:** send from an unrelated external mailbox to `contact@`, confirm receipt, reply from `contact@`, confirm external receipt, then inspect headers for `spf=pass`, `dkim=pass` and the DMARC result.
@@ -76,56 +77,56 @@ Legend: **RO** = read-only check · **MUT** = mutation (7D.3B only).
 - **Follow-up:** consider moving DMARC from `p=none` to `p=quarantine`/`p=reject` only after SPF and DKIM pass.
 - **Owner:** Owner/Ops. **Evidence:** retained message headers.
 
-### 11. Verify HTTPS
+## 11. Verify HTTPS
 - **RO:** `curl -sI https://silveroakestate.online | grep -i strict-transport-security`.
 
-### 12. Verify canonical URLs
+## 12. Verify canonical URLs
 - **RO:** each public page emits `rel="canonical"` on the apex.
 
-### 13. Verify sitemap and robots
-- **RO:** `/sitemap.xml` excludes `/admin`, `/api`, `/book`, and (until legal approval) `/privacy`, `/terms`; `/robots.txt` disallows `/api/` and `/admin/`.
+## 13. Verify sitemap and robots
+- **RO:** `/sitemap.xml` **includes** `/privacy` and `/terms` (published 30 July 2026) and **excludes** `/admin`, `/api` and `/book`; `/robots.txt` disallows `/api/` and `/admin/` and does not disallow the legal routes.
 
-### 14. Verify social image
+## 14. Verify social image
 - **RO:** `/images/brand/silver-oak-estate-og.webp` returns 200; OG/Twitter reference it.
 
-### 15. Verify structured data
+## 15. Verify structured data
 - **RO:** homepage JSON-LD parses; `LodgingBusiness`+`EventVenue`; no `ReserveAction`.
 
-### 16. Verify availability calendar
+## 16. Verify availability calendar
 - **RO:** `/availability` loads; the calendar reads only public Supabase config; selecting a date creates **no** hold, reservation or payment order.
 
-### 17. Verify WhatsApp, phone and email pathways
+## 17. Verify WhatsApp, phone and email pathways
 - **RO:** `tel:`, `wa.me` and `mailto:` links resolve to the verified numbers/address.
 
-### 18. Create the first administrator
+## 18. Create the first administrator
 - **MUT (approved secure process, 7D.3B):** provision the first admin outside public self-service. **Do not create an administrator in 7D.3A.**
 - **Rollback:** disable the account.
 
-### 19. Run authenticated administrator QA
+## 19. Run authenticated administrator QA
 - **RO:** verify protected routes, masking, recovery diagnosis-only, notification "pending = queued".
 
-### 20. Verify production logs
+## 20. Verify production logs
 - **RO:** `vercel logs` — confirm no secret or PII leakage, no 5xx storms.
 
-### 21. Configure error monitoring (when approved)
+## 21. Configure error monitoring (when approved)
 - **MUT:** set `ERROR_MONITORING_DSN`.
 
-### 22. Configure analytics (only after approval + privacy disclosure)
+## 22. Configure analytics (only after approval + privacy disclosure)
 - **MUT:** deferred until an approved privacy policy discloses it.
 
-### 23. Configure Search Console (after canonical domain resolves)
+## 23. Configure Search Console (after canonical domain resolves)
 - **MUT:** add the property and verify.
 
-### 24. Submit sitemap
+## 24. Submit sitemap
 - **MUT:** submit `/sitemap.xml` in Search Console.
 
-### 25. Run post-launch smoke tests
+## 25. Run post-launch smoke tests
 - **RO:** all public routes 200; `/book` still `noindex` and unlinked; admin anon redirects to `/admin/login`.
 
-### 26. Maintain online booking disabled
+## 26. Maintain online booking disabled
 - **RO:** `ONLINE_BOOKING_ENABLED=false`; `/book` unlinked and `noindex`; no `ReserveAction`. Standing invariant.
 
-### 27. Record rollback steps
+## 27. Record rollback steps
 - Keep prior env values, prior DNS records and the pre-launch commit SHA. Rollback = remove domains, restore DNS to parked, revert to the prior deployment. Email records are managed independently and are not part of website rollback.
 
 ---

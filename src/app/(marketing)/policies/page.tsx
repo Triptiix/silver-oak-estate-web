@@ -6,7 +6,7 @@ import { EstateHeading } from "@/components/estate-ui/estate-heading";
 import { EstateSection } from "@/components/estate-ui/estate-section";
 import { EstateText } from "@/components/estate-ui/estate-text";
 import { formatInrFromPaise, publicInformation } from "@/config/public-information";
-import { legalInformation } from "@/config/legal-information";
+import { legalInformation, refundWording } from "@/config/legal-information";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = buildPageMetadata({
@@ -210,7 +210,7 @@ export default function PoliciesPage() {
                   {legalInformation.cancellation.bands.map((band) => (
                     <li key={band.window} className="flex items-start gap-3">
                       <span className="inline-block w-2 h-2 mt-2 rounded-full bg-[var(--soe-color-brand)] shrink-0" />
-                      <span><strong>{band.window}:</strong> {band.refund}.</span>
+                      <span><strong>{band.window}:</strong> {refundWording(band.refundPercent)}.</span>
                     </li>
                   ))}
                 </ul>

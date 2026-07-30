@@ -1,7 +1,6 @@
 import { existsSync, readFileSync } from "fs";
-import { render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup } from "@testing-library/react";
 
 vi.mock("server-only", () => ({}));
 
@@ -11,7 +10,7 @@ import PoliciesPage from "@/app/(marketing)/policies/page";
 import sitemap from "@/app/sitemap";
 import robots from "@/app/robots";
 import { EstateStructuredData } from "@/components/seo/estate-structured-data";
-import { legalInformation } from "@/config/legal-information";
+import { legalInformation, refundWording } from "@/config/legal-information";
 import {
   formatInrFromPaise,
   publicInformation,
@@ -172,7 +171,7 @@ describe("terms and conditions are published", () => {
     const text = textOf(container);
     for (const band of legalInformation.cancellation.bands) {
       expect(text).toContain(band.window);
-      expect(text).toContain(band.refund);
+      expect(text).toContain(refundWording(band.refundPercent));
     }
     expect(text).toMatch(
       new RegExp(`${legalInformation.cancellation.refundInitiationBusinessDays} business days`, "i"),
@@ -318,10 +317,18 @@ describe("booking safety is unchanged", () => {
     expect(raw).not.toContain("potentialAction");
     expect(JSON.parse(raw).potentialAction).toBeUndefined();
     cleanup();
-    for (const file of [".env", ".env.example"]) {
-      if (!existsSync(file)) continue;
-      const match = readFileSync(file, "utf8").match(/^ONLINE_BOOKING_ENABLED=(.*)$/m);
-      if (match) expect(match[1].replace(/["']/g, "").trim()).not.toBe("true");
+    // .env.example is checked in, so assert on it unconditionally: a missing
+    // file or a dropped flag must fail rather than silently skip.
+    expect(existsSync(".env.example")).toBe(true);
+    const example = readFileSync(".env.example", "utf8");
+    const declared = example.match(/^ONLINE_BOOKING_ENABLED=(.*)$/m);
+    expect(declared, "ONLINE_BOOKING_ENABLED missing from .env.example").not.toBeNull();
+    expect(declared![1].replace(/["']/g, "").trim()).not.toBe("true");
+
+    // .env is developer-local and may be absent in CI; check it only if present.
+    if (existsSync(".env")) {
+      const local = readFileSync(".env", "utf8").match(/^ONLINE_BOOKING_ENABLED=(.*)$/m);
+      if (local) expect(local[1].replace(/["']/g, "").trim()).not.toBe("true");
     }
   });
 

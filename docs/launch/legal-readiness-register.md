@@ -76,11 +76,19 @@ public online self-service booking.
 | Governing law | India, subject to consumer-protection law and non-waivable rights |
 | Jurisdiction | Courts of competent jurisdiction at Gautam Buddha Nagar, Uttar Pradesh; statutory consumer forums preserved |
 
-**Still unresolved / not approved:** legal entity type, registered business address
-(beyond the property address), merchant of record for card acquiring, identity-document
-requirements, cash-payment limits, chargeback handling, third-party-platform precedence
-detail, and GST registration status (currently not registered). These remain required
-before card-based online self-service booking.
+**Still unresolved / not approved.** These are distinct from the generic approvals
+above and remain required before card-based online self-service booking:
+
+- Legal entity type (#2) and registered business address (#3)
+- **Merchant of record for card acquiring (#4)** — the approved decision is the
+  *payment beneficiary* (#6, owner's designated bank account); a card-acquiring
+  MoR has not been appointed
+- Identity-document requirements (#11)
+- Overtime fee schedule (#23)
+- **Third-party-platform precedence detail (#36)** — general wording is published,
+  but per-platform precedence has not been decided
+- Accepted payment methods (#43), cash-payment limits (#44), chargeback handling (#46)
+- GST registration status (currently not registered, #42)
 
 ## Blocking legend
 
@@ -97,7 +105,7 @@ before card-based online self-service booking.
 | 1 | Legal contracting party | Who the guest actually contracts with | M, 3P, O | Approved 2026-07-30 (owner) | Owner + counsel | Signed determination |
 | 2 | Legal entity type (individual / firm / company) | Governs liability and tax | M, O | UNRESOLVED — OWNER/COUNSEL DECISION REQUIRED | Owner + counsel | Registration proof |
 | 3 | Business / registered address | Invoices, notices, jurisdiction | M, O | Partially verified (property address known; registered address unconfirmed) | Owner | Registration proof |
-| 4 | Merchant of record | Who is paid and bears chargebacks | M, O | Approved 2026-07-30 (owner) | Owner + payment provider | MoR agreement |
+| 4 | Merchant of record | Who is paid and bears chargebacks | M, O | UNRESOLVED — card-acquiring MoR not approved (payment beneficiary #6 is approved) | Owner + payment provider | MoR agreement |
 | 5 | Invoice issuer | Tax invoice validity | M, O | Approved 2026-07-30 (owner) | Owner | Invoice template |
 | 6 | Payment beneficiary | Settlement account owner | M, O | Approved 2026-07-30 (owner) | Owner | Bank confirmation (kept off-repo) |
 | 7 | Data fiduciary / controller | DPDP Act 2023 accountability | A, E, M, O | Approved 2026-07-30 (owner) | Owner + counsel | Privacy policy sign-off |
@@ -129,7 +137,7 @@ before card-based online self-service booking.
 | 33 | Guest-data retention periods | DPDP compliance | A, E | Approved 2026-07-30 (owner) | Owner + counsel | Retention schedule |
 | 34 | Marketing-consent rules | Opt-in law | E | Approved 2026-07-30 (owner) — wording published | Owner + counsel | Consent design |
 | 35 | Cookie policy | Tracking disclosure | Not applicable for assisted launch (no analytics/cookies added; only Supabase auth cookies on admin) | — | Owner | Reassess before analytics |
-| 36 | Third-party platform precedence | Conflicting terms | 3P | Approved 2026-07-30 (owner) — wording published | Owner | Precedence clause |
+| 36 | Third-party platform precedence | Conflicting terms | 3P | Partially verified — general wording published; precedence detail per platform UNRESOLVED | Owner | Precedence clause |
 | 37 | Dispute-resolution mechanism | Enforceability | M, O | Approved 2026-07-30 (owner) | Owner + counsel | Clause text |
 | 38 | Governing law | Applicable law | M, O | Approved 2026-07-30 (owner) | Owner + counsel | Clause text |
 | 39 | Court jurisdiction | Venue | M, O | Approved 2026-07-30 (owner) | Owner + counsel | Clause text |

@@ -69,8 +69,11 @@ export const legalInformation = {
   /** Minimum age of the person making the booking. */
   minimumBookingAge: 18,
 
-  /** Booking advance, adjusted against the total booking price. */
-  bookingAdvancePaise: 500_000,
+  /**
+   * Booking advance, adjusted against the total booking price. Aliased from
+   * publicInformation so the pricing and legal copy cannot desync.
+   */
+  bookingAdvancePaise: publicInformation.booking.advancePaise,
 
   /**
    * A separate refundable security deposit. This is NOT part of the booking
@@ -93,17 +96,14 @@ export const legalInformation = {
     bands: [
       {
         window: "More than 14 days before check-in",
-        refund: "100% refund of refundable booking amounts",
         refundPercent: 100,
       },
       {
         window: "From 7 to 14 days before check-in (inclusive of both days)",
-        refund: "50% refund of refundable booking amounts",
         refundPercent: 50,
       },
       {
         window: "Less than 7 days before check-in",
-        refund: "No refund",
         refundPercent: 0,
       },
     ],
@@ -132,3 +132,13 @@ export const legalInformation = {
 } as const;
 
 export type LegalInformation = typeof legalInformation;
+
+/**
+ * Single place that turns a band's `refundPercent` into published wording, so a
+ * policy change to the number cannot leave stale prose behind.
+ */
+export function refundWording(refundPercent: number): string {
+  return refundPercent === 0
+    ? "No refund"
+    : `${refundPercent}% refund of refundable booking amounts`;
+}

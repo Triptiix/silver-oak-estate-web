@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { buildPageMetadata } from "@/lib/seo/page-metadata";
 import { Container } from "@/components/ui/container";
-import { legalInformation } from "@/config/legal-information";
+import { legalInformation, refundWording } from "@/config/legal-information";
 import {
   formatInrFromPaise,
   publicInformation,
@@ -74,6 +74,7 @@ export default function TermsPage() {
   const { booking, capacity, contact, location, tax, optionalArrangements } =
     publicInformation;
 
+  const partialBand = cancellation.bands.find((b) => b.refundPercent > 0 && b.refundPercent < 100)!;
   const advance = formatInrFromPaise(bookingAdvancePaise);
   const deposit = formatInrFromPaise(securityDepositPaise);
   const weekdayRate = formatInrFromPaise(booking.weekday.ratePaise);
@@ -256,7 +257,7 @@ export default function TermsPage() {
               {cancellation.bands.map((band) => (
                 <tr key={band.window}>
                   <th scope="row">{band.window}</th>
-                  <td>{band.refund}</td>
+                  <td>{refundWording(band.refundPercent)}</td>
                 </tr>
               ))}
             </tbody>
@@ -264,7 +265,7 @@ export default function TermsPage() {
           <p>
             Cancellation exactly {cancellation.partialRefundFromDays} days before
             check-in, or exactly {cancellation.partialRefundToDays} days before
-            check-in, falls within the 50% band.
+            check-in, falls within the {partialBand.refundPercent}% band.
           </p>
           <p>
             The refundable security deposit is treated separately. Where the
