@@ -48,6 +48,19 @@ export const publicInformation = {
     fullAddress:
       "Farm house 22, Phase 16, Green Beauty Farms, Sector 135, Noida, Uttar Pradesh 201310",
     mapsUrl: "https://maps.app.goo.gl/zaB8oYQeiaUWChYM7",
+
+    /**
+     * Structured components of the same verified address above, split for
+     * schema.org PostalAddress. These must stay an exact mirror of
+     * `fullAddress` — no new location fact is introduced here.
+     */
+    postalAddress: {
+      streetAddress: "Farm house 22, Phase 16, Green Beauty Farms, Sector 135",
+      addressLocality: "Noida",
+      addressRegion: "Uttar Pradesh",
+      postalCode: "201310",
+      addressCountry: "IN",
+    },
   },
 
   parking: {
