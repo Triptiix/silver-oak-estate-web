@@ -2,12 +2,20 @@ import GalleryPage, { metadata } from "@/app/(marketing)/gallery/page";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
+// Effective <title>: an absolute title renders verbatim; a plain string gets the
+// root template's " | Silver Oak Estate" suffix appended.
+function effectiveTitle(title: unknown): string {
+  if (title && typeof title === "object" && "absolute" in title) {
+    return String((title as { absolute: string }).absolute);
+  }
+  return `${String(title)} | Silver Oak Estate`;
+}
+
 describe("GalleryPage", () => {
   it("exports complete metadata and exactly one H1", () => {
-    expect(metadata).toEqual({
-      title: "Gallery | Silver Oak Estate",
-      description: "Explore verified photographs of the residence, bedrooms, lawn, pool, living spaces and evening atmosphere at Silver Oak Estate in Sector 135, Noida.",
-    });
+    expect(effectiveTitle(metadata.title)).toBe("Gallery | Silver Oak Estate");
+    expect(metadata.description).toBe("Explore verified photographs of the residence, bedrooms, lawn, pool, living spaces and evening atmosphere at Silver Oak Estate in Sector 135, Noida.");
+    expect(metadata.alternates?.canonical).toBe("/gallery");
     render(<GalleryPage />);
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
   });

@@ -10,7 +10,12 @@ import { EstateText } from "@/components/estate-ui/estate-text";
 import { publicInformation } from "@/config/public-information";
 
 export const metadata: Metadata = {
-  title: "Location | Silver Oak Estate, Sector 135 Noida",
+  title: {
+    absolute: "Location | Silver Oak Estate, Sector 135 Noida",
+  },
+  alternates: {
+    canonical: "/location",
+  },
   description: `Find Silver Oak Estate at ${publicInformation.location.fullAddress} and open the official Google Maps location.`,
 };
 

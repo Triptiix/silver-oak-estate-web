@@ -8,7 +8,10 @@ import { formatInrFromPaise, publicInformation } from "@/config/public-informati
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Booking Information | Silver Oak Estate",
+  title: "Booking Information",
+  alternates: {
+    canonical: "/policies",
+  },
   description:
     "Review verified capacity, payment and operational information for Silver Oak Estate. Final legal booking terms will be provided before payment and confirmation.",
 };

@@ -31,7 +31,7 @@ export function BookingUnavailable() {
         <a
           href={contact.primaryPhone.whatsappHref}
           target="_blank"
-          rel="noreferrer"
+          rel="noopener noreferrer"
           className="inline-flex min-h-11 items-center justify-center rounded-md border border-slate-300 bg-white px-5 py-3 font-medium text-slate-950 transition-colors hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-950 focus:ring-offset-2"
         >
           WhatsApp the team

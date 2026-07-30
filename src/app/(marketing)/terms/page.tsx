@@ -2,6 +2,9 @@ import { Container } from "@/components/ui/container";
 
 export const metadata = {
   title: "Terms of Service",
+  alternates: {
+    canonical: "/terms",
+  },
 };
 
 export default function TermsPage() {

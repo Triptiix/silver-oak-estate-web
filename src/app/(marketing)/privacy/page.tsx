@@ -2,6 +2,9 @@ import { Container } from "@/components/ui/container";
 
 export const metadata = {
   title: "Privacy Policy",
+  alternates: {
+    canonical: "/privacy",
+  },
 };
 
 export default function PrivacyPage() {

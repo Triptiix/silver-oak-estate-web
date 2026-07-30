@@ -11,7 +11,10 @@ import {
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Pricing | Silver Oak Estate",
+  title: "Pricing",
+  alternates: {
+    canonical: "/pricing",
+  },
   description:
     "View confirmed weekday and weekend rates for Silver Oak Estate’s fixed booking slot, advance payment information and enquiry options in Sector 135, Noida.",
 };
@@ -112,9 +115,9 @@ export default function PricingPage() {
                   <dd className="mt-5 font-soe-display text-[clamp(3.5rem,7vw,6.5rem)] leading-none tracking-[var(--soe-tracking-display)] text-[var(--soe-surface-text-primary)]">
                     {rate.amount}
                   </dd>
-                  <p className="mt-5 font-soe-body text-sm leading-[var(--soe-leading-body)] text-[var(--soe-surface-text-secondary)]">
+                  <dd className="mt-5 font-soe-body text-sm leading-[var(--soe-leading-body)] text-[var(--soe-surface-text-secondary)]">
                     {rate.description}. Complete-property rate for the {booking.durationLabel}.
-                  </p>
+                  </dd>
                 </div>
               ))}
             </dl>

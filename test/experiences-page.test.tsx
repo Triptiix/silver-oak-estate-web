@@ -6,12 +6,21 @@ import * as fs from "fs";
 import * as path from "path";
 import { describe, expect, it, vi } from "vitest";
 
+// Effective <title>: an absolute title renders verbatim; a plain string gets the
+// root template's " | Silver Oak Estate" suffix appended.
+function effectiveTitle(title: unknown): string {
+  if (title && typeof title === "object" && "absolute" in title) {
+    return String((title as { absolute: string }).absolute);
+  }
+  return `${String(title)} | Silver Oak Estate`;
+}
+
 vi.mock("server-only", () => ({}));
 vi.mock("next/navigation", () => ({ usePathname: () => "/experiences" }));
 
 describe("ExperiencesPage", () => {
   it("exports the canonical metadata and one H1", () => {
-    expect(metadata.title).toBe("Experiences | Private Stays & Gatherings at Silver Oak Estate");
+    expect(effectiveTitle(metadata.title)).toBe("Experiences | Private Stays & Gatherings at Silver Oak Estate");
     render(<ExperiencesPage />);
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Experiences at Silver Oak Estate");

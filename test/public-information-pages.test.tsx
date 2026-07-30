@@ -11,47 +11,56 @@ import fs from "fs";
 import path from "path";
 import { describe, expect, it, vi } from "vitest";
 
+// Effective <title>: an absolute title renders verbatim; a plain string gets the
+// root template's " | Silver Oak Estate" suffix appended.
+function effectiveTitle(title: unknown): string {
+  if (title && typeof title === "object" && "absolute" in title) {
+    return String((title as { absolute: string }).absolute);
+  }
+  return `${String(title)} | Silver Oak Estate`;
+}
+
 vi.mock("server-only", () => ({}));
 
 describe("Public Information Pages & Config Contracts", () => {
   describe("A. Metadata Contracts", () => {
     it("exports exact metadata for Pricing Page", () => {
-      expect(pricingMetadata.title).toBe("Pricing | Silver Oak Estate");
+      expect(effectiveTitle(pricingMetadata.title)).toBe("Pricing | Silver Oak Estate");
       expect(pricingMetadata.description).toBe(
         "View confirmed weekday and weekend rates for Silver Oak Estate’s fixed booking slot, advance payment information and enquiry options in Sector 135, Noida."
       );
     });
 
     it("exports exact metadata for Location Page", () => {
-      expect(locationMetadata.title).toBe("Location | Silver Oak Estate, Sector 135 Noida");
+      expect(effectiveTitle(locationMetadata.title)).toBe("Location | Silver Oak Estate, Sector 135 Noida");
       expect(locationMetadata.description).toBe(
         "Find Silver Oak Estate at Farm house 22, Phase 16, Green Beauty Farms, Sector 135, Noida, Uttar Pradesh 201310 and open the official Google Maps location."
       );
     });
 
     it("exports exact metadata for Contact Page", () => {
-      expect(contactMetadata.title).toBe("Contact | Silver Oak Estate");
+      expect(effectiveTitle(contactMetadata.title)).toBe("Contact | Silver Oak Estate");
       expect(contactMetadata.description).toBe(
         "Contact Silver Oak Estate via email, phone or WhatsApp regarding availability, private stays, approved gatherings, photography shoots and optional arrangements in Sector 135, Noida."
       );
     });
 
     it("exports exact metadata for Policies Page", () => {
-      expect(policiesMetadata.title).toBe("Booking Information | Silver Oak Estate");
+      expect(effectiveTitle(policiesMetadata.title)).toBe("Booking Information | Silver Oak Estate");
       expect(policiesMetadata.description).toBe(
         "Review verified capacity, payment and operational information for Silver Oak Estate. Final legal booking terms will be provided before payment and confirmation."
       );
     });
 
     it("exports exact metadata for Estate Page", () => {
-      expect(estateMetadata.title).toBe("The Estate | Silver Oak Estate Private Farmhouse in Noida");
+      expect(effectiveTitle(estateMetadata.title)).toBe("The Estate | Silver Oak Estate Private Farmhouse in Noida");
       expect(estateMetadata.description).toBe(
         "Explore the fully furnished 3 BHK residence, lawn, pool, kitchen and private gathering spaces at Silver Oak Estate in Sector 135, Noida."
       );
     });
 
     it("exports exact metadata for Experiences Page", () => {
-      expect(experiencesMetadata.title).toBe("Experiences | Private Stays & Gatherings at Silver Oak Estate");
+      expect(effectiveTitle(experiencesMetadata.title)).toBe("Experiences | Private Stays & Gatherings at Silver Oak Estate");
       expect(experiencesMetadata.description).toBe(
         `Discover private stays, approved gatherings, pool and lawn time at Silver Oak Estate in Sector 135, Noida. The fully furnished 3 BHK farmhouse accommodates ${publicInformation.capacity.overnightLabel.toLowerCase()}.`
       );

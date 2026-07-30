@@ -9,7 +9,10 @@ import { EstateSection } from "@/components/estate-ui/estate-section";
 import { EstateText } from "@/components/estate-ui/estate-text";
 
 export const metadata: Metadata = {
-  title: "Gallery | Silver Oak Estate",
+  title: "Gallery",
+  alternates: {
+    canonical: "/gallery",
+  },
   description:
     "Explore verified photographs of the residence, bedrooms, lawn, pool, living spaces and evening atmosphere at Silver Oak Estate in Sector 135, Noida.",
 };

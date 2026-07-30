@@ -10,7 +10,10 @@ import { publicInformation } from "@/config/public-information";
 import { getAvailabilityCapability } from "@/lib/capabilities/online-booking";
 
 export const metadata: Metadata = {
-  title: "Availability | Silver Oak Estate",
+  title: "Availability",
+  alternates: {
+    canonical: "/availability",
+  },
   description:
     "Review preferred dates and contact the Silver Oak Estate team for written availability confirmation for private stays and approved gatherings.",
 };

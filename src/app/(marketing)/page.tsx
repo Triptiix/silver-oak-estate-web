@@ -14,7 +14,12 @@ import {
 import { getOnlineBookingCapability } from "@/lib/capabilities/online-booking";
 
 export const metadata: Metadata = {
-  title: "Silver Oak Estate | Private Farmhouse Stay & Event Venue in Noida",
+  title: {
+    absolute: "Silver Oak Estate | Private Farmhouse Stay & Event Venue in Noida",
+  },
+  alternates: {
+    canonical: "/",
+  },
   description:
     "Discover Silver Oak Estate, a private farmhouse in Sector 135, Noida for stays, family gatherings, corporate retreats and private celebrations.",
 };

@@ -10,7 +10,12 @@ import { EstateText } from "@/components/estate-ui/estate-text";
 import { publicInformation } from "@/config/public-information";
 
 export const metadata: Metadata = {
-  title: "The Estate | Silver Oak Estate Private Farmhouse in Noida",
+  title: {
+    absolute: "The Estate | Silver Oak Estate Private Farmhouse in Noida",
+  },
+  alternates: {
+    canonical: "/estate",
+  },
   description:
     "Explore the fully furnished 3 BHK residence, lawn, pool, kitchen and private gathering spaces at Silver Oak Estate in Sector 135, Noida.",
 };

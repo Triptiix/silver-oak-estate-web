@@ -10,7 +10,12 @@ import { EstateText } from "@/components/estate-ui/estate-text";
 import { publicInformation } from "@/config/public-information";
 
 export const metadata: Metadata = {
-  title: "Experiences | Private Stays & Gatherings at Silver Oak Estate",
+  title: {
+    absolute: "Experiences | Private Stays & Gatherings at Silver Oak Estate",
+  },
+  alternates: {
+    canonical: "/experiences",
+  },
   description: `Discover private stays, approved gatherings, pool and lawn time at Silver Oak Estate in Sector 135, Noida. The fully furnished 3 BHK farmhouse accommodates ${publicInformation.capacity.overnightLabel.toLowerCase()}.`,
 };
 

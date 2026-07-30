@@ -8,7 +8,10 @@ import { EstateText } from "@/components/estate-ui/estate-text";
 import { publicInformation } from "@/config/public-information";
 
 export const metadata: Metadata = {
-  title: "Contact | Silver Oak Estate",
+  title: "Contact",
+  alternates: {
+    canonical: "/contact",
+  },
   description:
     "Contact Silver Oak Estate via email, phone or WhatsApp regarding availability, private stays, approved gatherings, photography shoots and optional arrangements in Sector 135, Noida.",
 };
