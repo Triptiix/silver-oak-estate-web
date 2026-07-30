@@ -45,9 +45,9 @@ function publicPathFor(source: string) {
  * Mirrors CSS grid's default ("sparse") auto-placement: the cursor only moves
  * forward, so an item too wide for the columns left in the current row skips to
  * the next row and leaves a hole behind rather than backfilling it. Returns the
- * number of empty cells inside the occupied rows.
+ * occupied row count and the number of empty cells inside those rows.
  */
-function countGridHoles(
+function simulateGrid(
   tiles: readonly { colSpan: number; rowSpan: number }[],
   columns: number,
 ) {
@@ -93,7 +93,11 @@ function countGridHoles(
     }
   }
 
-  return occupied.flat().filter((cell) => !cell).length;
+  return {
+    rows: occupied.length,
+    cells: occupied.length * columns,
+    holes: occupied.flat().filter((cell) => !cell).length,
+  };
 }
 
 describe("premium image refresh — priority assets", () => {
@@ -183,7 +187,12 @@ describe("premium image refresh — gallery curation", () => {
       rowSpan: figure.className.includes("md:row-span-2") ? 2 : 1,
     }));
 
-    expect(countGridHoles(tiles, 3)).toBe(0);
+    const layout = simulateGrid(tiles, 3);
+    expect(layout.holes).toBe(0);
+    // Pin the intended editorial rhythm too: zero holes alone would also allow
+    // twelve equal standard tiles collapsing into four uniform rows.
+    expect(layout.rows).toBe(6);
+    expect(layout.cells).toBe(18);
   });
 
   it("detects the gaps the previous tile order produced", () => {
@@ -203,7 +212,7 @@ describe("premium image refresh — gallery curation", () => {
       { colSpan: 1, rowSpan: 1 },
     ];
 
-    expect(countGridHoles(previousOrder, 3)).toBeGreaterThan(0);
+    expect(simulateGrid(previousOrder, 3).holes).toBeGreaterThan(0);
   });
 
   it("drops the redundant duplicate experience photographs", () => {
