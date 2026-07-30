@@ -163,16 +163,46 @@ export function ManualPaymentVerificationForm({
   }
 
   return (
-    <section className="mt-8 rounded border border-amber-300 bg-amber-50 p-5">
-      <h2 className="text-xl font-bold">Verify a manual payment</h2>
-      <p className="mt-2 text-sm">
-        Record an independently observed external payment. The backend remains authoritative and may require reconciliation.
+    <section className="mt-8 rounded border border-amber-300 bg-amber-50 p-4 sm:p-6">
+      <p className="text-xs font-bold uppercase tracking-[0.12em] text-amber-900">
+        Privileged action · admin and super-admin only
       </p>
-      <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
-        <div><dt className="text-stone-600">Booking reference</dt><dd className="font-medium">{candidate.bookingReference}</dd></div>
-        <div><dt className="text-stone-600">Expected amount</dt><dd className="font-medium">{formatExpectedAmount(candidate)}</dd></div>
-        <div><dt className="text-stone-600">Provider</dt><dd className="font-medium">{candidate.provider.replaceAll("_", " ")}</dd></div>
+      <h2 className="mt-2 text-xl font-bold">Verify a manual payment</h2>
+      <p className="mt-2 max-w-3xl text-sm leading-6">
+        Record an independently observed payment fact. The browser does not
+        calculate confirmation, and the authoritative backend may require
+        reconciliation.
+      </p>
+      <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
+        <div>
+          <dt className="text-stone-600">Booking reference</dt>
+          <dd className="break-all font-mono font-medium">
+            {candidate.bookingReference}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-stone-600">Expected amount</dt>
+          <dd className="font-medium">{formatExpectedAmount(candidate)}</dd>
+        </div>
+        <div>
+          <dt className="text-stone-600">Provider</dt>
+          <dd className="font-medium capitalize">
+            {candidate.provider.replaceAll("_", " ")}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-stone-600">Candidate state</dt>
+          <dd className="font-medium capitalize">
+            {candidate.paymentStatus.replaceAll("_", " ")}
+          </dd>
+        </div>
       </dl>
+      <ul className="mt-4 grid gap-2 rounded border border-amber-200 bg-white/60 p-4 text-xs leading-5 sm:grid-cols-2">
+        <li>No automatic refund or reconciliation.</li>
+        <li>No currency conversion.</li>
+        <li>No file, image or URL evidence.</li>
+        <li>Duplicate submissions remain idempotently protected.</li>
+      </ul>
       <form onSubmit={submit} className="mt-5 space-y-5">
         <fieldset disabled={pending} className="space-y-4">
           <legend className="text-sm font-semibold">Observed external payment</legend>
@@ -255,7 +285,7 @@ export function ManualPaymentVerificationForm({
             {firstFieldError(fieldErrors, "attested") && <p id="paymentAttestation-error" className={errorClassName}>{firstFieldError(fieldErrors, "attested")}</p>}
           </div>
         </fieldset>
-        <Button type="submit" disabled={pending}>
+        <Button type="submit" disabled={pending} className="min-h-11">
           {pending ? "Verifying payment…" : "Submit verified payment observation"}
         </Button>
       </form>

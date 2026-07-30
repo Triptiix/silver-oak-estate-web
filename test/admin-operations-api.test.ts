@@ -176,7 +176,7 @@ describe("Phase 5A administrator APIs", () => {
 
     expect(mocks.requireAdminRole).toHaveBeenCalledWith("operations", "admin", "super_admin");
     expect(mocks.getAdminBookingDetail).toHaveBeenCalledWith(validReference);
-    expect(JSON.stringify(page)).toContain(validReference);
+    expect(page.props.title).toBe(validReference);
   });
 
   it("returns the same safe not-found API response for invalid and nonexistent detail references", async () => {
