@@ -44,7 +44,7 @@ export function AdminShell({
             >
               Silver Oak Estate Operations
             </Link>
-            <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
+            <h1 className="mt-1 break-words text-2xl font-bold tracking-tight sm:text-3xl">
               {title}
             </h1>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--muted-foreground)]">

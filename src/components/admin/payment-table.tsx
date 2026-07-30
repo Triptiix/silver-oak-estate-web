@@ -3,9 +3,103 @@ import { formatAdminDateTime, formatPaise } from "@/lib/admin/format";
 import type { AdminPaymentItem } from "@/lib/admin/types";
 import { StatusBadge } from "./status-badge";
 
-export function PaymentTable({ items, recovery = false }: { items: AdminPaymentItem[]; recovery?: boolean }) {
+export function PaymentTable({
+  items,
+  recovery = false,
+  context = "default",
+}: {
+  items: AdminPaymentItem[];
+  recovery?: boolean;
+  context?: "default" | "booking-detail";
+}) {
   if (!items.length) {
-    return <div className="rounded border border-dashed p-10 text-center text-[var(--muted-foreground)]">{recovery ? "No payments require recovery." : "No payment attempts match these filters."}</div>;
+    return (
+      <div className="rounded border border-dashed p-8 text-center text-[var(--muted-foreground)]">
+        {recovery
+          ? "No payments require recovery."
+          : context === "booking-detail"
+            ? "No payment attempts are recorded for this booking."
+            : "No payment attempts match these filters."}
+      </div>
+    );
+  }
+  if (context === "booking-detail") {
+    return (
+      <ol aria-label="Payment attempts for this booking" className="space-y-4">
+        {items.map((item, index) => (
+          <li
+            key={`${item.bookingReference}-${item.providerOrderId ?? index}`}
+            className="rounded-[var(--radius)] border border-[var(--border)] bg-white p-4 sm:p-5"
+          >
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
+                  Attempt {index + 1}
+                </p>
+                <div className="mt-2"><StatusBadge value={item.status} /></div>
+              </div>
+              <p className="font-mono font-bold">
+                {formatPaise(item.amountPaise, item.currency)}
+              </p>
+            </div>
+            <dl className="mt-5 grid gap-4 text-sm md:grid-cols-2 xl:grid-cols-3">
+              <div>
+                <dt className="text-[var(--muted-foreground)]">Provider</dt>
+                <dd className="break-all font-medium capitalize">
+                  {item.provider.replaceAll("_", " ")}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-[var(--muted-foreground)]">Provider order reference</dt>
+                <dd className="break-all font-mono">
+                  {item.providerOrderId ?? "Not attached"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-[var(--muted-foreground)]">Provider payment reference</dt>
+                <dd className="break-all font-mono">
+                  {item.providerPaymentId ?? "Not attached"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-[var(--muted-foreground)]">Provider event reference</dt>
+                <dd className="break-all font-mono">
+                  {item.providerEventId ?? "Not attached"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-[var(--muted-foreground)]">Verification</dt>
+                <dd className="break-words">
+                  {item.verificationSource ?? "Not verified"}
+                  <span className="mt-1 block text-xs text-[var(--muted-foreground)]">
+                    {item.verifiedAt
+                      ? formatAdminDateTime(item.verifiedAt)
+                      : "Verification time not available"}
+                  </span>
+                </dd>
+              </div>
+              <div>
+                <dt className="text-[var(--muted-foreground)]">Recovery or failure</dt>
+                <dd className="break-words">
+                  {item.recoveryReason?.replaceAll("_", " ")
+                    ?? item.failureCode?.replaceAll("_", " ")
+                    ?? "No recovery or failure reason"}
+                  {recovery ? (
+                    <span className="mt-1 block text-xs font-semibold text-amber-800">
+                      Diagnosis only — no action available
+                    </span>
+                  ) : null}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-[var(--muted-foreground)]">Updated</dt>
+                <dd>{formatAdminDateTime(item.updatedAt)}</dd>
+              </div>
+            </dl>
+          </li>
+        ))}
+      </ol>
+    );
   }
   return (
     <div className="overflow-x-auto rounded-[var(--radius)] border border-[var(--border)] bg-white">
