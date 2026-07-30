@@ -15,7 +15,7 @@ describe("GalleryPage", () => {
   it("renders a meaningful verified editorial image collection with alt text", () => {
     const { container } = render(<GalleryPage />);
     const images = Array.from(container.querySelectorAll("img"));
-    expect(images).toHaveLength(11);
+    expect(images).toHaveLength(13);
     images.forEach((image) => {
       expect(decodeURIComponent(image.getAttribute("src") || "")).toContain("/images/estate/");
       expect(image.getAttribute("alt")?.trim().length).toBeGreaterThan(8);

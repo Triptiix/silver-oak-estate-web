@@ -90,13 +90,31 @@ export default function HomePage() {
 
           <div className="relative min-h-[45svh] overflow-hidden lg:min-h-full">
             <Image
-              src="/images/estate/home/hero-estate-exterior.webp"
-              alt="Exterior view of Silver Oak Estate private farmhouse in Sector 135, Noida"
+              src="/images/estate/home/hero-page.PNG"
+              alt="Silver Oak Estate at golden hour, with the residence, open private lawn, pool and garden gazebo"
               fill
               sizes="(max-width: 1023px) 100vw, 64vw"
               priority
               className="object-cover transition-transform duration-[var(--soe-duration-editorial)] motion-reduce:transition-none lg:scale-[1.01]"
             />
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_top,rgba(13,15,14,0.45),rgba(13,15,14,0)_45%)]"
+            />
+            <figure className="absolute bottom-4 left-4 w-40 sm:bottom-6 sm:left-6 sm:w-56 lg:bottom-10 lg:left-10 lg:w-[21rem]">
+              <div className="relative aspect-[16/10] overflow-hidden rounded-[var(--soe-radius-media)] border border-[var(--soe-color-gold)]/70 shadow-[0_18px_40px_rgba(13,15,14,0.45)]">
+                <Image
+                  src="/images/estate/home/hero 1.PNG"
+                  alt="The estate residence at twilight, with warm façade lighting, landscaped hedges and the pool beyond"
+                  fill
+                  sizes="(max-width: 639px) 160px, (max-width: 1023px) 224px, 336px"
+                  className="object-cover"
+                />
+                <figcaption className="absolute inset-x-0 bottom-0 hidden bg-[linear-gradient(to_top,rgba(13,15,14,0.85),transparent)] px-3 pb-2 pt-10 font-soe-ui text-[length:var(--soe-text-xs)] uppercase tracking-[var(--soe-tracking-eyebrow)] text-[var(--soe-color-canvas)] sm:block">
+                  Evenings at the estate
+                </figcaption>
+              </div>
+            </figure>
           </div>
         </div>
 

@@ -22,17 +22,21 @@ type GalleryImage = {
   size: "wide" | "tall" | "standard";
 };
 
+// Ordered so the newest estate photography leads the grid, and so the
+// wide/tall/standard sizes tile a three-column layout without leaving gaps.
 const galleryImages: readonly GalleryImage[] = [
   { src: "/images/estate/home/estate-lawn.webp", alt: "Spacious private lawn and grounds at Silver Oak Estate", category: "Grounds", caption: "Private lawn", size: "wide" },
-  { src: "/images/estate/estate/estate-living-area.webp", alt: "Indoor seating area with two chairs and a table at Silver Oak Estate", category: "Residence", caption: "Living space", size: "standard" },
-  { src: "/images/estate/estate/estate-bedroom.webp", alt: "Bedroom with a king bed at Silver Oak Estate", category: "Bedrooms", caption: "King-bed bedroom", size: "tall" },
-  { src: "/images/estate/estate/estate-bathroom.webp", alt: "Clean attached bathroom at Silver Oak Estate", category: "Residence", size: "standard" },
+  { src: "/images/estate/experiences/deck01.PNG", alt: "Patterned poolside deck beside the residence, with the tiled pool and open fields beyond", category: "Pool", caption: "Poolside deck", size: "standard" },
+  { src: "/images/estate/estate/estate-deck-03.PNG", alt: "Elevated view of the geometric poolside deck, turquoise pool and hedged garden edge", category: "Pool", caption: "Deck and pool", size: "tall" },
+  { src: "/images/estate/estate/estate-dinning-03.PNG", alt: "Six-seat wooden dining table with a stone top, cushioned chairs and sheer curtained windows", category: "Dining", caption: "Dining room", size: "standard" },
+  { src: "/images/estate/estate/estate-Bedroom-02.PNG", alt: "Two views of a bedroom with a padded headboard, wardrobe, woven rug and window seating", category: "Bedrooms", caption: "Bedroom views", size: "standard" },
   { src: "/images/estate/estate/estate-kitchen.webp", alt: "Modular kitchen at Silver Oak Estate", category: "Kitchen", caption: "Self-cooking kitchen", size: "wide" },
+  { src: "/images/estate/estate/estate-pool-deck.webp", alt: "Adult-size party pool and deck at Silver Oak Estate", category: "Pool", size: "wide" },
+  { src: "/images/estate/estate/estate-bedroom-03.PNG", alt: "Three views of a bedroom with an en-suite bathroom and a pair of red-cushioned chairs by the window", category: "Bedrooms", caption: "Bedroom and seating", size: "standard" },
+  { src: "/images/estate/estate/estate-kitchen-03.PNG", alt: "Open kitchen with a breakfast counter, bar stools, patterned tile splashback and rope pendant lighting", category: "Kitchen", caption: "Breakfast counter", size: "tall" },
+  { src: "/images/estate/estate/estate-living-area.webp", alt: "Indoor seating area with two chairs and a table at Silver Oak Estate", category: "Residence", caption: "Living space", size: "standard" },
   { src: "/images/estate/estate/estate-dining.webp", alt: "Dedicated dining table and seating area at Silver Oak Estate", category: "Dining", size: "standard" },
-  { src: "/images/estate/estate/estate-pool-deck.webp", alt: "Adult-size party pool and deck at Silver Oak Estate", category: "Pool", caption: "Poolside deck", size: "wide" },
-  { src: "/images/estate/estate/estate-lawn-evening.webp", alt: "Evening view of the private lawn and grounds at Silver Oak Estate", category: "Evenings", caption: "Lawn at evening", size: "tall" },
-  { src: "/images/estate/experiences/experiences-dining.webp", alt: "Dedicated dining area prepared for shared meals at Silver Oak Estate", category: "Dining", size: "standard" },
-  { src: "/images/estate/experiences/experiences-pool-lawn.webp", alt: "Pool deck and lawn at Silver Oak Estate", category: "Grounds", size: "standard" },
+  { src: "/images/estate/estate/estate-lawn-evening.webp", alt: "Evening view of the private lawn and grounds at Silver Oak Estate", category: "Evenings", caption: "Lawn at evening", size: "wide" },
 ];
 
 const cellClasses = {
@@ -88,9 +92,14 @@ export default function GalleryPage() {
                   key={image.src}
                   className={`group relative overflow-hidden bg-[var(--soe-color-stone)] ${cellClasses[image.size]}`}
                 >
+                  {/*
+                    The grid cell owns the box here, so the frame's default
+                    4/3 ratio is reset — otherwise aspect-ratio derives the
+                    width from the row height and wide cells render short.
+                  */}
                   <EstateMediaFrame
                     aspectRatio="landscape"
-                    className="h-full rounded-none"
+                    className="aspect-auto h-full w-full rounded-none"
                   >
                     <Image
                       src={image.src}
