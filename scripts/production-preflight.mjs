@@ -29,6 +29,14 @@ const PROFILE_FIELDS = {
     "EMAIL_SENDER",
     "ADMIN_NOTIFICATION_RECIPIENTS",
   ],
+  "production-assisted": [
+    "NEXT_PUBLIC_SITE_URL",
+    "NEXT_PUBLIC_SUPABASE_URL",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+    "APP_ENV",
+    "APP_TIMEZONE",
+    "ONLINE_BOOKING_ENABLED",
+  ],
   "production-live": [
     "NEXT_PUBLIC_SITE_URL",
     "NEXT_PUBLIC_SUPABASE_URL",
@@ -80,6 +88,7 @@ const PLACEHOLDER_PATTERNS = [
 
 const PROFILE_ALIASES = {
   staging: "booking-test",
+  "assisted-production": "production-assisted",
   production: "production-live",
 };
 
@@ -147,6 +156,20 @@ function validateEmailAddress(environment, field, blockers) {
   }
 }
 
+// Mirrors AVAILABILITY_REQUIRED_FIELDS in src/lib/capabilities/online-booking.ts:
+// the read-only availability calendar needs only the two public Supabase fields.
+const AVAILABILITY_REQUIRED_FIELDS = [
+  "NEXT_PUBLIC_SUPABASE_URL",
+  "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+];
+
+function evaluateAvailabilityReadiness(environment) {
+  const missingFields = AVAILABILITY_REQUIRED_FIELDS.filter(
+    (field) => isBlank(environment[field]) || looksLikePlaceholder(environment[field]),
+  );
+  return { ready: missingFields.length === 0, missingFields };
+}
+
 function resolveProfile(options) {
   if (options.profile !== undefined) {
     if (!(options.profile in PROFILE_FIELDS)) {
@@ -190,7 +213,12 @@ export function evaluateProductionReadiness(environment, options = {}) {
     }
   }
 
-  if (profile === "core" || profile === "booking-test" || profile === "production-live") {
+  if (
+    profile === "core" ||
+    profile === "booking-test" ||
+    profile === "production-assisted" ||
+    profile === "production-live"
+  ) {
     validateHttpsUrl(environment, "NEXT_PUBLIC_SITE_URL", blockers, { forbidLocalhost: true });
     validateHttpsUrl(environment, "NEXT_PUBLIC_SUPABASE_URL", blockers, { forbidLocalhost: true });
 
@@ -199,6 +227,43 @@ export function evaluateProductionReadiness(environment, options = {}) {
     }
     if (environment.APP_TIMEZONE !== "Asia/Kolkata") {
       addFinding(blockers, "APP_TIMEZONE", "must equal Asia/Kolkata");
+    }
+  }
+
+  if (profile === "production-assisted") {
+    // Assisted launch: public marketing + read-only availability + assisted
+    // enquiry only. Online booking must remain OFF, and the canonical
+    // production domain and environment must be exact. No payment, Razorpay,
+    // Turnstile, booking-token or email-provider field is required, because the
+    // public path uses only the two public Supabase fields plus user-initiated
+    // mailto / WhatsApp / phone links.
+    if (environment.APP_ENV !== "production") {
+      addFinding(blockers, "APP_ENV", "must equal production");
+    }
+    if (environment.NEXT_PUBLIC_SITE_URL !== "https://silveroakestate.online") {
+      addFinding(blockers, "NEXT_PUBLIC_SITE_URL", "must equal the canonical production URL");
+    }
+    if (environment.ONLINE_BOOKING_ENABLED !== "false") {
+      addFinding(
+        blockers,
+        "ONLINE_BOOKING_ENABLED",
+        "must equal false for the assisted-enquiry launch",
+      );
+    }
+
+    const availability = evaluateAvailabilityReadiness(environment);
+    if (!availability.ready) {
+      for (const field of availability.missingFields) {
+        addFinding(blockers, field, "is required for the availability calendar");
+      }
+    }
+
+    if (isBlank(environment.ERROR_MONITORING_DSN)) {
+      addFinding(
+        warnings,
+        "ERROR_MONITORING_DSN",
+        "is not configured; deployment observability will be limited",
+      );
     }
   }
 

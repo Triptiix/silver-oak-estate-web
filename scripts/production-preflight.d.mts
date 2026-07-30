@@ -2,9 +2,13 @@ export type ProductionPreflightProfile =
   | "core"
   | "booking-test"
   | "email"
+  | "production-assisted"
   | "production-live";
 
-export type ProductionPreflightTarget = "staging" | "production";
+export type ProductionPreflightTarget =
+  | "staging"
+  | "assisted-production"
+  | "production";
 
 export type ProductionPreflightFinding = {
   field: string;
