@@ -28,11 +28,18 @@ export function buildPageMetadata({
   description,
   path,
   absoluteTitle = false,
+  noindex = false,
 }: {
   title: string;
   description: string;
   path: string;
   absoluteTitle?: boolean;
+  /**
+   * Pass `true` for pages that must not be indexed yet — e.g. legal placeholders
+   * awaiting approved content. Emits `robots: { index: false, follow: false }`
+   * so crawlers can still read the directive (unlike a robots.txt disallow).
+   */
+  noindex?: boolean;
 }): Metadata {
   // The share card always shows the full, self-describing title.
   const socialTitle = absoluteTitle ? title : `${title} | ${siteConfig.name}`;
@@ -41,6 +48,7 @@ export function buildPageMetadata({
     title: absoluteTitle ? { absolute: title } : title,
     description,
     alternates: { canonical: path },
+    ...(noindex ? { robots: { index: false, follow: false } } : {}),
     openGraph: {
       type: "website",
       siteName: siteConfig.name,

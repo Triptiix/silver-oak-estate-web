@@ -19,6 +19,7 @@
     "test:concurrency": "npm run test:concurrency:booking-hold && npm run test:concurrency:admin-manual-bookings && npm run test:concurrency:admin-manual-payments",
     "check": "npm run typecheck && npm run lint && npm run test",
     "preflight:production": "node scripts/production-preflight.mjs",
+    "preflight:assisted": "node scripts/production-preflight.mjs --profile=production-assisted",
     "db:start": "supabase start",
     "db:stop": "supabase stop",
     "db:status": "supabase status",
