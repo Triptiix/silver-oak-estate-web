@@ -123,7 +123,7 @@ export default function GalleryPage() {
                       alt={image.alt}
                       fill
                       sizes={sizes}
-                      className="object-cover transition-transform duration-[var(--soe-duration-editorial)] group-hover:scale-[1.025] motion-reduce:transition-none"
+                      className="object-cover"
                     />
                   </EstateMediaFrame>
                   <figcaption className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-[linear-gradient(to_top,rgba(13,15,14,0.85),transparent)] px-4 pb-4 pt-16 text-[var(--soe-color-canvas)]">

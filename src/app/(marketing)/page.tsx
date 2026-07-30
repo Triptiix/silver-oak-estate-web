@@ -38,7 +38,6 @@ export default function HomePage() {
     `${capacity.overnightLabel} overnight`,
     `${capacity.standardDayEventLabel} for daytime events`,
     "Pool, lawn and indoor space",
-    "Complete-property reservation",
   ];
 
   return (
@@ -103,7 +102,7 @@ export default function HomePage() {
               aria-hidden="true"
               className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_top,rgba(13,15,14,0.45),rgba(13,15,14,0)_45%)]"
             />
-            <figure className="hidden sm:block absolute sm:bottom-6 sm:left-6 sm:w-56 lg:bottom-10 lg:left-10 lg:w-[21rem]">
+            <figure className="hidden md:block absolute md:bottom-6 md:left-6 md:w-56 lg:bottom-10 lg:left-10 lg:w-[21rem]">
               <div className="relative aspect-[16/10] overflow-hidden rounded-[var(--soe-radius-media)] border border-[var(--soe-color-gold)]/70 shadow-[0_18px_40px_rgba(13,15,14,0.45)]">
                 <Image
                   src="/images/estate/home/hero-evening.webp"
@@ -212,7 +211,7 @@ export default function HomePage() {
                 alt="Bedroom with a king bed at Silver Oak Estate"
                 fill
                 sizes="(max-width: 1023px) 100vw, 50vw"
-                className="object-cover transition-transform duration-[var(--soe-duration-editorial)] ease-[var(--soe-ease-editorial)] group-hover:scale-[1.025] motion-reduce:transition-none"
+                className="object-cover"
               />
               <div className="absolute inset-x-0 bottom-0 bg-[linear-gradient(to_top,rgba(13,15,14,0.95),rgba(13,15,14,0))] px-6 pb-8 pt-28 sm:px-10 sm:pb-10">
                 <p className="font-soe-ui text-[length:var(--soe-text-xs)] font-semibold uppercase tracking-[var(--soe-tracking-eyebrow)] text-[var(--soe-color-gold)]">
@@ -244,7 +243,7 @@ export default function HomePage() {
                 alt="Outdoor party pool at Silver Oak Estate"
                 fill
                 sizes="(max-width: 1023px) 100vw, 50vw"
-                className="object-cover transition-transform duration-[var(--soe-duration-editorial)] ease-[var(--soe-ease-editorial)] group-hover:scale-[1.025] motion-reduce:transition-none"
+                className="object-cover"
               />
               <div className="absolute inset-x-0 bottom-0 bg-[linear-gradient(to_top,rgba(13,15,14,0.95),rgba(13,15,14,0))] px-6 pb-8 pt-28 sm:px-10 sm:pb-10">
                 <p className="font-soe-ui text-[length:var(--soe-text-xs)] font-semibold uppercase tracking-[var(--soe-tracking-eyebrow)] text-[var(--soe-color-gold)]">

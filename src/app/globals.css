@@ -285,12 +285,20 @@
   }
 
   .soe-motion-image-reveal {
-    transform: scale(1);
-    transition: transform 8s var(--soe-ease-editorial);
+    overflow: hidden;
   }
 
-  .soe-motion-image-reveal:hover {
-    transform: scale(1.025);
+  .soe-motion-image-reveal img,
+  .soe-motion-image-reveal picture > img {
+    transform: scale(1);
+    transition: transform 800ms var(--soe-ease-editorial);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .soe-motion-image-reveal:hover img,
+    .soe-motion-image-reveal:hover picture > img {
+      transform: scale(1.025);
+    }
   }
 
   .soe-motion-menu-enter {
@@ -324,7 +332,9 @@
     .soe-motion-menu-enter {
       animation: none !important;
     }
-    .soe-motion-image-reveal {
+    .soe-motion-image-reveal,
+    .soe-motion-image-reveal img,
+    .soe-motion-image-reveal picture > img {
       transition: none !important;
       transform: none !important;
     }
