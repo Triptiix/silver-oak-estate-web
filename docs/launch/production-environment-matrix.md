@@ -1,6 +1,10 @@
 # Production environment matrix — Silver Oak Estate
 
-Variable **names** and rules only. **No values appear in this file.** Rows marked
+Variable **names** and rules only. **No credential or secret values appear in
+this file.** It does state the required *non-secret* configuration constants that
+the preflight enforces (the canonical URL `https://silveroakestate.online`,
+`APP_ENV=production`, `APP_TIMEZONE=Asia/Kolkata`, `ONLINE_BOOKING_ENABLED=false`),
+because those are public validation targets, not secrets. Rows marked
 `present by name: unverified` could not be confirmed because the local checkout is
 not linked to the Vercel project and `vercel link` was intentionally not run
 (it would create local `.vercel` state). Confirm names in the Vercel dashboard or

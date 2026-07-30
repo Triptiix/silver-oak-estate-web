@@ -93,14 +93,18 @@ Last updated: 2026-07-30 · Phase 7D.3A
 
 ## Launch impact summary
 
-- **Assisted public launch (A):** the marketing site, read-only availability and
-  assisted enquiry can go live because no payment is taken and no contract is
-  concluded online. The **hard blockers** are the privacy-facing items
-  (#7 data fiduciary, #8 grievance contact, #30 photography consent, #32 CCTV
-  disclosure, #33 retention, #41 grievance period) — these should be resolved
-  before broad promotion because enquiry contact details are personal data. Until
-  then, `/privacy` and `/terms` remain review-draft placeholders, `noindex`, and
-  excluded from the sitemap.
+- **Assisted public launch (A) — BLOCKED until the privacy items resolve.** The
+  marketing site takes no payment and concludes no contract online, but assisted
+  enquiry collects personal data (name, phone, email), which engages the DPDP Act
+  2023. Therefore the `A`-tagged items are **hard blockers** for the assisted
+  public launch, not merely for broad promotion: #7 data fiduciary/controller,
+  #8 privacy grievance contact, #30 photography consent, #32 CCTV disclosure,
+  #33 guest-data retention, #41 grievance-response period (and the display-only
+  policy items #26–#29 where shown to the public). Until these are approved and
+  an approved privacy policy is published, `/privacy` and `/terms` remain
+  review-draft placeholders — `noindex` and excluded from the sitemap — and the
+  site should not be actively promoted as accepting enquiries. Marketing content
+  that collects no personal data may be served in the meantime.
 - **Manual paid bookings (M):** blocked until the contracting party, merchant of
   record, refund/cancellation schedule and deposit terms are approved.
 - **Online self-service booking (O):** remains a full Phase 8 effort; not in scope.

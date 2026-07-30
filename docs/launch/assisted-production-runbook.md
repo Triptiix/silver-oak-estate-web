@@ -30,7 +30,7 @@ Legend: **RO** = read-only check · **MUT** = mutation (7D.3B only).
 - **Owner:** Owner. **Evidence:** approval message + source file.
 
 ### 3. Merge code readiness
-- **RO:** PR #? (this phase) merged; CI green at exact head.
+- **RO:** Phase 7D.3A PR **#45** (`phase-7d3a/assisted-launch-readiness`) merged with CI green at its exact head; record the merge commit SHA here at execution time: `__________`.
 - **MUT:** merge via review, not force.
 - **Verify:** `origin/main` at the merged SHA.
 - **Rollback:** revert merge commit.

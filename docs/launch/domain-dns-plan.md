@@ -24,14 +24,26 @@ Last updated: 2026-07-30 · Phase 7D.3A
 has **no email records**, and is **not attached to Vercel** (the Vercel account
 holds unrelated domains only, and production currently serves on `*.vercel.app`).
 
-## Email-delivery risk
+## Email status and risk
 
-**None to preserve.** There are currently no `MX`, SPF `TXT`, DKIM or `DMARC`
-records, so pointing the website to Vercel cannot break existing mail flow (there
-is none). Guest email today is handled by the mailbox behind
-`contact@silveroakestate.online` at the provider; if that provider needs
-`MX`/SPF/DKIM records in future, they must be added and then **left untouched** by
-any website change. Do not overwrite mail records when adding website records.
+**Email at `@silveroakestate.online` is currently UNCONFIGURED at the DNS layer.**
+There are no `MX`, SPF `TXT`, DKIM or `DMARC` records, so this domain cannot
+receive mail today and `contact@silveroakestate.online` is **not yet a working
+inbound mailbox** unless it is hosted under a different domain/alias. This is a
+**launch blocker for relying on email enquiries**: verify with the owner whether
+mail is expected here.
+
+- If email should work at this domain, the mail provider's `MX`, SPF `TXT` and
+  DKIM records must be added first, and then **left untouched** by any website
+  change.
+- Until mail is configured, the assisted-enquiry pathways that are actually
+  functional are **phone and WhatsApp** (the `tel:`/`wa.me` links); the site's
+  `mailto:` link opens the visitor's own mail client and does not itself prove
+  the estate can receive replies.
+
+**Website-DNS risk to mail: none in either direction** — because there are no mail
+records to overwrite, adding website `A`/`CNAME` records cannot break mail. Once
+mail records exist, never overwrite them when changing website records.
 
 ## Target state
 
