@@ -40,7 +40,7 @@ export function MobileBookingCTA({
         }}
       />
       <aside
-        aria-label="Booking and contact action"
+        aria-label="Booking action"
         className="fixed bottom-0 left-0 right-0 z-40 border-t border-[var(--soe-surface-control-border)] bg-[var(--soe-surface-bg-primary)]/95 backdrop-blur-md p-3 md:hidden"
         style={{
           paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))",
