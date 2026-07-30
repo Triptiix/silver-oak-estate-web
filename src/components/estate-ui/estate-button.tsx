@@ -28,7 +28,7 @@ export const EstateButton = React.forwardRef<HTMLButtonElement, EstateButtonProp
         disabled={Boolean(isLoading || disabled)}
         aria-busy={isLoading ? true : undefined}
         className={cn(
-          "relative inline-flex items-center justify-center min-h-[48px] rounded-[var(--soe-radius-control)] px-6 py-3 font-soe-ui text-[length:var(--soe-text-base)] font-medium transition-colors duration-[var(--soe-duration-interface)] ease-[var(--soe-ease-standard)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--soe-color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--soe-color-focus-offset)] disabled:opacity-50 disabled:pointer-events-none",
+          "relative inline-flex items-center justify-center min-h-[48px] rounded-[var(--soe-radius-control)] px-6 py-3 font-soe-ui text-[length:var(--soe-text-base)] font-medium transition-colors duration-[var(--soe-duration-interface)] ease-[var(--soe-ease-standard)] active:scale-[0.985] motion-reduce:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--soe-color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--soe-color-focus-offset)] disabled:opacity-50 disabled:pointer-events-none",
           {
             "bg-[var(--soe-surface-action-primary)] text-[var(--soe-surface-text-inverse)] hover:bg-[var(--soe-surface-action-hover)]":
               variant === "primary",
