@@ -1,3 +1,4 @@
+import { buildPageMetadata } from "@/lib/seo/page-metadata";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -13,16 +14,12 @@ import {
 } from "@/config/public-information";
 import { getOnlineBookingCapability } from "@/lib/capabilities/online-booking";
 
-export const metadata: Metadata = {
-  title: {
-    absolute: "Silver Oak Estate | Private Farmhouse Stay & Event Venue in Noida",
-  },
-  alternates: {
-    canonical: "/",
-  },
-  description:
-    "Discover Silver Oak Estate, a private farmhouse in Sector 135, Noida for stays, family gatherings, corporate retreats and private celebrations.",
-};
+export const metadata: Metadata = buildPageMetadata({
+  title: "Silver Oak Estate | Private Farmhouse Stay & Event Venue in Noida",
+  description: "Discover Silver Oak Estate, a private farmhouse in Sector 135, Noida for stays, family gatherings, corporate retreats and private celebrations.",
+  path: "/",
+  absoluteTitle: true,
+});
 
 const focusClasses =
   "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--soe-color-focus-ring)] focus-visible:ring-offset-4 focus-visible:ring-offset-[var(--soe-color-focus-offset)]";

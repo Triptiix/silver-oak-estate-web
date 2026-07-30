@@ -1,3 +1,4 @@
+import { buildPageMetadata } from "@/lib/seo/page-metadata";
 import type { Metadata } from "next";
 import { EstateActionLink } from "@/components/estate-ui/estate-action-link";
 import { EstateContainer } from "@/components/estate-ui/estate-container";
@@ -7,14 +8,11 @@ import { EstateSection } from "@/components/estate-ui/estate-section";
 import { EstateText } from "@/components/estate-ui/estate-text";
 import { publicInformation } from "@/config/public-information";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Contact",
-  alternates: {
-    canonical: "/contact",
-  },
-  description:
-    "Contact Silver Oak Estate via email, phone or WhatsApp regarding availability, private stays, approved gatherings, photography shoots and optional arrangements in Sector 135, Noida.",
-};
+  description: "Contact Silver Oak Estate via email, phone or WhatsApp regarding availability, private stays, approved gatherings, photography shoots and optional arrangements in Sector 135, Noida.",
+  path: "/contact",
+});
 
 const actionClassName =
   "min-h-11 px-4 font-soe-ui text-sm font-semibold focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--soe-color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--soe-color-focus-offset)]";

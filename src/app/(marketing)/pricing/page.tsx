@@ -1,3 +1,4 @@
+import { buildPageMetadata } from "@/lib/seo/page-metadata";
 import { EstateActionLink } from "@/components/estate-ui/estate-action-link";
 import { EstateContainer } from "@/components/estate-ui/estate-container";
 import { EstateEyebrow } from "@/components/estate-ui/estate-eyebrow";
@@ -10,14 +11,11 @@ import {
 } from "@/config/public-information";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Pricing",
-  alternates: {
-    canonical: "/pricing",
-  },
-  description:
-    "View confirmed weekday and weekend rates for Silver Oak Estate’s fixed booking slot, advance payment information and enquiry options in Sector 135, Noida.",
-};
+  description: "View confirmed weekday and weekend rates for Silver Oak Estate’s fixed booking slot, advance payment information and enquiry options in Sector 135, Noida.",
+  path: "/pricing",
+});
 
 export default function PricingPage() {
   const { booking, contact, optionalArrangements, tax } = publicInformation;

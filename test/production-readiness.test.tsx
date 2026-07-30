@@ -47,6 +47,15 @@ function titleString(title: unknown): string {
   return String(title);
 }
 
+// The <title> a user actually sees: an absolute title renders verbatim, a plain
+// string gets the root template's " | Silver Oak Estate" suffix.
+function effectiveTitle(title: unknown): string {
+  if (title && typeof title === "object" && "absolute" in title) {
+    return String((title as { absolute: string }).absolute);
+  }
+  return `${String(title)} | ${siteConfig.name}`;
+}
+
 describe("readiness — canonical URLs", () => {
   it("gives every public route a canonical matching its path", async () => {
     for (const [mod, expected] of PUBLIC_ROUTES) {
@@ -114,6 +123,37 @@ describe("readiness — social metadata", () => {
     expect(existsSync(path.join(process.cwd(), "public", asset))).toBe(true);
     expect(twitter?.card).toBe("summary_large_image");
   });
+
+  it("gives every public route its own share title and URL, not the homepage card", async () => {
+    for (const [mod, expected] of PUBLIC_ROUTES) {
+      const meta = await metadataFor(mod);
+      const og = meta.openGraph as {
+        title?: string;
+        url?: string;
+        siteName?: string;
+        images?: Array<{ url: string }>;
+      };
+      const twitter = meta.twitter as { title?: string; card?: string };
+
+      expect(og?.url, `${mod} og:url`).toBe(expected);
+      expect(og?.siteName, `${mod} og:siteName`).toBe(siteConfig.name);
+      expect(og?.images?.length, `${mod} og:image`).toBeGreaterThan(0);
+      // The share title must match the effective page title exactly.
+      expect(og?.title, `${mod} og:title`).toBe(effectiveTitle(meta.title));
+      expect(twitter?.title, `${mod} twitter:title`).toBe(effectiveTitle(meta.title));
+      expect(twitter?.card).toBe("summary_large_image");
+    }
+  });
+
+  it("keeps each route's share title distinct from the bare site name", async () => {
+    const seen = new Set<string>();
+    for (const [mod] of PUBLIC_ROUTES) {
+      const meta = await metadataFor(mod);
+      const og = meta.openGraph as { title?: string };
+      expect(seen.has(og.title!), `${mod} duplicates share title`).toBe(false);
+      seen.add(og.title!);
+    }
+  });
 });
 
 describe("readiness — indexing controls", () => {
@@ -175,13 +215,21 @@ describe("readiness — external link safety", () => {
       "src/components/booking/booking-unavailable.tsx",
       "src/components/booking/selected-date-summary.tsx",
     ];
+    let checked = 0;
     for (const file of files) {
       const source = readFileSync(file, "utf8");
-      const blanks = source.split('target="_blank"').length - 1;
-      const safe = source.split('rel="noopener noreferrer"').length - 1;
-      expect(safe, `${file} has ${blanks} blank targets but ${safe} safe rels`)
-        .toBeGreaterThanOrEqual(blanks);
+      // Inspect each opening <a ...> tag on its own so a safe rel on one anchor
+      // cannot mask a missing rel on another.
+      const anchors = source.match(/<a\b[^>]*>/g) ?? [];
+      for (const anchor of anchors) {
+        if (!anchor.includes('target="_blank"')) continue;
+        checked += 1;
+        expect(anchor, `${file}: blank target without noopener noreferrer`)
+          .toContain('rel="noopener noreferrer"');
+      }
     }
+    expect(checked, "expected blank-target anchors to be present")
+      .toBeGreaterThan(0);
   });
 });
 
