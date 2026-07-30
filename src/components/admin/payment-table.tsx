@@ -15,10 +15,10 @@ export function PaymentTable({
   if (!items.length) {
     return (
       <div className="rounded border border-dashed p-8 text-center text-[var(--muted-foreground)]">
-        {recovery
-          ? "No payments require recovery."
-          : context === "booking-detail"
-            ? "No payment attempts are recorded for this booking."
+        {context === "booking-detail"
+          ? "No payment attempts are recorded for this booking."
+          : recovery
+            ? "No payments require recovery."
             : "No payment attempts match these filters."}
       </div>
     );

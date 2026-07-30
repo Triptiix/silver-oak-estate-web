@@ -35,12 +35,14 @@ export function BookingTable({ items }: { items: AdminBookingListItem[] }) {
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--muted-foreground)]">
                   Booking reference
                 </p>
-                <Link
-                  className="mt-1 inline-flex min-h-11 max-w-full items-center break-all font-mono font-bold underline decoration-stone-300 underline-offset-4 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2"
-                  href={`/admin/bookings/${item.bookingReference}`}
-                >
-                  {item.bookingReference}
-                </Link>
+                <h2 className="mt-1">
+                  <Link
+                    className="inline-flex min-h-11 max-w-full items-center break-all font-mono font-bold underline decoration-stone-300 underline-offset-4 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2"
+                    href={`/admin/bookings/${item.bookingReference}`}
+                  >
+                    {item.bookingReference}
+                  </Link>
+                </h2>
               </div>
               <div className="sm:text-right">
                 <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
@@ -54,27 +56,27 @@ export function BookingTable({ items }: { items: AdminBookingListItem[] }) {
 
             <div className="grid gap-5 py-4 sm:grid-cols-2 xl:grid-cols-4">
               <div>
-                <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
                   Stay
-                </h2>
+                </p>
                 <p className="mt-2 font-medium">{formatAdminDate(item.checkInAt)}</p>
                 <p className="text-sm text-[var(--muted-foreground)]">
                   Checkout {formatAdminDate(item.checkOutAt)}
                 </p>
               </div>
               <div>
-                <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
                   Masked customer
-                </h2>
+                </p>
                 <p className="mt-2 font-medium">{item.customerNameMasked}</p>
                 <p className="font-mono text-sm text-[var(--muted-foreground)]">
                   {item.customerPhoneMasked}
                 </p>
               </div>
               <div>
-                <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
                   Lifecycle
-                </h2>
+                </p>
                 <dl className="mt-2 space-y-2 text-sm">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <dt>Booking</dt>
@@ -91,9 +93,9 @@ export function BookingTable({ items }: { items: AdminBookingListItem[] }) {
                 </dl>
               </div>
               <div>
-                <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
                   Operational context
-                </h2>
+                </p>
                 <dl className="mt-2 space-y-2 text-sm">
                   <div>
                     <dt className="text-[var(--muted-foreground)]">Reservation type</dt>

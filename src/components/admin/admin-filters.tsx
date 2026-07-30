@@ -202,11 +202,13 @@ export function AdminFilters({
               defaultValue={String(values?.pageSize ?? 20)}
               className="mt-1.5 block min-h-11 w-full rounded-[var(--radius)] border border-[var(--border)] bg-white px-3 text-sm"
             >
-              {[10, 20, 50].map((value) => (
-                <option key={value} value={value}>
-                  {value}
-                </option>
-              ))}
+              {[...new Set([10, 20, 50, values?.pageSize ?? 20])]
+                .sort((first, second) => first - second)
+                .map((value) => (
+                  <option key={value} value={value}>
+                    {value}
+                  </option>
+                ))}
             </select>
           </label>
         )}

@@ -303,6 +303,19 @@ describe("Phase 7C.2A booking filters", () => {
     expect(container.querySelector('[name="email"]')).toBeNull();
     expect(container.querySelector('[name="phone"]')).toBeNull();
   });
+
+  it("reflects a validated page size the select does not otherwise offer", () => {
+    const values = parseAdminListQuery({ pageSize: "30" });
+    expect(values.pageSize).toBe(30);
+
+    render(<AdminFilters showPageSize values={values} />);
+
+    const control = screen.getByLabelText("Results per page");
+    expect(control).toHaveValue("30");
+    expect(
+      within(control).getAllByRole("option").map((option) => option.textContent),
+    ).toEqual(["10", "20", "30", "50"]);
+  });
 });
 
 describe("Phase 7C.2A responsive booking records", () => {
@@ -569,6 +582,24 @@ describe("Phase 7C.2A shared embedded history", () => {
     rerender(<NotificationTable items={[notification]} />);
     expect(screen.getByRole("table")).toBeInTheDocument();
     expect(screen.getByText("Delivery not implemented in Phase 5A."))
+      .toBeInTheDocument();
+  });
+
+  it("keeps the booking-scoped empty payment message when recovery applies", () => {
+    const { rerender } = render(
+      <PaymentTable items={[]} recovery context="booking-detail" />,
+    );
+    expect(
+      screen.getByText("No payment attempts are recorded for this booking."),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("No payments require recovery.")).toBeNull();
+
+    rerender(<PaymentTable items={[]} recovery />);
+    expect(screen.getByText("No payments require recovery."))
+      .toBeInTheDocument();
+
+    rerender(<PaymentTable items={[]} />);
+    expect(screen.getByText("No payment attempts match these filters."))
       .toBeInTheDocument();
   });
 });
