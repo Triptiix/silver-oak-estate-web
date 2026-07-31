@@ -375,7 +375,7 @@ export default function HomePage() {
               ))}
             </div>
             <p className="mt-10 border-t border-[var(--soe-color-gold)]/35 pt-6 text-center font-soe-body text-[length:var(--soe-text-sm)] text-[var(--soe-color-ink-muted)]">
-              Rates shown are indicative and subject to date, guest count, event requirements, taxes and final confirmation by the Silver Oak Estate team.
+              {booking.confirmationNotice}
             </p>
           </div>
         </EstateContainer>
