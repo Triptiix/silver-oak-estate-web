@@ -51,8 +51,29 @@ export default function GalleryPage() {
     <div className="overflow-x-clip bg-[var(--soe-color-canvas)]">
       <EstateSection surface="dark" spacing="none" className="border-b border-[var(--soe-color-gold)]/45">
         <div className="grid min-h-[calc(76svh-var(--header-height))] lg:grid-cols-[0.86fr_1.14fr]">
-          <div className="flex items-center px-4 py-14 sm:px-8 lg:pl-[max(3rem,calc((100vw-var(--soe-container-visual))/2+2rem))] lg:pr-12"><div className="max-w-[34rem]"><EstateEyebrow className="mb-6 text-[var(--soe-surface-accent-metal)]">Silver Oak Estate · Sector 135, Noida</EstateEyebrow><EstateHeading as="h1" variant="hero" className="text-[var(--soe-surface-text-primary)]" style={{ fontSize: "clamp(3rem, 5vw, 6rem)" }}>A closer look at the estate</EstateHeading><EstateText variant="lg" className="mt-7 text-[var(--soe-surface-text-secondary)]">A considered collection of verified views from the residence, bedrooms, kitchen, lawn, pool and evenings outdoors.</EstateText></div></div>
-          <div className="relative min-h-[42svh] overflow-hidden lg:min-h-full"><Image src="/images/estate/home/hero-estate-exterior.webp" alt="Exterior view of Silver Oak Estate private farmhouse in Sector 135, Noida" fill priority sizes="(max-width: 1023px) 100vw, 64vw" className="object-cover" /></div>
+          <div className="soe-motion-fade-rise flex items-center px-4 py-14 sm:px-8 lg:pl-[max(3rem,calc((100vw-var(--soe-container-visual))/2+2rem))] lg:pr-12">
+            <div className="max-w-[34rem]">
+              <EstateEyebrow className="mb-6 text-[var(--soe-surface-accent-metal)]">
+                Silver Oak Estate · Sector 135, Noida
+              </EstateEyebrow>
+              <EstateHeading as="h1" variant="hero" className="text-[var(--soe-surface-text-primary)]" style={{ fontSize: "clamp(3rem, 5vw, 6rem)" }}>
+                A closer look at the estate
+              </EstateHeading>
+              <EstateText variant="lg" className="mt-7 text-[var(--soe-surface-text-secondary)]">
+                A considered collection of verified views from the residence, bedrooms, kitchen, lawn, pool and evenings outdoors.
+              </EstateText>
+            </div>
+          </div>
+          <div className="soe-motion-image-reveal relative min-h-[42svh] overflow-hidden lg:min-h-full">
+            <Image
+              src="/images/estate/home/hero-estate-exterior.webp"
+              alt="Exterior view of Silver Oak Estate private farmhouse in Sector 135, Noida"
+              fill
+              priority
+              sizes="(max-width: 1023px) 100vw, 64vw"
+              className="object-cover"
+            />
+          </div>
         </div>
       </EstateSection>
 
@@ -91,13 +112,8 @@ export default function GalleryPage() {
               return (
                 <figure
                   key={image.src}
-                  className={`group relative overflow-hidden bg-[var(--soe-color-stone)] ${cellClasses[image.size]}`}
+                  className={`soe-motion-image-reveal group relative overflow-hidden rounded-[var(--soe-radius-media)] border border-[var(--soe-color-gold)]/35 bg-[var(--soe-color-stone)] ${cellClasses[image.size]}`}
                 >
-                  {/*
-                    The grid cell owns the box here, so the frame's default
-                    4/3 ratio is reset — otherwise aspect-ratio derives the
-                    width from the row height and wide cells render short.
-                  */}
                   <EstateMediaFrame
                     aspectRatio="landscape"
                     className="aspect-auto h-full w-full rounded-none"
@@ -107,11 +123,11 @@ export default function GalleryPage() {
                       alt={image.alt}
                       fill
                       sizes={sizes}
-                      className="object-cover transition-transform duration-[var(--soe-duration-editorial)] group-hover:scale-[1.02] motion-reduce:transition-none"
+                      className="object-cover"
                     />
                   </EstateMediaFrame>
-                  <figcaption className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-[linear-gradient(to_top,rgba(13,15,14,0.8),transparent)] px-4 pb-4 pt-16 text-[var(--soe-color-canvas)]">
-                    <span className="font-soe-ui text-xs font-semibold uppercase tracking-[var(--soe-tracking-eyebrow)]">
+                  <figcaption className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-[linear-gradient(to_top,rgba(13,15,14,0.85),transparent)] px-4 pb-4 pt-16 text-[var(--soe-color-canvas)]">
+                    <span className="font-soe-ui text-xs font-semibold uppercase tracking-[var(--soe-tracking-eyebrow)] text-[var(--soe-color-gold)]">
                       {image.category}
                     </span>
                     {image.caption ? (
@@ -127,7 +143,29 @@ export default function GalleryPage() {
         </EstateContainer>
       </EstateSection>
 
-      <EstateSection surface="dark" spacing="lg"><EstateContainer variant="reading"><div className="text-center"><EstateHeading as="h2" variant="h2" className="text-[var(--soe-surface-text-primary)]">Continue your estate plan</EstateHeading><EstateText variant="lg" className="mx-auto mt-5 max-w-2xl text-[var(--soe-surface-text-secondary)]">Check preferred dates for a private stay, explore the details of the residence or speak with the estate team about an approved event.</EstateText><div className="mt-8 flex flex-wrap justify-center gap-4"><EstateActionLink variant="button" href="/availability">Check Availability</EstateActionLink><EstateActionLink href="/estate" className="text-[var(--soe-surface-text-primary)]">Explore the Estate</EstateActionLink><EstateActionLink href="/contact" className="text-[var(--soe-surface-text-primary)]">Event Enquiry</EstateActionLink></div></div></EstateContainer></EstateSection>
+      <EstateSection surface="dark" spacing="lg">
+        <EstateContainer variant="reading">
+          <div className="text-center">
+            <EstateHeading as="h2" variant="h2" className="text-[var(--soe-surface-text-primary)]">
+              Continue your estate plan
+            </EstateHeading>
+            <EstateText variant="lg" className="mx-auto mt-5 max-w-2xl text-[var(--soe-surface-text-secondary)]">
+              Check preferred dates for a private stay, explore the details of the residence or speak with the estate team about an approved event.
+            </EstateText>
+            <div className="mt-8 flex flex-wrap justify-center gap-4">
+              <EstateActionLink variant="button" href="/availability">
+                Check Availability
+              </EstateActionLink>
+              <EstateActionLink href="/estate" className="text-[var(--soe-surface-text-primary)]">
+                Explore the Estate
+              </EstateActionLink>
+              <EstateActionLink href="/contact" className="text-[var(--soe-surface-text-primary)]">
+                Event Enquiry
+              </EstateActionLink>
+            </div>
+          </div>
+        </EstateContainer>
+      </EstateSection>
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { EstateActionLink } from "@/components/estate-ui/estate-action-link";
 import { EstateContainer } from "@/components/estate-ui/estate-container";
 import { siteConfig } from "@/config/site";
@@ -21,6 +22,7 @@ export function SiteHeader({
   onlineBookingAvailable = false,
 }: SiteHeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+  const pathname = usePathname();
   const triggerRef = React.useRef<HTMLButtonElement>(null);
   const bookingAction = onlineBookingAvailable
     ? { href: "/book", label: "Book Now" }
@@ -63,15 +65,19 @@ export function SiteHeader({
           aria-label="Main Navigation"
           className="hidden items-center gap-1 font-soe-ui text-[length:var(--soe-text-sm)] font-medium lg:flex"
         >
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="flex min-h-11 items-center rounded-[var(--soe-radius-control)] px-4 text-[var(--soe-surface-text-primary)] transition-colors duration-[var(--soe-duration-interface)] hover:bg-white/10 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--soe-color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--soe-color-focus-offset)]"
-            >
-              {link.label}
-            </Link>
-          ))}
+          {navLinks.map((link) => {
+            const isActive = pathname === link.href;
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                aria-current={isActive ? "page" : undefined}
+                className={`flex min-h-11 items-center rounded-[var(--soe-radius-control)] px-4 text-[var(--soe-surface-text-primary)] transition-colors duration-[var(--soe-duration-interface)] hover:bg-white/10 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--soe-color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--soe-color-focus-offset)] ${isActive ? "border-b-2 border-[var(--soe-color-gold)]" : ""}`}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="flex items-center gap-3">
@@ -115,20 +121,24 @@ export function SiteHeader({
         <nav
           id="mobile-navigation"
           aria-label="Mobile navigation"
-          className="border-t border-[var(--soe-color-gold)]/35 bg-[var(--soe-color-night)] px-4 pb-7 pt-4 lg:hidden"
+          className="soe-motion-menu-enter border-t border-[var(--soe-color-gold)]/35 bg-[var(--soe-color-night)]/95 backdrop-blur-md px-4 pb-7 pt-4 lg:hidden"
         >
           <EstateContainer variant="visual" className="px-0">
             <div className="grid gap-1">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex min-h-[48px] items-center border-b border-white/10 px-3 font-soe-ui text-[length:var(--soe-text-base)] font-medium text-[var(--soe-surface-text-primary)] transition-colors duration-[var(--soe-duration-interface)] hover:bg-white/10 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--soe-color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--soe-color-focus-offset)]"
-                >
-                  {link.label}
-                </Link>
-              ))}
+              {navLinks.map((link) => {
+                const isActive = pathname === link.href;
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    aria-current={isActive ? "page" : undefined}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`flex min-h-[48px] items-center border-b border-white/10 px-3 font-soe-ui text-[length:var(--soe-text-base)] font-medium text-[var(--soe-surface-text-primary)] transition-colors duration-[var(--soe-duration-interface)] hover:bg-white/10 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--soe-color-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--soe-color-focus-offset)] ${isActive ? "text-[var(--soe-color-gold)]" : ""}`}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
               <EstateActionLink
                 variant="button"
                 href={bookingAction.href}
