@@ -29,6 +29,14 @@ remains assisted-only: the capability is disabled whenever `APP_ENV=production`.
    hash plus redacted identifiers through `begin_payment_webhook`, and uses the
    same finalizer or `mark_provider_payment_failed`. It completes its durable
    receipt with `complete_payment_webhook`.
+8. An eligible captured payment becomes financially `verified`, converts the
+   existing hold into one active non-expiring `confirmed_booking` inventory
+   block, and moves the booking to `payment_pending`. It returns
+   `payment_received`, never automatic booking confirmation.
+
+`confirmed_booking` is an inventory classification only. It keeps the dates
+blocked while the team reviews the booking; written confirmation from Silver
+Oak Estate remains required through a separate administrator workflow.
 
 ## Idempotency and recovery
 
@@ -37,7 +45,10 @@ the open attempt and attached provider order. Webhook receipts deduplicate
 provider event IDs, while the database finalizer locks the payment, booking and
 inventory reservation. A late or released hold is never revived: a verified
 financial success becomes recovery-required/refund-pending for human handling.
-No automatic refund or notification delivery exists.
+Browser and webhook races return the same `payment_received` result without
+duplicate payment, reservation, event, or internal-notification rows. No
+automatic booking-confirmed event, customer confirmation, refund, or
+notification delivery exists.
 
 ## Test-mode configuration
 

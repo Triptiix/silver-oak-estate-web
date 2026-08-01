@@ -53,7 +53,7 @@ export function PaymentCheckout({
         return;
       }
       const verified = await response.json() as PaymentVerificationResponse;
-      if (verified.state === "confirmed" || verified.state === "recovery_required") {
+      if (verified.state === "payment_received" || verified.state === "recovery_required") {
         onFinalState(verified);
       } else {
         setState("payment_pending");
@@ -117,7 +117,10 @@ export function PaymentCheckout({
           <p className="text-slate-600">Complete payment in the secure Razorpay window.</p>
         )}
         {state === "payment_pending" && (
-          <p className="text-amber-800">Payment received — booking confirmation pending.</p>
+          <p className="text-amber-800">
+            Payment status is being checked. Do not retry payment blindly. Written confirmation
+            has not been issued; contact Silver Oak Estate with your booking reference.
+          </p>
         )}
         {state === "failed" && (
           <p className="text-red-700">Payment could not be completed. Your booking is not confirmed.</p>
@@ -126,4 +129,3 @@ export function PaymentCheckout({
     </div>
   );
 }
-

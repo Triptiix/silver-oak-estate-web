@@ -54,7 +54,7 @@ export function HoldSummary({ hold, onExpire, onRelease, onPaymentFinalState }: 
               <span>{formatInrFromPaise(hold.priceAmountPaise)}</span>
             </div>
             <div className="flex justify-between font-medium text-slate-900">
-              <span>Advance Required to Confirm</span>
+              <span>Advance Payment</span>
               <span>{formatInrFromPaise(hold.advanceAmountPaise)}</span>
             </div>
             <div className="flex justify-between text-slate-600 text-sm">

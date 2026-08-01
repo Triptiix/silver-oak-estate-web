@@ -13,7 +13,7 @@ export type PreparedPaymentOrder = {
 };
 
 export type FinalizationResult = {
-  result: "payment_pending" | "confirmed" | "recovery_required";
+  result: "payment_pending" | "payment_received" | "recovery_required";
   bookingReference: string;
 };
 

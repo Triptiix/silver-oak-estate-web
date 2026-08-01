@@ -71,7 +71,7 @@ describe("payment verification API", () => {
       captured: true,
     });
     mocks.finalizeVerifiedPayment.mockResolvedValue({
-      result: "confirmed",
+      result: "payment_received",
       bookingReference: "SOE-20260725-ABCD1234",
     });
   });
@@ -88,7 +88,7 @@ describe("payment verification API", () => {
       source: "browser",
     });
     expect(await response.json()).toEqual({
-      state: "confirmed",
+      state: "payment_received",
       bookingReference: "SOE-20260725-ABCD1234",
     });
   });
@@ -193,5 +193,31 @@ describe("payment verification API", () => {
     expect(cookie).toMatch(/HttpOnly/i);
     expect(cookie).toMatch(/SameSite=lax/i);
     expect(cookie).toMatch(/Max-Age=0/i);
+  });
+
+  it("returns payment-received state and clears the API-scoped hold cookie", async () => {
+    const response = await POST(request());
+    expect((await response.json()).state).toBe("payment_received");
+    expect(response.headers.get("set-cookie") ?? "").toMatch(/Max-Age=0/i);
+  });
+
+  it("keeps the hold cookie when an authorized payment remains pending", async () => {
+    mocks.fetchPayment.mockResolvedValue({
+      id: "pay_test_1",
+      order_id: "order_test_1",
+      amount: 500000,
+      currency: "INR",
+      status: "authorized",
+      captured: false,
+    });
+    mocks.finalizeVerifiedPayment.mockResolvedValue({
+      result: "payment_pending",
+      bookingReference: "SOE-20260725-ABCD1234",
+    });
+
+    const response = await POST(request());
+
+    expect((await response.json()).state).toBe("payment_pending");
+    expect(response.headers.get("set-cookie")).toBeNull();
   });
 });

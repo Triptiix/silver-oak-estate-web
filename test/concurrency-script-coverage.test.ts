@@ -12,6 +12,8 @@ const suites = {
     "node test/concurrency/admin-manual-bookings.mjs",
   "test:concurrency:admin-manual-payments":
     "node test/concurrency/admin-manual-payments.mjs",
+  "test:concurrency:payment-finalization":
+    "node test/concurrency/payment-finalization.mjs",
 };
 
 describe("concurrency command coverage", () => {

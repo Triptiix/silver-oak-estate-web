@@ -3,7 +3,7 @@
 ## Scope and status
 
 Phase 4 provides a Razorpay test-mode foundation for server-created orders,
-cryptographic payment verification, signed webhooks, atomic confirmation, and
+cryptographic payment verification, signed webhooks, atomic durable blocking, and
 durable payment recovery. It does not configure production credentials,
 automatic refunds, tax handling, cancellation policy, or deployment.
 
@@ -55,8 +55,9 @@ refund_pending / reconciliation_required
 ```
 
 A database trigger rejects unapproved backward or lateral transitions.
-`authorized` is not sufficient to confirm a booking; confirmation occurs only
-for a captured, cryptographically verified payment.
+`authorized` is not sufficient to complete payment verification. A captured,
+cryptographically verified payment becomes `verified`, while the booking moves
+to `payment_pending` until Silver Oak Estate issues written confirmation.
 
 ## Database model
 
@@ -111,14 +112,15 @@ and safely reuses an already attached provider order.
 ## Checkout and browser verification
 
 The client loads Razorpay Checkout only from the approved CSP origin. Public
-states distinguish checkout creation, verification, confirmed booking, payment
-failure, pending confirmation, hold expiry, and recovery.
+states distinguish checkout creation, verification, payment received, payment
+failure, pending verification, hold expiry, and recovery.
 
 `POST /api/payments/verify` validates the Checkout HMAC over the order and
 payment IDs. It then fetches the provider payment server-to-server and validates
 the stored order association, amount, currency, and captured/authorized state
-before calling the shared finalizer. The UI cannot display “Booking confirmed”
-until that finalizer returns `confirmed`.
+before calling the shared finalizer. An eligible capture returns
+`payment_received`; automatic verification never returns or displays booking
+confirmation.
 
 The verification endpoint does not require the hold cookie. This is deliberate:
 a genuine payment callback can arrive after the browser has discarded an
@@ -142,10 +144,10 @@ money as recovery-required. Order creation always requires the cookie.
 Failed internal processing returns a generic retryable response and records only
 a bounded error category. No raw payload or customer data is logged or stored.
 
-## Atomic confirmation and race handling
+## Atomic payment receipt and race handling
 
 `finalize_verified_payment` locks the payment, booking, and existing reservation.
-It confirms only when:
+It records eligible payment receipt only when:
 
 - the provider order and payment identifiers match;
 - amount and currency match the stored attempt;
@@ -154,20 +156,23 @@ It confirms only when:
 - the temporary reservation is still `active`;
 - its expiry is later than the transaction time.
 
-The transaction converts that exact reservation to `confirmed_booking`, removes
-its expiry, marks the booking `confirmed`, records audit events, and writes a
-pending `notification_events` outbox row. Phase 4 does not deliver that
-notification. It never inserts or reacquires inventory. Repeated browser and
-webhook calls return the same safe result without duplicate confirmation events
-or outbox rows.
+The transaction converts that exact reservation to `confirmed_booking`, keeps
+it active, removes its expiry, marks the booking `payment_pending`, records
+payment-received audit events, and writes one internal pending
+`notification_events` outbox row. Phase 4 does not deliver that notification.
+It never inserts or reacquires inventory. `confirmed_booking` is the name of the
+durable inventory block and does not itself represent written business
+confirmation. Repeated browser and webhook calls return `payment_received`
+without duplicate events, reservations, payments, or outbox rows. A later
+administrator confirmation remains a separate workflow.
 
 ## Recovery and `refund_pending`
 
 If a verified financial success has an amount/currency anomaly, an expired or
-released hold, a missing/ineligible reservation, or an internal confirmation
-failure, the payment is preserved as `refund_pending`. Confirmation work occurs
-inside a PL/pgSQL exception block, so failed confirmation writes roll back to a
-savepoint before both the durable recovery update and a pending internal
+released hold, a missing/ineligible reservation, or an internal payment-receipt
+transition failure, the payment is preserved as `refund_pending`. Inventory and
+booking transition work occurs inside a PL/pgSQL exception block, so failed
+transition writes roll back to a savepoint before both the durable recovery update and a pending internal
 recovery outbox record are written. Administrator alert delivery is not
 implemented in Phase 4.
 

@@ -123,7 +123,7 @@ describe("payment webhook API", () => {
     });
     mocks.completePaymentWebhook.mockResolvedValue(undefined);
     mocks.finalizeVerifiedPayment.mockResolvedValue({
-      result: "confirmed",
+      result: "payment_received",
       bookingReference: "SOE-20260725-ABCD1234",
     });
   });

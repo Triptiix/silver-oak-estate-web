@@ -77,6 +77,18 @@ The backend returns standardized error codes representing `PublicBookingErrorCod
 - `sessionStorage` stores only non-PII (Personally Identifiable Information) data: Booking Reference, amounts, and expiration time. No names, emails, or phone numbers are persisted in local storage.
 - The `bookingToken` acts as a bearer token for the specific hold, allowing release without full user authentication.
 
+## Automatic Payment Outcome Boundary
+
+The later test-mode payment integration preserves a strict distinction between
+financial receipt and booking confirmation. An eligible captured payment shows
+`PAYMENT RECEIVED — AWAITING WRITTEN CONFIRMATION`, keeps the booking reference
+visible, and explains that the advance payment was received and the dates remain
+blocked while Silver Oak Estate reviews the booking. It must also state that the
+booking is not yet confirmed and becomes confirmed only when Silver Oak Estate
+issues written confirmation. Recovery outcomes state that payment was received
+but manual review is required. An uncertain verification result warns the
+customer not to retry payment blindly and does not claim written confirmation.
+
 ## Responsive and Accessibility Decisions
 
 - **Responsive**: The calendar, booking form, and summary screens are verified against viewports from 320px to 1440px. No horizontal overflow exists. Sticky elements do not cover form fields.
@@ -95,5 +107,5 @@ The backend returns standardized error codes representing `PublicBookingErrorCod
 
 ## Known Limitations
 
-- **Payment is absent**: Phase 3 does not include the Razorpay checkout flow. A placeholder informational text is shown instead of a payment mechanism.
+- **Phase boundary**: Phase 3 itself did not include Razorpay checkout; the later test-mode integration follows the automatic payment outcome boundary above.
 - A "hold" is strictly a temporary reservation, not a confirmed booking.

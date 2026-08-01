@@ -1,5 +1,5 @@
 begin;
-select plan(50);
+select plan(60);
 
 create temporary table payment_test_context (
   key text primary key,
@@ -125,16 +125,16 @@ select is(
     'razorpay', 'order_active_1', 'pay_active_1', 500000, 'INR',
     'captured', 'browser', null
   )->>'result',
-  'confirmed',
-  'captured payment confirms while the original hold remains eligible'
+  'payment_received',
+  'captured payment is received while the original hold remains eligible'
 );
 select is(
   (
     select booking_status from public.bookings
     where id = (select (value->>'bookingId')::uuid from payment_test_context where key = 'active_hold')
   ),
-  'confirmed'::public.booking_status,
-  'eligible booking becomes confirmed'
+  'payment_pending'::public.booking_status,
+  'eligible booking awaits written confirmation'
 );
 select is(
   (
@@ -146,11 +146,69 @@ select is(
 );
 select is(
   (
+    select status from public.inventory_reservations
+    where booking_id = (select (value->>'bookingId')::uuid from payment_test_context where key = 'active_hold')
+  ),
+  'active'::public.reservation_status,
+  'durable reservation remains active'
+);
+select is(
+  (
+    select expires_at from public.inventory_reservations
+    where booking_id = (select (value->>'bookingId')::uuid from payment_test_context where key = 'active_hold')
+  ),
+  null,
+  'durable reservation has no expiry'
+);
+select is(
+  (
+    select count(*)::integer from public.inventory_reservations
+    where booking_id = (select (value->>'bookingId')::uuid from payment_test_context where key = 'active_hold')
+  ),
+  1,
+  'automatic finalization retains exactly one reservation'
+);
+select is(
+  (
     select status from public.payments
     where id = (select (value->>'paymentId')::uuid from payment_test_context where key = 'active_payment')
   ),
   'verified'::public.payment_status,
-  'confirmed payment reaches verified state'
+  'received payment reaches verified state'
+);
+select is(
+  (
+    select count(*)::integer from public.booking_events
+    where booking_id = (select (value->>'bookingId')::uuid from payment_test_context where key = 'active_hold')
+      and event_type = 'payment_verified'
+  ),
+  1,
+  'payment verification records one event'
+);
+select is(
+  (
+    select count(*)::integer from public.notification_events
+    where booking_id = (select (value->>'bookingId')::uuid from payment_test_context where key = 'active_hold')
+      and template_key = 'payment_received_awaiting_confirmation'
+      and channel = 'internal'
+      and recipient_hash = encode(extensions.digest('administrator_payment_received_awaiting_confirmation', 'sha256'), 'hex')
+      and recipient_masked = 'administrator'
+  ),
+  1,
+  'payment receipt queues one PII-free internal notification'
+);
+select is(
+  (
+    select count(*)::integer from public.booking_events
+    where booking_id = (select (value->>'bookingId')::uuid from payment_test_context where key = 'active_hold')
+      and event_type = 'payment_received_awaiting_confirmation'
+      and actor_type = 'system'
+      and previous_state = 'held'
+      and new_state = 'payment_pending'
+      and metadata = '{}'::jsonb
+  ),
+  1,
+  'payment receipt records one PII-free awaiting-confirmation event'
 );
 select is(
   (
@@ -158,8 +216,8 @@ select is(
     where booking_id = (select (value->>'bookingId')::uuid from payment_test_context where key = 'active_hold')
       and event_type = 'booking_confirmed'
   ),
-  1,
-  'confirmation records one booking event'
+  0,
+  'automatic payment receipt records no booking-confirmed event'
 );
 select is(
   (
@@ -167,16 +225,53 @@ select is(
     where booking_id = (select (value->>'bookingId')::uuid from payment_test_context where key = 'active_hold')
       and template_key = 'booking_confirmed'
   ),
-  1,
-  'confirmation queues one notification'
+  0,
+  'automatic payment receipt queues no customer confirmation'
 );
 select is(
   public.finalize_verified_payment(
     'razorpay', 'order_active_1', 'pay_active_1', 500000, 'INR',
     'captured', 'webhook', 'event_active_1'
   )->>'result',
-  'confirmed',
-  'webhook-after-callback is idempotently confirmed'
+  'payment_received',
+  'webhook-after-callback is idempotently received'
+);
+select is(
+  (
+    select count(*)::integer from public.booking_events
+    where booking_id = (select (value->>'bookingId')::uuid from payment_test_context where key = 'active_hold')
+      and event_type = 'payment_received_awaiting_confirmation'
+  ),
+  1,
+  'idempotent finalization does not duplicate awaiting-confirmation events'
+);
+select is(
+  (
+    select count(*)::integer from public.notification_events
+    where booking_id = (select (value->>'bookingId')::uuid from payment_test_context where key = 'active_hold')
+      and template_key = 'payment_received_awaiting_confirmation'
+  ),
+  1,
+  'idempotent finalization does not duplicate internal notifications'
+);
+update public.bookings
+set booking_status = 'confirmed'
+where id = (select (value->>'bookingId')::uuid from payment_test_context where key = 'active_hold');
+select is(
+  public.finalize_verified_payment(
+    'razorpay', 'order_active_1', 'pay_active_1', 500000, 'INR',
+    'captured', 'browser', null
+  )->>'result',
+  'payment_received',
+  'duplicate automatic finalization returns the payment-layer result after later confirmation'
+);
+select is(
+  (
+    select booking_status from public.bookings
+    where id = (select (value->>'bookingId')::uuid from payment_test_context where key = 'active_hold')
+  ),
+  'confirmed'::public.booking_status,
+  'duplicate automatic finalization does not undo later confirmation'
 );
 select is(
   (
@@ -184,8 +279,8 @@ select is(
     where booking_id = (select (value->>'bookingId')::uuid from payment_test_context where key = 'active_hold')
       and event_type = 'booking_confirmed'
   ),
-  1,
-  'idempotent confirmation does not duplicate events'
+  0,
+  'duplicate automatic finalization does not emit confirmation'
 );
 
 insert into payment_test_context
@@ -380,7 +475,7 @@ $$;
 create trigger payment_test_reject_confirmation
 before update of booking_status on public.bookings
 for each row
-when (new.booking_status = 'confirmed')
+when (new.booking_status = 'payment_pending')
 execute function pg_temp.reject_test_confirmation();
 
 select is(
@@ -389,12 +484,12 @@ select is(
     'captured', 'webhook', 'event_failure_1'
   )->>'result',
   'recovery_required',
-  'confirmation failure exits through durable recovery'
+  'payment-receipt transition failure exits through durable recovery'
 );
 select is(
   (select booking_status from public.bookings where hold_request_id = '51000000-0000-4000-8000-000000000007'),
   'held'::public.booking_status,
-  'failed confirmation does not partially confirm the booking'
+  'failed payment-receipt transition does not partially update the booking'
 );
 select is(
   (
@@ -402,7 +497,7 @@ select is(
     where booking_id = (select id from public.bookings where hold_request_id = '51000000-0000-4000-8000-000000000007')
   ),
   'refund_pending'::public.payment_status,
-  'verified money survives a rolled-back confirmation as refund pending'
+  'verified money survives a rolled-back payment-receipt transition as refund pending'
 );
 drop trigger payment_test_reject_confirmation on public.bookings;
 
@@ -432,8 +527,8 @@ select is(
     'razorpay', 'order_authorized_1', 'pay_authorized_1', 500000, 'INR',
     'captured', 'webhook', 'event_authorized_2'
   )->>'result',
-  'confirmed',
-  'later captured event confirms through the same finalizer'
+  'payment_received',
+  'later captured event records payment receipt through the same finalizer'
 );
 
 select is(

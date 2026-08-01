@@ -6,9 +6,9 @@ Booking, payment, and inventory reservation states are strictly separated.
 - **Meaning & Actor:** Represents the business lifecycle of a booking. Mutated by Server (via hooks) or Admins.
 - **States:**
   - `draft`: Initial entry. Allowed next: `held`.
-  - `held`: Hold acquired. Allowed next: `payment_pending`, `confirmed`, `expired`.
-  - `payment_pending`: Manual fallback hold. Allowed next: `confirmed`, `expired`, `cancelled`.
-  - `confirmed`: Payment verified. Allowed next: `checked_in`, `cancelled`.
+  - `held`: Hold acquired. Automatic captured payment moves this to `payment_pending`; expiry remains possible.
+  - `payment_pending`: Payment has been received or awaits manual verification, but written confirmation has not been issued. Allowed next: `confirmed`, `expired`, `cancelled`.
+  - `confirmed`: Written booking confirmation has been recorded through an approved administrator workflow. Allowed next: `checked_in`, `cancelled`.
   - `checked_in`: Guest arrived. Allowed next: `completed`.
   - `completed`: Check-out complete. Allowed next: None.
   - `cancelled`: Admin/User voided. Allowed next: None.
@@ -38,10 +38,11 @@ Booking, payment, and inventory reservation states are strictly separated.
 - `expired`: Hold lapsed.
 - `cancelled`: Booking cancelled.
 
-**Transitions (e.g., successful payment):**
+**Transitions (e.g., captured automatic payment):**
 - Original: `type = temporary_hold`, `status = active`.
-- Payment Success: `type` converts to `confirmed_booking`. `status` **REMAINS** `active`. 
-*(Note: `confirmed_booking` is a type, not a status. The record stays `active` to continue blocking dates).*
+- Payment receipt: `type` converts to `confirmed_booking`, `status` **REMAINS** `active`, and `expires_at` becomes null.
+  The booking itself moves only to `payment_pending`.
+*(Note: `confirmed_booking` is an inventory type, not written business confirmation. The record stays `active` to keep the dates blocked while administrator review is pending.)*
 
 ## Implementation Clarification
 

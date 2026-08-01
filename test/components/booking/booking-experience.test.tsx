@@ -15,6 +15,24 @@ vi.mock("../../../src/components/booking/turnstile-widget", () => ({
   ),
 }));
 
+vi.mock("../../../src/components/booking/payment-checkout", () => ({
+  PaymentCheckout: ({ onFinalState }: {
+    onFinalState: (result: {
+      state: "payment_received" | "recovery_required";
+      bookingReference: string;
+    }) => void;
+  }) => (
+    <>
+      <button onClick={() => onFinalState({ state: "payment_received", bookingReference: "REF-123" })}>
+        Simulate payment received
+      </button>
+      <button onClick={() => onFinalState({ state: "recovery_required", bookingReference: "REF-123" })}>
+        Simulate recovery
+      </button>
+    </>
+  ),
+}));
+
 global.fetch = vi.fn();
 
 describe("BookingExperience", () => {
@@ -49,6 +67,54 @@ describe("BookingExperience", () => {
     
     // No fetch call to /api/availability should occur
     expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it("shows the written-confirmation boundary after payment receipt", () => {
+    sessionStorage.setItem("soe_hold_summary", JSON.stringify({
+      bookingReference: "REF-123",
+      checkInAt: "2024-12-05T14:00:00Z",
+      checkOutAt: "2024-12-06T10:00:00Z",
+      holdExpiresAt: new Date(Date.now() + 10 * 60000).toISOString(),
+      priceAmountPaise: 100000,
+      advanceAmountPaise: 50000,
+      balanceAmountPaise: 50000,
+      currency: "INR",
+      version: 1,
+    }));
+
+    render(<BookingExperience />);
+    fireEvent.click(screen.getByRole("button", { name: "Simulate payment received" }));
+
+    expect(screen.getByRole("heading", {
+      name: "PAYMENT RECEIVED — AWAITING WRITTEN CONFIRMATION",
+    })).toBeInTheDocument();
+    expect(screen.getByText(/advance payment was received/i)).toBeInTheDocument();
+    expect(screen.getByText(/dates remain blocked while Silver Oak Estate reviews/i)).toBeInTheDocument();
+    expect(screen.getByText(/booking is not yet confirmed/i)).toBeInTheDocument();
+    expect(screen.getByText(/only when Silver Oak Estate issues written confirmation/i)).toBeInTheDocument();
+    expect(screen.getByText("REF-123")).toBeInTheDocument();
+    expect(screen.queryByText(/^Booking confirmed$/i)).not.toBeInTheDocument();
+  });
+
+  it("keeps recovery language explicitly unconfirmed", () => {
+    sessionStorage.setItem("soe_hold_summary", JSON.stringify({
+      bookingReference: "REF-123",
+      checkInAt: "2024-12-05T14:00:00Z",
+      checkOutAt: "2024-12-06T10:00:00Z",
+      holdExpiresAt: new Date(Date.now() + 10 * 60000).toISOString(),
+      priceAmountPaise: 100000,
+      advanceAmountPaise: 50000,
+      balanceAmountPaise: 50000,
+      currency: "INR",
+      version: 1,
+    }));
+
+    render(<BookingExperience />);
+    fireEvent.click(screen.getByRole("button", { name: "Simulate recovery" }));
+
+    expect(screen.getByRole("heading", { name: /manual review required/i })).toBeInTheDocument();
+    expect(screen.getByText(/booking is not confirmed/i)).toBeInTheDocument();
+    expect(screen.queryByText(/^Booking confirmed$/i)).not.toBeInTheDocument();
   });
 
   describe("Release Hold", () => {

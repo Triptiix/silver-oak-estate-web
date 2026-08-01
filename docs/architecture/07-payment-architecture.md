@@ -9,14 +9,20 @@ Browser verification (`/api/payments/verify`) and Provider Webhooks (`/api/payme
 3. Verify the temporary hold remains active, unexpired, and unreleased.
 4. Verify the authoritative temporary inventory reservation is still active.
 5. Convert that reservation to `confirmed_booking` without reacquiring inventory.
-6. Confirm the booking ONLY while the original hold remains eligible.
+6. Move the booking to `payment_pending`; payment receipt never confirms it.
 7. Mark the payment verified/captured as appropriate.
-8. Create audit events and pending `notification_events` outbox records.
+8. Create payment-received audit events and one internal pending
+   `notification_events` outbox record for administrator review.
    Phase 4 does not deliver those notifications.
 
 **The later callback will:**
 - Return idempotent success (`200 OK`) without repeating writes or creating
   duplicate outbox records.
+
+`confirmed_booking` names the durable inventory block. It does not mean the
+booking has received written confirmation. The active, non-expiring block keeps
+the dates unavailable until a separately approved administrator workflow
+records written confirmation.
 
 ## Expired-Hold Payment Recovery
 If a verified payment arrives AFTER the `temporary_hold` expired:
@@ -51,8 +57,8 @@ A late manual payment must never revive an expired or released booking.
 ### Payment Conflict Recovery
 
 When verified payment succeeds but the original hold is expired, released, or
-otherwise ineligible for confirmation:
-1. The inventory-confirmation transaction rolls back or uses a savepoint.
+otherwise ineligible for durable blocking:
+1. The inventory-transition transaction rolls back or uses a savepoint.
 2. A separate successful recovery transaction updates the payment to `refund_pending` / `reconciliation_required`.
 3. An audit event is recorded.
 4. A pending internal recovery outbox record is written; alert delivery is not

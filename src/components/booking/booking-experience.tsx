@@ -101,7 +101,7 @@ export function BookingExperience() {
     clearHold();
   }
 
-  if (!isLoaded || (isChecking && !holdSummary && !hasExpired)) {
+  if (!isLoaded || (isChecking && !holdSummary && !hasExpired && !paymentOutcome)) {
     return (
       <div className="flex justify-center py-20">
         <p className="text-slate-500" aria-live="polite">Loading booking experience…</p>
@@ -131,17 +131,19 @@ export function BookingExperience() {
   }
 
   if (paymentOutcome) {
-    const confirmed = paymentOutcome.state === "confirmed";
+    const paymentReceived = paymentOutcome.state === "payment_received";
     return (
       <div className="py-8">
         <div className="max-w-2xl mx-auto bg-white border border-slate-200 rounded-lg p-8 shadow-sm text-center">
           <h2 className="text-2xl font-semibold text-slate-900 mb-2">
-            {confirmed ? "Booking confirmed" : "Payment received — recovery required"}
+            {paymentReceived
+              ? "PAYMENT RECEIVED — AWAITING WRITTEN CONFIRMATION"
+              : "Payment received — manual review required"}
           </h2>
           <p className="text-slate-600 mb-4">
-            {confirmed
-              ? "Your booking is confirmed and the dates are reserved."
-              : "Your payment was received, but the expired or released booking was not revived. Our team must review the payment."}
+            {paymentReceived
+              ? "Your advance payment was received. The dates remain blocked while Silver Oak Estate reviews your booking. Your booking is not yet confirmed. Confirmation occurs only when Silver Oak Estate issues written confirmation."
+              : "Your payment was received but requires manual review. The expired or released booking was not revived, and your booking is not confirmed."}
           </p>
           <p className="font-mono text-sm text-slate-700">{paymentOutcome.bookingReference}</p>
         </div>
