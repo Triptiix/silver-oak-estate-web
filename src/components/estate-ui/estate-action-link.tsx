@@ -17,7 +17,7 @@ export const EstateActionLink = React.forwardRef<HTMLAnchorElement, EstateAction
           {
             "font-soe-display text-[length:var(--soe-text-lg)] text-[var(--soe-surface-text-primary)] hover:opacity-80 underline underline-offset-4 decoration-1":
               variant === "editorial",
-            "min-h-[48px] justify-center rounded-[var(--soe-radius-control)] px-6 py-3 font-soe-ui text-[length:var(--soe-text-base)] font-medium bg-[var(--soe-surface-action-primary)] text-[var(--soe-surface-text-inverse)] hover:bg-[var(--soe-surface-action-hover)]":
+            "min-h-[48px] justify-center rounded-[var(--soe-radius-control)] px-6 py-3 font-soe-ui text-[length:var(--soe-text-base)] font-medium bg-[var(--soe-surface-action-primary)] text-[var(--soe-surface-text-inverse)] hover:bg-[var(--soe-surface-action-hover)] active:scale-[0.985] motion-reduce:active:scale-100":
               variant === "button",
           },
           className

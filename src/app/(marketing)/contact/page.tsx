@@ -33,7 +33,7 @@ export default function ContactPage() {
         className="border-b border-[var(--soe-color-gold)]/45"
       >
         <EstateContainer variant="visual">
-          <div className="grid min-h-[calc(76svh-var(--header-height))] items-end gap-12 py-14 lg:grid-cols-12 lg:py-20">
+          <div className="soe-motion-fade-rise grid min-h-[calc(76svh-var(--header-height))] items-end gap-12 py-14 lg:grid-cols-12 lg:py-20">
             <div className="lg:col-span-8">
               <EstateEyebrow className="mb-6 text-[var(--soe-surface-accent-metal)]">
                 Contact Silver Oak Estate

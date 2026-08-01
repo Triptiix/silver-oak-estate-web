@@ -23,10 +23,17 @@ async function getContentSecurityPolicy(
   return cspHeader.value;
 }
 
+function getSupabaseOrigins(value: string): string[] {
+  return value.match(/https:\/\/[a-z0-9-]+\.supabase\.co/g) ?? [];
+}
+
 describe("Supabase image host configuration", () => {
-  it("derives the staging Supabase hostname for remote images and CSP", async () => {
+  it("derives only the validated staging Supabase hostname for remote images and CSP", async () => {
     const config = createNextConfig(STAGING_SUPABASE_URL);
     const csp = await getContentSecurityPolicy(config);
+    const imageDirectives = csp
+      .split("; ")
+      .filter((directive) => directive.startsWith("img-src "));
 
     expect(getSupabaseImageHostname(STAGING_SUPABASE_URL)).toBe(
       STAGING_SUPABASE_HOSTNAME,
@@ -38,8 +45,10 @@ describe("Supabase image host configuration", () => {
         pathname: "/storage/v1/object/public/**",
       },
     ]);
-    expect(csp).toContain(`img-src 'self' data: ${STAGING_SUPABASE_URL}`);
-    expect(csp).not.toContain("tcjijcqdulszckbbkbcz");
+    expect(imageDirectives).toEqual([
+      `img-src 'self' data: ${STAGING_SUPABASE_URL}`,
+    ]);
+    expect(getSupabaseOrigins(csp)).toEqual([STAGING_SUPABASE_URL]);
   });
 
   it.each([
@@ -57,6 +66,6 @@ describe("Supabase image host configuration", () => {
     expect(getSupabaseImageHostname(rawUrl)).toBeNull();
     expect(config.images?.remotePatterns).toEqual([]);
     expect(csp).toContain("img-src 'self' data:");
-    expect(csp).not.toContain("supabase.co");
+    expect(getSupabaseOrigins(csp)).toEqual([]);
   });
 });

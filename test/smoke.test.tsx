@@ -14,7 +14,7 @@ import MarketingLayout from "@/app/(marketing)/layout";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { MobileBookingCTA } from "@/components/layout/mobile-booking-cta";
-import nextConfig from "../next.config";
+import { createNextConfig } from "../next.config";
 
 // Effective <title>: an absolute title renders verbatim; a plain string gets the
 // root template's " | Silver Oak Estate" suffix appended.
@@ -649,10 +649,13 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
   });
 
   describe("Next Image & CSP Security Configuration", () => {
+    const stagingSupabaseUrl = "https://hirelfuprxruzppwrabc.supabase.co";
+    const stagingSupabaseHostname = "hirelfuprxruzppwrabc.supabase.co";
+    const configuredNextConfig = createNextConfig(stagingSupabaseUrl);
     let cspDirectives: Record<string, string[]>;
 
     beforeAll(async () => {
-      const headers = await nextConfig.headers!();
+      const headers = await configuredNextConfig.headers!();
       const cspHeader = headers[0].headers.find(
         (header) => header.key === "Content-Security-Policy"
       );
@@ -661,34 +664,37 @@ describe("Smoke & Launch-Unblock Regression Suite", () => {
       cspDirectives = parseCspDirectives(cspHeader!.value);
     });
 
-    it("31. remotePatterns contains exactly approved host", () => {
-      const patterns = nextConfig.images?.remotePatterns || [];
-      expect(patterns.length).toBe(1);
-      expect(patterns[0].hostname).toBe("tcjijcqdulszckbbkbcz.supabase.co");
+    it("31. remotePatterns contains exactly the environment-derived host", () => {
+      const patterns = configuredNextConfig.images?.remotePatterns || [];
+      expect(patterns).toHaveLength(1);
+      expect(patterns[0].hostname).toBe(stagingSupabaseHostname);
     });
 
     it("32. remotePatterns uses https", () => {
-      const patterns = nextConfig.images?.remotePatterns || [];
+      const patterns = configuredNextConfig.images?.remotePatterns || [];
+      expect(patterns).toHaveLength(1);
       expect(patterns[0].protocol).toBe("https");
     });
 
     it("33. remotePatterns uses /storage/v1/object/public/**", () => {
-      const patterns = nextConfig.images?.remotePatterns || [];
+      const patterns = configuredNextConfig.images?.remotePatterns || [];
+      expect(patterns).toHaveLength(1);
       expect(patterns[0].pathname).toBe("/storage/v1/object/public/**");
     });
 
     it("34. no wildcard hostname exists in remotePatterns", () => {
-      const patterns = nextConfig.images?.remotePatterns || [];
-      patterns.forEach((p) => {
-        expect(p.hostname).not.toContain("*");
+      const patterns = configuredNextConfig.images?.remotePatterns || [];
+      expect(patterns).toHaveLength(1);
+      patterns.forEach((pattern) => {
+        expect(pattern.hostname).not.toContain("*");
       });
     });
 
-    it("35. CSP img-src directive equals exactly approved tokens", () => {
+    it("35. CSP img-src directive equals exactly the environment-derived tokens", () => {
       expect(cspDirectives["img-src"]).toEqual([
         "'self'",
         "data:",
-        "https://tcjijcqdulszckbbkbcz.supabase.co",
+        stagingSupabaseUrl,
       ]);
     });
 

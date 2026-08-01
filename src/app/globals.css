@@ -278,4 +278,65 @@
   .font-soe-ui {
     font-family: var(--font-manrope), system-ui, sans-serif;
   }
+
+  /* Scoped Motion Utilities & Keyframes */
+  .soe-motion-fade-rise {
+    animation: soe-fade-rise var(--soe-duration-editorial) var(--soe-ease-editorial) forwards;
+  }
+
+  .soe-motion-image-reveal {
+    overflow: hidden;
+  }
+
+  .soe-motion-image-reveal img,
+  .soe-motion-image-reveal picture > img {
+    transform: scale(1);
+    transition: transform 800ms var(--soe-ease-editorial);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .soe-motion-image-reveal:hover img,
+    .soe-motion-image-reveal:hover picture > img {
+      transform: scale(1.025);
+    }
+  }
+
+  .soe-motion-menu-enter {
+    animation: soe-slide-down var(--soe-duration-interface) var(--soe-ease-standard) forwards;
+  }
+
+  @keyframes soe-fade-rise {
+    from {
+      opacity: 0;
+      transform: translateY(0.75rem);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes soe-slide-down {
+    from {
+      opacity: 0;
+      transform: translateY(-0.5rem);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .soe-motion-fade-rise,
+    .soe-motion-menu-enter {
+      animation: none !important;
+    }
+    .soe-motion-image-reveal,
+    .soe-motion-image-reveal img,
+    .soe-motion-image-reveal picture > img {
+      transition: none !important;
+      transform: none !important;
+    }
+  }
 }
